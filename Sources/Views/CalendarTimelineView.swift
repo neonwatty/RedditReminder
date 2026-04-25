@@ -27,7 +27,7 @@ struct CalendarTimelineView: View {
                     .fill(dotColor(for: windows))
                     .frame(width: 10, height: 10)
                 Rectangle()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(StickerColors.border)
                     .frame(width: 2)
             }
             .frame(width: 16)

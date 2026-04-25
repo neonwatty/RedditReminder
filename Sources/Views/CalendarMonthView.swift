@@ -14,19 +14,19 @@ struct CalendarMonthView: View {
                 Button(action: previousMonth) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(StickerColors.textSecondary)
                 }
                 .buttonStyle(.plain)
 
                 Spacer()
                 Text(monthTitle)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .bold))
                 Spacer()
 
                 Button(action: nextMonth) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(StickerColors.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -35,7 +35,7 @@ struct CalendarMonthView: View {
                 ForEach(dayLabels, id: \.self) { label in
                     Text(label)
                         .font(.system(size: 9))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(StickerColors.textSecondary)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -53,12 +53,15 @@ struct CalendarMonthView: View {
             if let selected = selectedDay {
                 let dayWindows = windowsFor(day: selected)
                 if !dayWindows.isEmpty {
-                    Divider().padding(.vertical, 4)
+                    Rectangle()
+                        .fill(StickerColors.border)
+                        .frame(height: 2)
+                        .padding(.vertical, 4)
                     Text(dayDetailTitle(selected))
                         .font(.system(size: 9, weight: .medium))
                         .tracking(1)
                         .textCase(.uppercase)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(StickerColors.textSecondary)
 
                     ForEach(Array(dayWindows.enumerated()), id: \.offset) { _, window in
                         EventCardView(window: window)
@@ -93,7 +96,11 @@ struct CalendarMonthView: View {
             }
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
-            .background(isSelected ? Color.white.opacity(0.08) : Color.clear)
+            .background(isSelected ? StickerColors.card : Color.clear)
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(isSelected ? StickerColors.border : Color.clear, lineWidth: 1)
+            )
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)

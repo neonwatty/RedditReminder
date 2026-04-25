@@ -48,7 +48,9 @@ struct SettingsView: View {
                     .frame(maxWidth: 120)
                 }
 
-                Divider()
+                Rectangle()
+                    .fill(StickerColors.border)
+                    .frame(height: 2)
                 sectionLabel("Notifications")
 
                 Toggle("macOS notifications", isOn: $notificationsEnabled)
@@ -70,9 +72,9 @@ struct SettingsView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 10, weight: .medium))
+            .font(.system(size: 10, weight: .bold))
             .tracking(1.5)
             .textCase(.uppercase)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(StickerColors.textSecondary)
     }
 }
