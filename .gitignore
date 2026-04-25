@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# Brainstorm session state (local only)
+.superpowers/
+
+# Build artifacts (future)
+.build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/

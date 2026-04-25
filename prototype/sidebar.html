@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedditReminder — Sidebar Prototype</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --reddit: #ff4500;
+    --reddit-soft: #ff450020;
+    --reddit-border: #ff450050;
+    --green: #22c55e;
+    --blue: #4a9eff;
+    --purple: #a855f7;
+    --bg-dark: #0d0d1a;
+    --bg-panel: #141428;
+    --bg-card: #1a1a32;
+    --bg-input: #12122a;
+    --border: #2a2a45;
+    --border-light: #333355;
+    --text: #e0e0e0;
+    --text-muted: #888899;
+    --text-dim: #555566;
+    --strip-width: 28px;
+    --glance-width: 200px;
+    --browse-width: 340px;
+    --capture-width: 500px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Helvetica Neue', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Desktop mock */
+  .desktop {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+    transition: opacity 0.3s;
+  }
+
+  .desktop-hint {
+    font-size: 14px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.6;
+    max-width: 400px;
+  }
+
+  .desktop-hint kbd {
+    background: #2a2a40;
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+  }
+
+  .desktop-hint .shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #1a1a2e;
+  }
+
+  .desktop-hint .shortcut-row:last-child { border-bottom: none; }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--browse-width);
+    min-width: var(--strip-width);
+    height: 100vh;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sidebar[data-state="strip"] { width: var(--strip-width); }
+  .sidebar[data-state="glance"] { width: var(--glance-width); }
+  .sidebar[data-state="browse"] { width: var(--browse-width); }
+  .sidebar[data-state="capture"] { width: var(--capture-width); }
+
+  /* Strip view */
+  .strip-view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 14px;
+    gap: 12px;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .sidebar[data-state="strip"] .strip-view { display: flex; }
+  .sidebar[data-state="strip"] .main-view { display: none; }
+
+  .strip-expand {
+    font-size: 16px;
+    color: var(--text-dim);
+    transition: color 0.2s;
+  }
+
+  .strip-view:hover .strip-expand { color: var(--text); }
+
+  .strip-badge {
+    width: 18px;
+    height: 18px;
+    background: var(--reddit);
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .strip-event-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--reddit);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--reddit);
+    animation: pulse 2s infinite;
+  }
+
+  .strip-label {
+    writing-mode: vertical-rl;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: auto;
+    margin-bottom: 16px;
+  }
+
+  /* Main view (glance / browse / capture) */
+  .main-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .sidebar-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .sidebar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--reddit);
+    white-space: nowrap;
+  }
+
+  .sidebar-collapse {
+    font-size: 18px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+    user-select: none;
+  }
+
+  .sidebar-collapse:hover { color: var(--text); }
+
+  /* Width controls */
+  .width-controls {
+    display: flex;
+    gap: 2px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .width-btn {
+    flex: 1;
+    padding: 6px 0;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .width-btn:hover { color: var(--text-muted); background: var(--bg-card); }
+  .width-btn.active {
+    color: var(--reddit);
+    background: var(--reddit-soft);
+    border-color: var(--reddit-border);
+  }
+
+  /* Content area */
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+  }
+
+  .sidebar-content::-webkit-scrollbar { width: 4px; }
+  .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .section-label .action {
+    color: var(--reddit);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+  }
+
+  .section-label .action:hover { text-decoration: underline; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: var(--reddit-soft);
+    border: 1px solid var(--reddit-border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  .alert-title {
+    font-size: 12px;
+    color: var(--reddit);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alert-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  /* Capture cards */
+  .capture-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .capture-card:hover {
+    border-color: var(--border-light);
+    transform: translateX(-2px);
+  }
+
+  .capture-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .capture-project {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .capture-subs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .sub-tag {
+    font-size: 9px;
+    color: var(--reddit);
+    background: var(--reddit-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .capture-text {
+    font-size: 11px;
+    color: #aaa;
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .capture-media {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .capture-thumb {
+    width: 36px;
+    height: 36px;
+    background: var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    overflow: hidden;
+  }
+
+  .capture-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .status-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .status-queued { background: #22c55e20; color: var(--green); }
+  .status-posted { background: #55556620; color: var(--text-dim); }
+
+  /* Calendar timeline */
+  .timeline {
+    border-left: 2px solid var(--border);
+    margin-left: 7px;
+    padding-left: 16px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -21px;
+    top: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .timeline-date {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-event {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+  }
+
+  .timeline-event.urgent {
+    background: var(--reddit-soft);
+    border-color: var(--reddit-border);
+  }
+
+  .timeline-event-name {
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .timeline-event-sub {
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  .timeline-event-captures {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Capture form */
+  .capture-form {
+    display: none;
+  }
+
+  .sidebar[data-state="capture"] .capture-form { display: block; }
+  .sidebar[data-state="capture"] .queue-section { display: none; }
+  .sidebar[data-state="capture"] .calendar-section { display: none; }
+
+  .form-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    flex: 1;
+  }
+
+  .form-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: var(--reddit);
+  }
+
+  .form-textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--reddit);
+  }
+
+  .form-textarea::placeholder { color: var(--text-dim); }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .drop-zone:hover {
+    border-color: var(--reddit-border);
+    background: var(--reddit-soft);
+    color: var(--text-muted);
+  }
+
+  .drop-zone.dragover {
+    border-color: var(--reddit);
+    background: var(--reddit-soft);
+    color: var(--reddit);
+  }
+
+  .drop-zone-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .attached-media {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .attached-item {
+    width: 64px;
+    height: 48px;
+    background: var(--border);
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    overflow: hidden;
+  }
+
+  .attached-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--reddit);
+    border-radius: 50%;
+    font-size: 10px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .attached-item:hover .attached-remove { opacity: 1; }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .btn-cancel {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-cancel:hover { background: var(--border); color: var(--text); }
+
+  .btn-primary {
+    background: var(--reddit);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #e03d00; }
+
+  /* Capture button */
+  .capture-btn-container {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar[data-state="capture"] .capture-btn-container { display: none; }
+
+  .capture-btn {
+    width: 100%;
+    background: var(--reddit);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+
+  .capture-btn:hover { background: #e03d00; }
+
+  /* Subreddit multi-select */
+  .sub-multi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    min-height: 34px;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .sub-multi:focus-within { border-color: var(--reddit); }
+
+  .sub-chip {
+    font-size: 10px;
+    color: var(--reddit);
+    background: var(--reddit-soft);
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .sub-chip-remove {
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  .sub-chip-remove:hover { opacity: 1; }
+
+  .sub-add {
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .sub-add:hover { color: var(--text-muted); }
+
+  /* Notes field */
+  .form-notes {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: inherit;
+    resize: none;
+    height: 32px;
+  }
+
+  .form-notes:focus {
+    outline: none;
+    border-color: var(--reddit);
+    color: var(--text);
+  }
+
+  .form-notes::placeholder { color: var(--text-dim); }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0px transparent; }
+    50% { box-shadow: 0 0 12px var(--reddit-soft); }
+  }
+
+  /* State indicator */
+  .state-indicator {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    z-index: 100;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .state-indicator strong {
+    color: var(--reddit);
+  }
+
+  /* View tabs for browse mode */
+  .view-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .view-tab {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .view-tab:hover { color: var(--text-muted); }
+  .view-tab.active {
+    color: var(--reddit);
+    border-bottom-color: var(--reddit);
+  }
+
+  /* Hidden sections */
+  .calendar-section { display: none; }
+  .queue-section { display: block; }
+
+  .sidebar[data-view="calendar"] .calendar-section { display: block; }
+  .sidebar[data-view="calendar"] .queue-section { display: none; }
+  .sidebar[data-view="queue"] .calendar-section { display: none; }
+  .sidebar[data-view="queue"] .queue-section { display: block; }
+
+  /* Glance-specific styles */
+  .sidebar[data-state="glance"] .capture-card .capture-text { -webkit-line-clamp: 1; }
+  .sidebar[data-state="glance"] .capture-card .capture-media { display: none; }
+  .sidebar[data-state="glance"] .capture-card .capture-meta { display: none; }
+  .sidebar[data-state="glance"] .view-tabs { display: none; }
+  .sidebar[data-state="glance"] .calendar-section { display: none !important; }
+  .sidebar[data-state="glance"] .alert-banner .alert-subtitle { display: none; }
+  .sidebar[data-state="glance"] .capture-subs { display: none; }
+  .sidebar[data-state="glance"] .upcoming-peek { display: block; }
+
+  .upcoming-peek { display: none; }
+
+  /* Browse shows full cards */
+  .sidebar[data-state="browse"] .capture-text { -webkit-line-clamp: 3; }
+
+  /* Responsive adjustments within states */
+  .sidebar[data-state="glance"] .sidebar-title { font-size: 12px; }
+
+  /* Settings section in capture/manage width */
+  .settings-section { display: none; }
+  .sidebar[data-state="capture"][data-view="settings"] .settings-section { display: block; }
+  .sidebar[data-state="capture"][data-view="settings"] .capture-form { display: none; }
+  .sidebar[data-state="capture"][data-view="settings"] .queue-section { display: none; }
+  .sidebar[data-state="capture"][data-view="settings"] .calendar-section { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Desktop area -->
+<div class="desktop">
+  <div style="font-size: 48px; margin-bottom: 8px;">📢</div>
+  <div style="font-size: 20px; font-weight: 700; color: var(--text);">RedditReminder</div>
+  <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 24px;">Interactive Sidebar Prototype</div>
+  <div class="desktop-hint">
+    <div class="shortcut-row">
+      <span>Toggle capture mode</span>
+      <kbd>⌘ ⇧ R</kbd>
+    </div>
+    <div class="shortcut-row">
+      <span>Step down one level</span>
+      <kbd>Esc</kbd>
+    </div>
+    <div class="shortcut-row">
+      <span>Or use the width buttons in the sidebar header</span>
+      <span style="color: var(--text-dim);">→</span>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar" data-state="browse" data-view="queue">
+
+  <!-- Strip view (24px) -->
+  <div class="strip-view" onclick="setState('glance')">
+    <div class="strip-expand">›</div>
+    <div class="strip-badge">3</div>
+    <div class="strip-event-dot" title="Show-off Saturday tomorrow"></div>
+    <div class="strip-label">Reddit</div>
+  </div>
+
+  <!-- Main view (glance/browse/capture) -->
+  <div class="main-view">
+    <!-- Header -->
+    <div class="sidebar-header">
+      <div class="sidebar-title">RedditReminder</div>
+      <div class="sidebar-collapse" onclick="stepDown()" title="Collapse (Esc)">‹</div>
+    </div>
+
+    <!-- Width controls -->
+    <div class="width-controls">
+      <div class="width-btn" data-target="strip" onclick="setState('strip')">Strip</div>
+      <div class="width-btn" data-target="glance" onclick="setState('glance')">Glance</div>
+      <div class="width-btn active" data-target="browse" onclick="setState('browse')">Browse</div>
+      <div class="width-btn" data-target="capture" onclick="setState('capture')">Manage</div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="sidebar-content">
+
+      <!-- Alert banner -->
+      <div class="alert-banner">
+        <div class="alert-title">
+          <span>⏰</span> Show-off Saturday
+        </div>
+        <div class="alert-subtitle">r/SideProject · Tomorrow 9:00 AM · 2 captures ready</div>
+      </div>
+
+      <!-- Capture form (only visible at capture width) -->
+      <div class="capture-form">
+        <div class="section-label">New Capture</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label">Project</div>
+            <select class="form-select">
+              <option>Bullhorn</option>
+              <option>SessionSearch</option>
+              <option>CCSwitcher</option>
+              <option>SpaceLabeler</option>
+              <option>+ New Project...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Subreddits</div>
+            <div class="sub-multi">
+              <div class="sub-chip">r/SideProject <span class="sub-chip-remove">×</span></div>
+              <span class="sub-add">+ add</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <div class="form-label">What happened?</div>
+          <textarea class="form-textarea" placeholder="What did you ship, build, fix, or learn? Rough notes are fine — you'll polish before posting..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <div class="form-label">Notes to self</div>
+          <textarea class="form-notes" placeholder="e.g., mention the new screenshot, link the demo..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <div class="form-label">Media</div>
+          <div class="drop-zone" id="dropZone">
+            📎 Drop images or videos here
+            <div class="drop-zone-hint">or click to browse · PNG, JPG, GIF, MP4</div>
+          </div>
+          <div class="attached-media" id="attachedMedia">
+            <div class="attached-item">
+              dark.png
+              <div class="attached-remove">×</div>
+            </div>
+            <div class="attached-item">
+              demo.mp4
+              <div class="attached-remove">×</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-cancel" onclick="setState('browse')">Cancel</button>
+          <button class="btn btn-primary" onclick="addCapture()">Add to Queue ⌘↵</button>
+        </div>
+      </div>
+
+      <!-- Queue section -->
+      <div class="queue-section">
+        <!-- View tabs (browse only) -->
+        <div class="view-tabs">
+          <div class="view-tab active" data-tab="queue" onclick="setView('queue')">Queue</div>
+          <div class="view-tab" data-tab="calendar" onclick="setView('calendar')">Calendar</div>
+        </div>
+
+        <div class="section-label">
+          Queued · 3 captures
+        </div>
+
+        <!-- Card 1 -->
+        <div class="capture-card" onclick="expandCapture(this)">
+          <div class="capture-header">
+            <span class="capture-project">Bullhorn</span>
+            <div class="capture-subs">
+              <span class="sub-tag">r/SideProject</span>
+            </div>
+          </div>
+          <div class="capture-text">Added dark mode with system auto-detection. Full theme toggle in settings, all components updated with proper dark variants. Custom CSS variables for the sticker-bomb design system.</div>
+          <div class="capture-media">
+            <div class="capture-thumb">🌙</div>
+            <div class="capture-thumb">🖥</div>
+          </div>
+          <div class="capture-meta">
+            <span>2 hours ago</span>
+            <span class="status-badge status-queued">queued</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="capture-card" onclick="expandCapture(this)">
+          <div class="capture-header">
+            <span class="capture-project">SessionSearch</span>
+            <div class="capture-subs">
+              <span class="sub-tag">r/webdev</span>
+              <span class="sub-tag">r/MacApps</span>
+            </div>
+          </div>
+          <div class="capture-text">Full-text search across all Claude Code sessions. SQLite FTS5 backend, instant results, menu bar app. Search by content, tool calls, or conversation topics.</div>
+          <div class="capture-meta">
+            <span>Yesterday</span>
+            <span class="status-badge status-queued">queued</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="capture-card" onclick="expandCapture(this)">
+          <div class="capture-header">
+            <span class="capture-project">Bullhorn</span>
+            <div class="capture-subs">
+              <span class="sub-tag">r/SideProject</span>
+              <span class="sub-tag">r/indiehackers</span>
+            </div>
+          </div>
+          <div class="capture-text">Self-hosted BYOK mode — bring your own API keys for Twitter, LinkedIn, and Reddit. Full Docker Compose setup with Supabase, internal cron scheduler.</div>
+          <div class="capture-media">
+            <div class="capture-thumb">🐳</div>
+          </div>
+          <div class="capture-meta">
+            <span>3 days ago</span>
+            <span class="status-badge status-queued">queued</span>
+          </div>
+        </div>
+
+        <!-- Posted section -->
+        <div class="section-label" style="margin-top: 16px;">
+          Recently Posted
+        </div>
+
+        <div class="capture-card" style="opacity: 0.5;">
+          <div class="capture-header">
+            <span class="capture-project">CCSwitcher</span>
+            <div class="capture-subs">
+              <span class="sub-tag">r/MacApps</span>
+            </div>
+          </div>
+          <div class="capture-text">Switch Claude Code accounts with a click. Menu bar widget with usage stats.</div>
+          <div class="capture-meta">
+            <span>Last Saturday</span>
+            <span class="status-badge status-posted">posted</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar section -->
+      <div class="calendar-section">
+        <div class="view-tabs">
+          <div class="view-tab" data-tab="queue" onclick="setView('queue')">Queue</div>
+          <div class="view-tab active" data-tab="calendar" onclick="setView('calendar')">Calendar</div>
+        </div>
+
+        <div class="section-label">
+          This Week
+          <span class="action" onclick="setState('capture')">+ Add Event</span>
+        </div>
+
+        <div class="timeline">
+          <!-- Today -->
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--green); box-shadow: 0 0 6px var(--green);"></div>
+            <div class="timeline-date" style="color: var(--green);">Today · Thu Apr 24</div>
+            <div class="timeline-event">
+              <div class="timeline-event-name">r/webdev peak hours</div>
+              <div class="timeline-event-sub" style="color: var(--text-dim);">10am–12pm EST</div>
+              <div class="timeline-event-captures" style="color: var(--green);">1 capture matches → SessionSearch</div>
+            </div>
+          </div>
+
+          <!-- Saturday -->
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--reddit); box-shadow: 0 0 6px var(--reddit);"></div>
+            <div class="timeline-date" style="color: var(--reddit);">Sat Apr 26</div>
+            <div class="timeline-event urgent">
+              <div class="timeline-event-name" style="font-weight: 600; color: #fff;">Show-off Saturday</div>
+              <div class="timeline-event-sub" style="color: var(--reddit);">r/SideProject · recurring weekly</div>
+              <div class="timeline-event-captures">2 captures ready · <span style="color: var(--reddit);">Bullhorn, SessionSearch</span></div>
+            </div>
+          </div>
+
+          <!-- Wednesday -->
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--blue);"></div>
+            <div class="timeline-date" style="color: var(--blue);">Wed Apr 30</div>
+            <div class="timeline-event">
+              <div class="timeline-event-name">What Are You Working On</div>
+              <div class="timeline-event-sub" style="color: var(--blue);">r/webdev · recurring weekly</div>
+              <div class="timeline-event-captures">No captures tagged yet</div>
+            </div>
+          </div>
+
+          <!-- Next Monday -->
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--text-dim);"></div>
+            <div class="timeline-date" style="color: var(--text-dim);">Mon May 5</div>
+            <div class="timeline-event">
+              <div class="timeline-event-name">r/MacApps peak hours</div>
+              <div class="timeline-event-sub" style="color: var(--text-dim);">9am–11am EST</div>
+              <div class="timeline-event-captures">No captures tagged yet</div>
+            </div>
+          </div>
+
+          <!-- Next Saturday -->
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: var(--reddit); opacity: 0.4;"></div>
+            <div class="timeline-date" style="color: var(--text-dim);">Sat May 3</div>
+            <div class="timeline-event">
+              <div class="timeline-event-name">Show-off Saturday</div>
+              <div class="timeline-event-sub" style="color: var(--text-dim);">r/SideProject · recurring weekly</div>
+              <div class="timeline-event-captures">No captures tagged yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming peek (glance only) -->
+      <div class="upcoming-peek" style="margin-top: 8px;">
+        <div class="section-label">Upcoming</div>
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <div style="width:6px; height:6px; background:var(--reddit); border-radius:50%;"></div>
+          <span style="font-size:11px; color:var(--text-muted);">Show-off Sat · r/SideProject</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <div style="width:6px; height:6px; background:var(--blue); border-radius:50%;"></div>
+          <span style="font-size:11px; color:var(--text-muted);">WAYW Wed · r/webdev</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="width:6px; height:6px; background:var(--text-dim); border-radius:50%;"></div>
+          <span style="font-size:11px; color:var(--text-muted);">Peak · r/MacApps · Mon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capture button (bottom bar) -->
+    <div class="capture-btn-container">
+      <button class="capture-btn" onclick="setState('capture')">+ New Capture</button>
+    </div>
+  </div>
+</div>
+
+<!-- State indicator -->
+<div class="state-indicator" id="stateIndicator">
+  State: <strong id="stateLabel">browse</strong> · <span id="stateWidth">340px</span>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar')
+  const stateLabel = document.getElementById('stateLabel')
+  const stateWidth = document.getElementById('stateWidth')
+  const indicator = document.getElementById('stateIndicator')
+
+  const states = ['strip', 'glance', 'browse', 'capture']
+  const widths = { strip: '28px', glance: '200px', browse: '340px', capture: '500px' }
+
+  function setState(state) {
+    sidebar.dataset.state = state
+    stateLabel.textContent = state
+    stateWidth.textContent = widths[state]
+
+    // Update active button
+    document.querySelectorAll('.width-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.target === state)
+    })
+
+    // Flash indicator
+    indicator.style.opacity = '1'
+    clearTimeout(window._indicatorTimeout)
+    window._indicatorTimeout = setTimeout(() => {
+      indicator.style.opacity = '0.4'
+    }, 2000)
+
+    // Reset view to queue when entering capture mode
+    if (state === 'capture') {
+      setView('queue')
+    }
+  }
+
+  function stepDown() {
+    const current = sidebar.dataset.state
+    const idx = states.indexOf(current)
+    if (idx > 0) {
+      setState(states[idx - 1])
+    }
+  }
+
+  function setView(view) {
+    sidebar.dataset.view = view
+    document.querySelectorAll('.view-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.tab === view)
+    })
+  }
+
+  function expandCapture(card) {
+    const state = sidebar.dataset.state
+    if (state === 'glance') {
+      setState('browse')
+    }
+  }
+
+  function addCapture() {
+    // Simulate adding and return to browse
+    setState('browse')
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      stepDown()
+    }
+    // Cmd+Shift+R
+    if (e.metaKey && e.shiftKey && e.key === 'R') {
+      e.preventDefault()
+      if (sidebar.dataset.state === 'capture') {
+        // Focus textarea
+        document.querySelector('.form-textarea')?.focus()
+      } else {
+        setState('capture')
+        setTimeout(() => {
+          document.querySelector('.form-textarea')?.focus()
+        }, 400)
+      }
+    }
+  })
+
+  // Drag and drop on drop zone
+  const dropZone = document.getElementById('dropZone')
+  if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault()
+      dropZone.classList.add('dragover')
+    })
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover')
+    })
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault()
+      dropZone.classList.remove('dragover')
+    })
+  }
+
+  // Initial state
+  indicator.style.opacity = '0.4'
+</script>
+
+</body>
+</html>
