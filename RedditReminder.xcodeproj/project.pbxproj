@@ -10,8 +10,11 @@
 		041E25F2F96423AFDC87DC12 /* RRuleHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */; };
 		19F277D9FFDA1E43A857A149 /* SubredditEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */; };
 		1A56E70BA5F05C6021393E22 /* RedditReminderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */; };
+		1FB2F2B5269BA2F36BF13259 /* TimingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */; };
+		24F1E695ED63B7FB413361C5 /* TimingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B727389070814347602E1AB3 /* TimingEngineTests.swift */; };
 		35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA306067C4690F4D1CDAC2D /* Subreddit.swift */; };
 		3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0972EE8B384E16C0A49F8555 /* AppDelegate.swift */; };
+		42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
 		4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599273192FBCFDD93D1241B0 /* Project.swift */; };
 		5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */; };
 		59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1122ADEB6045619C303C31 /* MediaStore.swift */; };
@@ -20,6 +23,7 @@
 		AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */; };
 		B9D3BFE8CE05FE6BCCB4FF46 /* SidebarContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2907084ECC960F75B01FFF68 /* SidebarContainer.swift */; };
 		C39F0B757AA89B7E596CE04B /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FD6C46310DB68B2C81414AF /* PanelController.swift */; };
+		E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */; };
 		EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */; };
 		F3CF29763AE56B1639138AA1 /* Capture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE4E14F7A70E1A66FA994A3 /* Capture.swift */; };
 		FE03D040E4D6926755545F71 /* RRuleHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EA039404A90BBBD3CECD15 /* RRuleHelper.swift */; };
@@ -36,13 +40,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		050BB3D18ECE13E70E7CED42 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		0972EE8B384E16C0A49F8555 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleHelperTests.swift; sourceTree = "<group>"; };
 		20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStoreTests.swift; sourceTree = "<group>"; };
 		2907084ECC960F75B01FFF68 /* SidebarContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarContainer.swift; sourceTree = "<group>"; };
 		317B217ED06D209DAFACA344 /* RedditReminderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RedditReminderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		46EA039404A90BBBD3CECD15 /* RRuleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleHelper.swift; sourceTree = "<group>"; };
+		4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngine.swift; sourceTree = "<group>"; };
 		560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsStoreTests.swift; sourceTree = "<group>"; };
+		56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		599273192FBCFDD93D1241B0 /* Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project.swift; sourceTree = "<group>"; };
 		5DB4E56FCDA7A1CB1F24566D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		5FD6C46310DB68B2C81414AF /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
@@ -55,6 +62,7 @@
 		9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		AE1122ADEB6045619C303C31 /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		AEE4E14F7A70E1A66FA994A3 /* Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capture.swift; sourceTree = "<group>"; };
+		B727389070814347602E1AB3 /* TimingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -78,6 +86,7 @@
 				20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */,
 				9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */,
 				0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */,
+				B727389070814347602E1AB3 /* TimingEngineTests.swift */,
 			);
 			path = RedditReminderTests;
 			sourceTree = "<group>";
@@ -86,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				5DB4E56FCDA7A1CB1F24566D /* Constants.swift */,
+				56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */,
 				46EA039404A90BBBD3CECD15 /* RRuleHelper.swift */,
 			);
 			path = Utilities;
@@ -124,7 +134,9 @@
 			children = (
 				6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */,
 				AE1122ADEB6045619C303C31 /* MediaStore.swift */,
+				050BB3D18ECE13E70E7CED42 /* NotificationService.swift */,
 				5FD6C46310DB68B2C81414AF /* PanelController.swift */,
+				4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -239,6 +251,7 @@
 				70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */,
 				AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */,
 				041E25F2F96423AFDC87DC12 /* RRuleHelperTests.swift in Sources */,
+				24F1E695ED63B7FB413361C5 /* TimingEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,7 +263,9 @@
 				F3CF29763AE56B1639138AA1 /* Capture.swift in Sources */,
 				81C26D97123D840A9130AF7E /* Constants.swift in Sources */,
 				EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */,
+				E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
+				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
 				C39F0B757AA89B7E596CE04B /* PanelController.swift in Sources */,
 				4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */,
 				FE03D040E4D6926755545F71 /* RRuleHelper.swift in Sources */,
@@ -258,6 +273,7 @@
 				B9D3BFE8CE05FE6BCCB4FF46 /* SidebarContainer.swift in Sources */,
 				35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */,
 				19F277D9FFDA1E43A857A149 /* SubredditEvent.swift in Sources */,
+				1FB2F2B5269BA2F36BF13259 /* TimingEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
