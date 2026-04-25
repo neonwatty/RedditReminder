@@ -30,8 +30,11 @@ struct SidebarContainer: View {
                         onNewCapture: { panelController.setState(.capture) }
                     )
                 case .browse:
-                    Text("Browse — Task 11")
-                        .foregroundStyle(.secondary)
+                    BrowseView(
+                        captures: captures,
+                        upcomingWindows: timingEngine.upcomingWindows,
+                        onNewCapture: { panelController.setState(.capture) }
+                    )
                 case .capture:
                     Text("Capture — Task 12")
                         .foregroundStyle(.secondary)
