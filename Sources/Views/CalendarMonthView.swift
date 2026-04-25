@@ -53,9 +53,7 @@ struct CalendarMonthView: View {
             if let selected = selectedDay {
                 let dayWindows = windowsFor(day: selected)
                 if !dayWindows.isEmpty {
-                    Rectangle()
-                        .fill(StickerColors.border)
-                        .frame(height: 2)
+                    StickerDivider()
                         .padding(.vertical, 4)
                     Text(dayDetailTitle(selected))
                         .font(.system(size: 9, weight: .medium))
@@ -80,13 +78,13 @@ struct CalendarMonthView: View {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: date))")
                     .font(.system(size: 10))
-                    .foregroundStyle(isToday ? Color(nsColor: AppColors.reddit) : .primary)
+                    .foregroundStyle(isToday ? StickerColors.reddit : .primary)
 
                 if !dots.isEmpty {
                     HStack(spacing: 1) {
                         ForEach(Array(dots.prefix(3).enumerated()), id: \.offset) { _, w in
                             Circle()
-                                .fill(dotColor(w.urgency))
+                                .fill(w.urgency.color)
                                 .frame(width: 4, height: 4)
                         }
                     }
@@ -97,11 +95,11 @@ struct CalendarMonthView: View {
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
             .background(isSelected ? StickerColors.card : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(isSelected ? StickerColors.border : Color.clear, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)
     }
@@ -146,12 +144,4 @@ struct CalendarMonthView: View {
         return "\(f.string(from: date)) — \(count) event\(count == 1 ? "" : "s")"
     }
 
-    private func dotColor(_ urgency: UrgencyLevel) -> Color {
-        switch urgency {
-        case .active, .high: return Color(nsColor: AppColors.reddit)
-        case .medium: return Color(nsColor: AppColors.green)
-        case .low: return Color(nsColor: AppColors.blue)
-        default: return .gray
-        }
-    }
 }

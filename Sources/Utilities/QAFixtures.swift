@@ -61,8 +61,12 @@ enum QAFixtures {
     )
     context.insert(overdue)
 
-    try? context.save()
-    NSLog("RedditReminder: QA fixtures seeded")
+    do {
+      try context.save()
+      NSLog("RedditReminder: QA fixtures seeded")
+    } catch {
+      NSLog("RedditReminder: QA seed SAVE FAILED: \(error)")
+    }
   }
 
   @MainActor

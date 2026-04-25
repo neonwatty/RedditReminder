@@ -17,7 +17,7 @@ struct CaptureFormView: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    sectionLabel("New Capture")
+                    stickerSectionLabel("New Capture", size: 10)
 
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 3) {
@@ -63,9 +63,7 @@ struct CaptureFormView: View {
                 .padding(12)
             }
 
-            Rectangle()
-                .fill(StickerColors.border)
-                .frame(height: 2)
+            StickerDivider()
             captureFormFooter
         }
     }
@@ -92,7 +90,7 @@ struct CaptureFormView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(canSave ? Color(nsColor: AppColors.reddit) : Color.gray)
+                    .background(canSave ? StickerColors.reddit : Color.gray)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -162,13 +160,6 @@ struct CaptureFormView: View {
         }
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 10, weight: .bold))
-            .tracking(1.5)
-            .textCase(.uppercase)
-            .foregroundStyle(StickerColors.textSecondary)
-    }
 }
 
 // MARK: - Sub-views extracted to avoid type-checking complexity
@@ -181,7 +172,7 @@ private struct SubredditChip: View {
         HStack(spacing: 3) {
             Text(name)
                 .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(Color(nsColor: AppColors.reddit))
+                .foregroundStyle(StickerColors.reddit)
             Button(action: onRemove) {
                 Image(systemName: "xmark")
                     .font(.system(size: 8, weight: .bold))
@@ -191,9 +182,9 @@ private struct SubredditChip: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
-        .background(Color(nsColor: AppColors.reddit).opacity(0.1))
+        .background(StickerColors.reddit.opacity(0.1))
         .clipShape(Capsule())
-        .overlay(Capsule().stroke(Color(nsColor: AppColors.reddit), lineWidth: 2))
+        .overlay(Capsule().stroke(StickerColors.reddit, lineWidth: 2))
     }
 }
 
@@ -204,12 +195,12 @@ private struct DropZoneView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(
-                    isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.border,
+                    isDragOver ? StickerColors.reddit : StickerColors.border,
                     style: StrokeStyle(lineWidth: 2, dash: [6])
                 )
                 .background(
                     isDragOver
-                        ? Color(nsColor: AppColors.reddit).opacity(0.05)
+                        ? StickerColors.reddit.opacity(0.05)
                         : Color.clear
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -217,10 +208,10 @@ private struct DropZoneView: View {
             VStack(spacing: 4) {
                 Image(systemName: "paperclip")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.textSecondary)
+                    .foregroundStyle(isDragOver ? StickerColors.reddit : StickerColors.textSecondary)
                 Text("Drop images or videos here")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.textSecondary)
+                    .foregroundStyle(isDragOver ? StickerColors.reddit : StickerColors.textSecondary)
                 Text("PNG, JPG, GIF, MP4")
                     .font(.system(size: 10))
                     .foregroundStyle(StickerColors.textSecondary)

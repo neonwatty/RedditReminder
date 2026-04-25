@@ -73,7 +73,8 @@ final class PanelController {
 
     func goToSettings() {
         guard state != .settings else { return }
-        previousState = state
+        // Don't save .strip as previousState — it has no header to navigate back from
+        previousState = (state == .strip) ? .glance : state
         setState(.settings)
     }
 

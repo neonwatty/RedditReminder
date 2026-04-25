@@ -24,7 +24,7 @@ struct GlanceView: View {
 
                     let queued = captures.filter { $0.status == .queued }
                     if !queued.isEmpty {
-                        sectionLabel("Queue \u{00B7} \(queued.count)")
+                        stickerSectionLabel("Queue \u{00B7} \(queued.count)")
 
                         ForEach(queued, id: \.id) { capture in
                             glanceCard(capture: capture)
@@ -33,7 +33,7 @@ struct GlanceView: View {
                     }
 
                     if upcomingWindows.count > 1 {
-                        sectionLabel("Upcoming")
+                        stickerSectionLabel("Upcoming")
 
                         ForEach(Array(upcomingWindows.prefix(3).enumerated()), id: \.offset) { _, window in
                             eventDot(window: window)
@@ -45,7 +45,7 @@ struct GlanceView: View {
 
             Button(action: onNewCapture) {
                 Text("+ New Capture")
-                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
+                    .stickerButton(bgColor: StickerColors.reddit)
             }
             .buttonStyle(.plain)
             .padding(10)
@@ -58,7 +58,7 @@ struct GlanceView: View {
                 Text("\u{23F0}")
                 Text(window.event.name)
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color(nsColor: AppColors.reddit))
+                    .foregroundStyle(StickerColors.reddit)
             }
             if let sub = window.event.subreddit {
                 Text("\(sub.name) \u{00B7} \(window.matchingCaptureCount) ready")
@@ -68,7 +68,7 @@ struct GlanceView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .stickerCard(borderColor: Color(nsColor: AppColors.reddit))
+        .stickerCard(borderColor: StickerColors.reddit)
     }
 
     private func glanceCard(capture: Capture) -> some View {
@@ -89,7 +89,7 @@ struct GlanceView: View {
     private func eventDot(window: TimingEngine.UpcomingWindow) -> some View {
         HStack(spacing: 6) {
             Circle()
-                .fill(urgencyColor(window.urgency))
+                .fill(window.urgency.color)
                 .frame(width: 6, height: 6)
             Text("\(window.event.name) \u{00B7} \(window.event.subreddit?.name ?? "")")
                 .font(.system(size: 10))
@@ -98,21 +98,4 @@ struct GlanceView: View {
         }
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 9, weight: .bold))
-            .tracking(1.5)
-            .textCase(.uppercase)
-            .foregroundStyle(StickerColors.textSecondary)
-    }
-
-    private func urgencyColor(_ urgency: UrgencyLevel) -> Color {
-        switch urgency {
-        case .none: return .gray
-        case .low: return Color(nsColor: AppColors.blue)
-        case .medium: return Color(nsColor: AppColors.green)
-        case .high, .active: return Color(nsColor: AppColors.reddit)
-        case .expired: return .gray.opacity(0.5)
-        }
-    }
 }

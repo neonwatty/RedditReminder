@@ -107,7 +107,7 @@ struct SidebarContainer: View {
                 showDevMenu = false
             }) {
                 Text("Clear All Data")
-                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
+                    .stickerButton(bgColor: StickerColors.reddit)
             }
             .buttonStyle(.plain)
 
@@ -161,9 +161,7 @@ struct SidebarContainer: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(StickerColors.border)
-                .frame(height: 2)
+            StickerDivider()
         }
     }
 }

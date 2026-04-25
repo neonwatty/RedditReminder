@@ -49,13 +49,7 @@ struct CalendarTimelineView: View {
     }
 
     private func dotColor(for windows: [TimingEngine.UpcomingWindow]) -> Color {
-        let maxUrgency = windows.map(\.urgency).max() ?? .none
-        switch maxUrgency {
-        case .active, .high: return Color(nsColor: AppColors.reddit)
-        case .medium: return Color(nsColor: AppColors.green)
-        case .low: return Color(nsColor: AppColors.blue)
-        default: return .gray
-        }
+        (windows.map(\.urgency).max() ?? .none).color
     }
 
     private func dateLabel(_ date: Date) -> String {

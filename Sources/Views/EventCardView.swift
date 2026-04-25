@@ -14,13 +14,13 @@ struct EventCardView: View {
             if let sub = window.event.subreddit {
                 Text("\(sub.name) \u{00B7} \(window.event.isRecurring ? "recurring" : "one-off")")
                     .font(.system(size: 10))
-                    .foregroundStyle(urgencyColor)
+                    .foregroundStyle(window.urgency.color)
             }
 
             if window.matchingCaptureCount > 0 {
                 Text("\(window.matchingCaptureCount) captures ready")
                     .font(.system(size: 10))
-                    .foregroundStyle(urgencyColor)
+                    .foregroundStyle(window.urgency.color)
             } else {
                 Text("No captures tagged yet")
                     .font(.system(size: 10))
@@ -29,15 +29,6 @@ struct EventCardView: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .stickerCard(borderColor: isUrgent ? Color(nsColor: AppColors.reddit) : StickerColors.border)
-    }
-
-    private var urgencyColor: Color {
-        switch window.urgency {
-        case .active, .high: return Color(nsColor: AppColors.reddit)
-        case .medium: return Color(nsColor: AppColors.green)
-        case .low: return Color(nsColor: AppColors.blue)
-        default: return StickerColors.textSecondary
-        }
+        .stickerCard(borderColor: isUrgent ? StickerColors.reddit : StickerColors.border)
     }
 }

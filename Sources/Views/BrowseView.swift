@@ -19,9 +19,7 @@ struct BrowseView: View {
                 tabButton("Calendar", tab: .calendar)
             }
             .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(StickerColors.border)
-                    .frame(height: 2)
+                StickerDivider()
             }
 
             ScrollView {
@@ -37,7 +35,7 @@ struct BrowseView: View {
 
             Button(action: onNewCapture) {
                 Text("+ New Capture")
-                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
+                    .stickerButton(bgColor: StickerColors.reddit)
             }
             .buttonStyle(.plain)
             .padding(10)
@@ -50,7 +48,7 @@ struct BrowseView: View {
         let posted = captures.filter { $0.status == .posted }
 
         if !queued.isEmpty {
-            sectionLabel("Queued · \(queued.count)")
+            stickerSectionLabel("Queued · \(queued.count)")
             ForEach(queued, id: \.id) { capture in
                 CaptureCardView(capture: capture, compact: false) {
                     onMarkPosted?(capture)
@@ -59,7 +57,7 @@ struct BrowseView: View {
         }
 
         if !posted.isEmpty {
-            sectionLabel("Recently Posted")
+            stickerSectionLabel("Recently Posted")
             ForEach(posted.prefix(5), id: \.id) { capture in
                 CaptureCardView(capture: capture, compact: false)
                     .opacity(0.5)
@@ -103,11 +101,4 @@ struct BrowseView: View {
         .buttonStyle(.plain)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 9, weight: .bold))
-            .tracking(1.5)
-            .textCase(.uppercase)
-            .foregroundStyle(StickerColors.textSecondary)
-    }
 }

@@ -6,10 +6,43 @@ enum StickerColors {
   static let background = Color(red: 0.07, green: 0.08, blue: 0.14)
   static let card = Color(red: 0.10, green: 0.11, blue: 0.19)
   static let border = Color(red: 0.27, green: 0.29, blue: 0.40)
-  static let gold = Color(red: 0.81, green: 0.60, blue: 0.03)
-  static let pink = Color(red: 0.93, green: 0.29, blue: 0.60)
+  static let gold = Color(nsColor: AppColors.gold)
+  static let pink = Color(nsColor: AppColors.pink)
+  static let reddit = Color(nsColor: AppColors.reddit)
+  static let green = Color(nsColor: AppColors.green)
+  static let blue = Color(nsColor: AppColors.blue)
   static let textPrimary = Color(red: 0.95, green: 0.95, blue: 0.95)
   static let textSecondary = Color(red: 0.55, green: 0.56, blue: 0.63)
+}
+
+// MARK: - Shared Sticker Components
+
+struct StickerDivider: View {
+  var body: some View {
+    Rectangle()
+      .fill(StickerColors.border)
+      .frame(height: 2)
+  }
+}
+
+func stickerSectionLabel(_ text: String, size: CGFloat = 9) -> some View {
+  Text(text)
+    .font(.system(size: size, weight: .bold))
+    .tracking(1.5)
+    .textCase(.uppercase)
+    .foregroundStyle(StickerColors.textSecondary)
+}
+
+extension UrgencyLevel {
+  var color: Color {
+    switch self {
+    case .none: return .gray
+    case .low: return StickerColors.blue
+    case .medium: return StickerColors.green
+    case .high, .active: return StickerColors.reddit
+    case .expired: return .gray.opacity(0.5)
+    }
+  }
 }
 
 // MARK: - Sticker ViewModifiers

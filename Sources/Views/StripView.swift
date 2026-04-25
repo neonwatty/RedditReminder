@@ -15,7 +15,7 @@ struct StripView: View {
                 if queueCount > 0 {
                     ZStack {
                         Circle()
-                            .fill(Color(nsColor: AppColors.reddit))
+                            .fill(StickerColors.reddit)
                             .frame(width: 18, height: 18)
                             .overlay(
                                 Circle()
@@ -29,9 +29,9 @@ struct StripView: View {
 
                 if hasUrgentEvent {
                     Circle()
-                        .fill(Color(nsColor: AppColors.reddit))
+                        .fill(StickerColors.reddit)
                         .frame(width: 8, height: 8)
-                        .shadow(color: Color(nsColor: AppColors.reddit).opacity(0.6), radius: 4)
+                        .shadow(color: StickerColors.reddit.opacity(0.6), radius: 4)
                 }
 
                 Spacer()

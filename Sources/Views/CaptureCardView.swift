@@ -15,8 +15,8 @@ struct CaptureCardView: View {
                 HStack(spacing: 4) {
                     ForEach(capture.subreddits, id: \.id) { sub in
                         Text(sub.name)
-                            .foregroundStyle(Color(nsColor: AppColors.reddit))
-                            .stickerBadge(color: Color(nsColor: AppColors.reddit))
+                            .foregroundStyle(StickerColors.reddit)
+                            .stickerBadge(color: StickerColors.reddit)
                     }
                 }
             }

@@ -4,34 +4,46 @@ import Foundation
 
 @MainActor
 struct PanelControllerTests {
+    private let testDefaults = UserDefaults(suiteName: "PanelControllerTests")!
+
+    init() {
+        testDefaults.removePersistentDomain(forName: "PanelControllerTests")
+    }
+
     @Test func statePersistsToUserDefaults() {
         let pc = PanelController()
         pc.state = .browse
         let saved = UserDefaults.standard.string(forKey: "sidebarState")
         #expect(saved == "browse")
+        UserDefaults.standard.removeObject(forKey: "sidebarState")
     }
 
     @Test func captureRestoresToBrowse() {
-        UserDefaults.standard.set("capture", forKey: "sidebarState")
-        let result = PanelController.restoredState()
+        testDefaults.set("capture", forKey: "sidebarState")
+        let result = PanelController.restoredState(from: testDefaults)
         #expect(result == .browse)
     }
 
     @Test func glanceRestoresAsGlance() {
-        UserDefaults.standard.set("glance", forKey: "sidebarState")
-        let result = PanelController.restoredState()
+        testDefaults.set("glance", forKey: "sidebarState")
+        let result = PanelController.restoredState(from: testDefaults)
         #expect(result == .glance)
     }
 
     @Test func settingsRestoresToGlance() {
-        UserDefaults.standard.set("settings", forKey: "sidebarState")
-        let result = PanelController.restoredState()
+        testDefaults.set("settings", forKey: "sidebarState")
+        let result = PanelController.restoredState(from: testDefaults)
         #expect(result == .glance)
     }
 
     @Test func invalidDefaultsToGlance() {
-        UserDefaults.standard.set("nonsense", forKey: "sidebarState")
-        let result = PanelController.restoredState()
+        testDefaults.set("nonsense", forKey: "sidebarState")
+        let result = PanelController.restoredState(from: testDefaults)
+        #expect(result == .glance)
+    }
+
+    @Test func nilDefaultsToGlance() {
+        let result = PanelController.restoredState(from: testDefaults)
         #expect(result == .glance)
     }
 }
