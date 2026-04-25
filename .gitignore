@@ -13,4 +13,3 @@ DerivedData/
 
 # Node (semantic-release tooling only)
 node_modules/
-package-lock.json
