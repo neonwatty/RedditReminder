@@ -39,6 +39,8 @@ final class PanelController {
     enum ScreenEdge { case left, right }
 
     func setup(contentView: some View) {
+        let restored = Self.restoredState()
+
         let panel = ClickablePanel(
             contentRect: NSRect(x: 0, y: 0, width: SidebarConstants.glanceWidth, height: 0),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -51,17 +53,28 @@ final class PanelController {
         panel.hasShadow = true
         panel.backgroundColor = NSColor(red: 0.07, green: 0.08, blue: 0.14, alpha: 1.0)
         panel.isOpaque = false
+        panel.contentMinSize = NSSize(width: 1, height: 1)
+        panel.minSize = NSSize(width: 1, height: 1)
 
         let hosting = FirstMouseHostingView(rootView: AnyView(contentView))
+        hosting.sizingOptions = []
         panel.contentView = hosting
 
         self.panel = panel
         self.hostingView = hosting
 
-        state = Self.restoredState()
-
+        // Position at glance width (200pt) first so NSHostingView completes its
+        // initial layout without fighting the frame. Then restore the saved state
+        // (e.g. .strip at 24pt) and animate to it. Without this, NSHostingView's
+        // intrinsic sizing overrides narrow widths on cold start.
+        state = .glance
         positionPanel()
         panel.orderFront(nil)
+
+        if restored != .glance {
+            state = restored
+            animateWidth()
+        }
         resetAutoCollapseTimer()
     }
 
