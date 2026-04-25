@@ -24,7 +24,7 @@ struct GlanceView: View {
 
                     let queued = captures.filter { $0.status == .queued }
                     if !queued.isEmpty {
-                        sectionLabel("Queue · \(queued.count)")
+                        sectionLabel("Queue \u{00B7} \(queued.count)")
 
                         ForEach(queued, id: \.id) { capture in
                             glanceCard(capture: capture)
@@ -45,12 +45,7 @@ struct GlanceView: View {
 
             Button(action: onNewCapture) {
                 Text("+ New Capture")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(nsColor: AppColors.reddit))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
             }
             .buttonStyle(.plain)
             .padding(10)
@@ -60,41 +55,35 @@ struct GlanceView: View {
     private func alertBanner(window: TimingEngine.UpcomingWindow) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 6) {
-                Text("⏰")
+                Text("\u{23F0}")
                 Text(window.event.name)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color(nsColor: AppColors.reddit))
             }
             if let sub = window.event.subreddit {
-                Text("\(sub.name) · \(window.matchingCaptureCount) ready")
+                Text("\(sub.name) \u{00B7} \(window.matchingCaptureCount) ready")
                     .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(StickerColors.textSecondary)
             }
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: AppColors.reddit).opacity(0.1))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(nsColor: AppColors.reddit).opacity(0.3), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .stickerCard(borderColor: Color(nsColor: AppColors.reddit))
     }
 
     private func glanceCard(capture: Capture) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(capture.project?.name ?? "Unknown")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.primary)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(StickerColors.textPrimary)
             Text(capture.text)
                 .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(StickerColors.textSecondary)
                 .lineLimit(1)
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.05))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .stickerCard()
     }
 
     private func eventDot(window: TimingEngine.UpcomingWindow) -> some View {
@@ -102,19 +91,19 @@ struct GlanceView: View {
             Circle()
                 .fill(urgencyColor(window.urgency))
                 .frame(width: 6, height: 6)
-            Text("\(window.event.name) · \(window.event.subreddit?.name ?? "")")
+            Text("\(window.event.name) \u{00B7} \(window.event.subreddit?.name ?? "")")
                 .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(StickerColors.textSecondary)
                 .lineLimit(1)
         }
     }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 9, weight: .medium))
+            .font(.system(size: 9, weight: .bold))
             .tracking(1.5)
             .textCase(.uppercase)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(StickerColors.textSecondary)
     }
 
     private func urgencyColor(_ urgency: UrgencyLevel) -> Color {
