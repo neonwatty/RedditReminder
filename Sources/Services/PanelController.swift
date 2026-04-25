@@ -22,7 +22,11 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
 @MainActor
 @Observable
 final class PanelController {
-    var state: SidebarState = .glance
+    var state: SidebarState = .glance {
+        didSet {
+            UserDefaults.standard.set(state.rawValue, forKey: "sidebarState")
+        }
+    }
     var screenEdge: ScreenEdge = .right
 
     private var panel: NSPanel?
@@ -52,6 +56,8 @@ final class PanelController {
 
         self.panel = panel
         self.hostingView = hosting
+
+        state = Self.restoredState()
 
         positionPanel()
         panel.orderFront(nil)
@@ -87,6 +93,17 @@ final class PanelController {
         self.autoCollapseMinutes = minutes
         self.restingState = restingState
         resetAutoCollapseTimer()
+    }
+
+    static func restoredState(from defaults: UserDefaults = .standard) -> SidebarState {
+        guard let saved = defaults.string(forKey: "sidebarState"),
+              let restored = SidebarState(rawValue: saved) else {
+            return .glance
+        }
+        switch restored {
+        case .capture: return .browse
+        default: return restored
+        }
     }
 
     private func animateWidth() {
