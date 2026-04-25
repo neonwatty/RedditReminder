@@ -1,4 +1,4 @@
-.PHONY: build test install install-login clean generate
+.PHONY: build test install install-login clean generate qa
 
 APP_NAME := RedditReminder
 PROJ := $(APP_NAME).xcodeproj
@@ -31,6 +31,9 @@ install: build
 	else \
 	  open $(INSTALL_DIR)/$(APP_NAME).app; \
 	fi
+
+qa: install
+	./scripts/qa.sh
 
 clean:
 	rm -rf $(PROJ) $(BUILD_DIR)
