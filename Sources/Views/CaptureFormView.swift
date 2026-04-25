@@ -21,7 +21,7 @@ struct CaptureFormView: View {
 
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("PROJECT").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(.tertiary)
+                            Text("PROJECT").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                             Picker("", selection: $selectedProject) {
                                 Text("Select...").tag(nil as Project?)
                                 ForEach(projects.filter { !$0.archived }, id: \.id) { project in
@@ -32,42 +32,30 @@ struct CaptureFormView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("SUBREDDITS").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(.tertiary)
+                            Text("SUBREDDITS").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                             subredditMultiSelect
                         }
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("WHAT HAPPENED?").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(.tertiary)
+                        Text("WHAT HAPPENED?").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         TextEditor(text: $text)
                             .font(.system(size: 12))
                             .frame(minHeight: 80)
                             .scrollContentBackground(.hidden)
-                            .padding(8)
-                            .background(Color.white.opacity(0.03))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .stickerInput()
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("NOTES TO SELF").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(.tertiary)
+                        Text("NOTES TO SELF").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         TextField("e.g., mention the screenshot, link the demo...", text: $notes)
                             .textFieldStyle(.plain)
                             .font(.system(size: 11))
-                            .padding(8)
-                            .background(Color.white.opacity(0.03))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .stickerInput()
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("MEDIA").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(.tertiary)
+                        Text("MEDIA").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         dropZone
                         attachedFiles
                     }
@@ -75,7 +63,9 @@ struct CaptureFormView: View {
                 .padding(12)
             }
 
-            Divider()
+            Rectangle()
+                .fill(StickerColors.border)
+                .frame(height: 2)
             captureFormFooter
         }
     }
@@ -85,20 +75,30 @@ struct CaptureFormView: View {
             Spacer()
             Button("Cancel", action: onCancel)
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(StickerColors.textSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(StickerColors.card)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(StickerColors.border, lineWidth: 2)
+                )
 
             Button(action: save) {
-                Text("Add to Queue ⌘↵")
-                    .font(.system(size: 12, weight: .semibold))
+                Text("Add to Queue \u{2318}\u{21A9}")
+                    .font(.system(size: 12, weight: .heavy))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
                     .background(canSave ? Color(nsColor: AppColors.reddit) : Color.gray)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(StickerColors.border, lineWidth: 2)
+                    )
+                    .shadow(color: StickerColors.border.opacity(0.5), radius: 0, x: 2, y: 2)
             }
             .buttonStyle(.plain)
             .disabled(!canSave)
@@ -129,15 +129,10 @@ struct CaptureFormView: View {
                 }
             }
             .font(.system(size: 11))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(StickerColors.textSecondary)
         }
         .padding(6)
-        .background(Color.white.opacity(0.03))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .stickerInput()
     }
 
     private var dropZone: some View {
@@ -169,10 +164,10 @@ struct CaptureFormView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 10, weight: .medium))
+            .font(.system(size: 10, weight: .bold))
             .tracking(1.5)
             .textCase(.uppercase)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(StickerColors.textSecondary)
     }
 }
 
@@ -185,19 +180,20 @@ private struct SubredditChip: View {
     var body: some View {
         HStack(spacing: 3) {
             Text(name)
-                .font(.system(size: 10))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(Color(nsColor: AppColors.reddit))
             Button(action: onRemove) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 8))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
         .background(Color(nsColor: AppColors.reddit).opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Color(nsColor: AppColors.reddit), lineWidth: 2))
     }
 }
 
@@ -206,9 +202,9 @@ private struct DropZoneView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(
-                    isDragOver ? Color(nsColor: AppColors.reddit) : Color.white.opacity(0.1),
+                    isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.border,
                     style: StrokeStyle(lineWidth: 2, dash: [6])
                 )
                 .background(
@@ -216,18 +212,18 @@ private struct DropZoneView: View {
                         ? Color(nsColor: AppColors.reddit).opacity(0.05)
                         : Color.clear
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
             VStack(spacing: 4) {
                 Image(systemName: "paperclip")
-                    .font(.system(size: 16))
-                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : .secondary)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.textSecondary)
                 Text("Drop images or videos here")
-                    .font(.system(size: 12))
-                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : .secondary)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(isDragOver ? Color(nsColor: AppColors.reddit) : StickerColors.textSecondary)
                 Text("PNG, JPG, GIF, MP4")
                     .font(.system(size: 10))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .padding(.vertical, 20)
         }
@@ -248,13 +244,18 @@ private struct AttachedFileChip: View {
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .buttonStyle(.plain)
         }
+        .foregroundStyle(StickerColors.textPrimary)
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(Color.white.opacity(0.05))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .background(StickerColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(StickerColors.border, lineWidth: 1)
+        )
     }
 }
