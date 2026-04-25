@@ -2,6 +2,23 @@ import AppKit
 import SwiftUI
 import Observation
 
+/// NSPanel subclass that can become key even when borderless.
+/// Required so SwiftUI gesture recognizers receive mouse events.
+final class ClickablePanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+}
+
+/// NSHostingView subclass that accepts first-mouse clicks and
+/// makes the panel key on mouseDown so SwiftUI gestures fire.
+final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        window?.makeKey()
+        super.mouseDown(with: event)
+    }
+}
+
 @MainActor
 @Observable
 final class PanelController {
@@ -9,7 +26,7 @@ final class PanelController {
     var screenEdge: ScreenEdge = .right
 
     private var panel: NSPanel?
-    private var hostingView: NSHostingView<AnyView>?
+    private var hostingView: FirstMouseHostingView<AnyView>?
     private var autoCollapseTimer: Timer?
     private var restingState: SidebarState = .glance
     private var autoCollapseMinutes: Int = SidebarConstants.defaultAutoCollapseMinutes
@@ -17,7 +34,7 @@ final class PanelController {
     enum ScreenEdge { case left, right }
 
     func setup(contentView: some View) {
-        let panel = NSPanel(
+        let panel = ClickablePanel(
             contentRect: NSRect(x: 0, y: 0, width: SidebarConstants.glanceWidth, height: 0),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
@@ -30,7 +47,7 @@ final class PanelController {
         panel.backgroundColor = NSColor(red: 0.08, green: 0.08, blue: 0.16, alpha: 1.0)
         panel.isOpaque = false
 
-        let hosting = NSHostingView(rootView: AnyView(contentView))
+        let hosting = FirstMouseHostingView(rootView: AnyView(contentView))
         panel.contentView = hosting
 
         self.panel = panel
