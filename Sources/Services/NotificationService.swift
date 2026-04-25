@@ -3,7 +3,7 @@ import UserNotifications
 
 @MainActor
 final class NotificationService {
-  private let center = UNUserNotificationCenter.current()
+  nonisolated(unsafe) private let center = UNUserNotificationCenter.current()
 
   func requestPermission() async -> Bool {
     do {
