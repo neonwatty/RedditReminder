@@ -89,21 +89,16 @@ struct SidebarContainer: View {
     private var devMenuOverlay: some View {
         VStack(spacing: 8) {
             Text("DEVELOPER")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 9, weight: .heavy))
                 .tracking(2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(StickerColors.textSecondary)
 
             Button(action: {
                 QAFixtures.seed(context: modelContext)
                 showDevMenu = false
             }) {
                 Text("Seed QA Data")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                    .background(Color(nsColor: AppColors.green))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .stickerButton(bgColor: Color(nsColor: AppColors.green))
             }
             .buttonStyle(.plain)
 
@@ -112,29 +107,19 @@ struct SidebarContainer: View {
                 showDevMenu = false
             }) {
                 Text("Clear All Data")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                    .background(Color(nsColor: AppColors.reddit))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
             }
             .buttonStyle(.plain)
 
             Button(action: { showDevMenu = false }) {
                 Text("Dismiss")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .buttonStyle(.plain)
         }
         .padding(12)
-        .background(Color(red: 0.12, green: 0.12, blue: 0.20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .stickerCard()
         .padding(.horizontal, 20)
         .padding(.top, 60)
         .frame(maxHeight: .infinity, alignment: .top)

@@ -49,7 +49,7 @@ final class PanelController {
         panel.level = .floating
         panel.isMovableByWindowBackground = false
         panel.hasShadow = true
-        panel.backgroundColor = NSColor(red: 0.08, green: 0.08, blue: 0.16, alpha: 1.0)
+        panel.backgroundColor = NSColor(red: 0.07, green: 0.08, blue: 0.14, alpha: 1.0)
         panel.isOpaque = false
 
         let hosting = FirstMouseHostingView(rootView: AnyView(contentView))
