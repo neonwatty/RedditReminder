@@ -19,7 +19,7 @@ struct SidebarContainer: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.08, green: 0.08, blue: 0.16)
+            StickerColors.background
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -144,14 +144,14 @@ struct SidebarContainer: View {
         HStack {
             Button(action: { panelController.goToSettings() }) {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .buttonStyle(.plain)
 
             Text("RedditReminder")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Color(nsColor: AppColors.reddit))
+                .font(.system(size: 13, weight: .heavy))
+                .foregroundStyle(StickerColors.gold)
                 .onTapGesture {
                     let now = Date()
                     if now.timeIntervalSince(lastTapTime) > 2 {
@@ -168,15 +168,17 @@ struct SidebarContainer: View {
             Spacer()
             Button(action: { panelController.stepDown() }) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(StickerColors.textSecondary)
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .overlay(alignment: .bottom) {
-            Divider()
+            Rectangle()
+                .fill(StickerColors.border)
+                .frame(height: 2)
         }
     }
 }
