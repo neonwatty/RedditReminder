@@ -6,6 +6,7 @@ enum SidebarState: String, CaseIterable {
   case glance
   case browse
   case capture
+  case settings
 }
 
 enum SidebarConstants {
@@ -13,6 +14,7 @@ enum SidebarConstants {
   static let glanceWidth: CGFloat = 200
   static let browseWidth: CGFloat = 320
   static let captureWidth: CGFloat = 480
+  static let settingsWidth: CGFloat = 320
   static let animationDuration: CGFloat = 0.35
   static let defaultAutoCollapseMinutes: Int = 5
 
@@ -22,6 +24,7 @@ enum SidebarConstants {
     case .glance: return glanceWidth
     case .browse: return browseWidth
     case .capture: return captureWidth
+    case .settings: return settingsWidth
     }
   }
 }

@@ -66,6 +66,8 @@ struct SidebarContainer: View {
                         },
                         onCancel: { panelController.setState(.browse) }
                     )
+                case .settings:
+                    SettingsView(panelController: panelController)
                 }
             }
         }
@@ -79,6 +81,13 @@ struct SidebarContainer: View {
 
     private var header: some View {
         HStack {
+            Button(action: { panelController.goToSettings() }) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+
             Text("RedditReminder")
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(Color(nsColor: AppColors.reddit))

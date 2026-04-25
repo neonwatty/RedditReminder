@@ -34,6 +34,7 @@ final class PanelController {
     private var autoCollapseTimer: Timer?
     private var restingState: SidebarState = .glance
     private var autoCollapseMinutes: Int = SidebarConstants.defaultAutoCollapseMinutes
+    private var previousState: SidebarState = .glance
 
     enum ScreenEdge { case left, right }
 
@@ -70,10 +71,20 @@ final class PanelController {
         resetAutoCollapseTimer()
     }
 
+    func goToSettings() {
+        guard state != .settings else { return }
+        previousState = state
+        setState(.settings)
+    }
+
     func stepDown() {
-        let states = SidebarState.allCases
-        guard let idx = states.firstIndex(of: state), idx > 0 else { return }
-        setState(states[idx - 1])
+        if state == .settings {
+            setState(previousState)
+            return
+        }
+        let ladder: [SidebarState] = [.strip, .glance, .browse, .capture]
+        guard let idx = ladder.firstIndex(of: state), idx > 0 else { return }
+        setState(ladder[idx - 1])
     }
 
     func toggleCapture() {
@@ -102,6 +113,7 @@ final class PanelController {
         }
         switch restored {
         case .capture: return .browse
+        case .settings: return .glance
         default: return restored
         }
     }
