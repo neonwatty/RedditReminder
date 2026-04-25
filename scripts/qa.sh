@@ -2,8 +2,8 @@
 # RedditReminder QA — automated state-transition tests
 # Requires: the app to have been built via `make install` first.
 #
-# Uses macOS Accessibility (System Events) to click SwiftUI Buttons
-# and verifies window width matches expected sidebar state.
+# Uses macOS System Events to click at computed coordinates
+# and verify window width after each sidebar state transition.
 #
 # NOTE: This does NOT test the ⌘⇧R global shortcut — that requires
 # granting Accessibility permission to RedditReminder manually.
@@ -15,7 +15,7 @@ APP_PATH="$HOME/Applications/$APP_NAME.app"
 ANIM_WAIT=0.6          # seconds to wait for width animation (0.35s) + margin
 LAUNCH_WAIT=2           # seconds to wait after launch
 
-# Expected widths from Constants.swift
+# Expected widths from SidebarConstants (Sources/Utilities/Constants.swift)
 W_STRIP=24
 W_GLANCE=200
 W_BROWSE=320
@@ -39,81 +39,59 @@ get_width() {
                 return w as integer
             end tell
         end tell
-    " 2>/dev/null
+    "
 }
 
-get_pos_size() {
-    osascript -e "
-        tell application \"System Events\"
-            tell process \"$APP_NAME\"
-                set {x, y} to position of window 1
-                set {w, h} to size of window 1
-                return (x as text) & \",\" & (y as text) & \",\" & (w as text) & \",\" & (h as text)
-            end tell
-        end tell
-    " 2>/dev/null
-}
-
-click_back_chevron() {
-    # The back chevron is button 1 inside the header group — the first button
-    # in the window, positioned top-right with padding(.horizontal, 14).
+click_at_rel() {
+    # Click at a position relative to the window origin.
+    # $1 = AppleScript x expression using winX, winW
+    # $2 = AppleScript y expression using winY, winH
+    local x_expr="$1" y_expr="$2"
     osascript -e "
         tell application \"System Events\"
             tell process \"$APP_NAME\"
                 set {winX, winY} to position of window 1
                 set {winW, winH} to size of window 1
-                click at {winX + winW - 21, winY + 20}
+                click at {$x_expr, $y_expr}
             end tell
         end tell
-    " >/dev/null 2>&1
+    " >/dev/null
     sleep "$ANIM_WAIT"
 }
 
-click_strip() {
-    # The strip is a full-height Button. Click its center.
-    osascript -e "
-        tell application \"System Events\"
-            tell process \"$APP_NAME\"
-                set {winX, winY} to position of window 1
-                set {winW, winH} to size of window 1
-                click at {winX + (winW / 2), winY + (winH / 2)}
-            end tell
-        end tell
-    " >/dev/null 2>&1
-    sleep "$ANIM_WAIT"
-}
+# Back chevron: top-right of header, fixed offset from window corner
+click_back_chevron() { click_at_rel "winX + winW - 21" "winY + 20"; }
 
-click_new_capture() {
-    # "+ New Capture" is the last button in the window, pinned to bottom.
-    # In both Glance and Browse it sits at padding(10/10) from bottom.
-    osascript -e "
-        tell application \"System Events\"
-            tell process \"$APP_NAME\"
-                set {winX, winY} to position of window 1
-                set {winW, winH} to size of window 1
-                click at {winX + (winW / 2), winY + winH - 20}
-            end tell
-        end tell
-    " >/dev/null 2>&1
-    sleep "$ANIM_WAIT"
-}
+# Strip: full-height Button, click center
+click_strip()        { click_at_rel "winX + (winW / 2)" "winY + (winH / 2)"; }
+
+# "+ New Capture": pinned to bottom with .padding(10)
+click_new_capture()  { click_at_rel "winX + (winW / 2)" "winY + winH - 20"; }
 
 click_cancel() {
-    # Cancel button coordinates are fragile across resolutions.
-    # Instead, use accessibility to find it: it is button 2 in the
-    # main group (button 1 is the back chevron).
-    osascript -e "
+    # Cancel button: use accessibility element lookup rather than
+    # coordinates. Button order within group 1 is empirical — verify
+    # with Accessibility Inspector if the view hierarchy changes.
+    local result
+    result=$(osascript -e "
         tell application \"System Events\"
             tell process \"$APP_NAME\"
                 set grp to group 1 of window 1
                 set allBtns to every button of grp
-                -- Button order: 1=back chevron, 2=Cancel, 3=Add to Queue
                 if (count of allBtns) >= 2 then
                     click item 2 of allBtns
+                    return \"clicked\"
+                else
+                    return \"error: only \" & (count of allBtns) & \" buttons found, expected >= 2\"
                 end if
             end tell
         end tell
-    " >/dev/null 2>&1
+    ")
+    if [[ "$result" == error:* ]]; then
+        echo ""
+        echo "$(red ERROR): click_cancel: $result" >&2
+        exit 1
+    fi
     sleep "$ANIM_WAIT"
 }
 
@@ -122,7 +100,12 @@ assert_width() {
     local expected="$2"
     total=$((total + 1))
     local actual
-    actual=$(get_width)
+    actual=$(get_width) || true
+    if [ -z "$actual" ]; then
+        failed=$((failed + 1))
+        printf "  %-45s $(red FAIL)  (could not read window width)\n" "$label"
+        return
+    fi
     if [ "$actual" -eq "$expected" ]; then
         passed=$((passed + 1))
         printf "  %-45s $(green PASS)  (%dpx)\n" "$label" "$actual"
@@ -145,6 +128,18 @@ assert_running() {
         exit 1
     fi
 }
+
+# ─── pre-flight ────────────────────────────────────────────────────
+
+if ! osascript -e 'tell application "System Events" to return name of first process' >/dev/null 2>&1; then
+    echo ""
+    red "ERROR"
+    echo ": Cannot access System Events."
+    echo "  Grant Accessibility permission to your terminal app:"
+    echo "  System Settings > Privacy & Security > Accessibility"
+    echo ""
+    exit 1
+fi
 
 # ─── setup ─────────────────────────────────────────────────────────
 
