@@ -1,26 +1,62 @@
 import SwiftUI
 
 struct SidebarContainer: View {
-    let panelController: PanelController
+    @Bindable var panelController: PanelController
+    var timingEngine: TimingEngine = TimingEngine()
+    var captures: [Capture] = []
 
     var body: some View {
         ZStack {
-            Color(nsColor: NSColor(red: 0.08, green: 0.08, blue: 0.16, alpha: 1.0))
+            Color(red: 0.08, green: 0.08, blue: 0.16)
+                .ignoresSafeArea()
 
-            switch panelController.state {
-            case .strip:
-                Text("Strip")
-                    .foregroundStyle(.secondary)
-            case .glance:
-                Text("Glance")
-                    .foregroundStyle(.secondary)
-            case .browse:
-                Text("Browse")
-                    .foregroundStyle(.secondary)
-            case .capture:
-                Text("Capture")
+            VStack(spacing: 0) {
+                if panelController.state != .strip {
+                    header
+                }
+
+                switch panelController.state {
+                case .strip:
+                    StripView(
+                        queueCount: captures.filter { $0.status == .queued }.count,
+                        hasUrgentEvent: timingEngine.upcomingWindows.contains { $0.urgency >= .high },
+                        onTap: { panelController.setState(.glance) }
+                    )
+                case .glance:
+                    GlanceView(
+                        upcomingWindows: timingEngine.upcomingWindows,
+                        captures: captures,
+                        onCaptureCardTap: { panelController.setState(.browse) },
+                        onNewCapture: { panelController.setState(.capture) }
+                    )
+                case .browse:
+                    Text("Browse — Task 11")
+                        .foregroundStyle(.secondary)
+                case .capture:
+                    Text("Capture — Task 12")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var header: some View {
+        HStack {
+            Text("RedditReminder")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Color(nsColor: AppColors.reddit))
+            Spacer()
+            Button(action: { panelController.stepDown() }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14))
                     .foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .overlay(alignment: .bottom) {
+            Divider()
         }
     }
 }
