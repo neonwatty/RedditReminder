@@ -223,6 +223,9 @@ assert_width   "Back chevron → Strip"                "$W_STRIP"
 echo ""
 bold "10. Settings: gear icon"
 echo ""
+# Strip has no header — expand to Glance first so gear icon is visible
+click_strip
+assert_width   "Strip → Glance (header visible)"   "$W_GLANCE"
 # Click gear icon — positioned left side of header
 click_at_rel "winX + 20" "winY + 20"
 assert_width   "Gear icon → Settings"              "$W_SETTINGS"

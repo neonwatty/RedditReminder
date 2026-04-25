@@ -23,6 +23,12 @@ struct PanelControllerTests {
         #expect(result == .glance)
     }
 
+    @Test func settingsRestoresToGlance() {
+        UserDefaults.standard.set("settings", forKey: "sidebarState")
+        let result = PanelController.restoredState()
+        #expect(result == .glance)
+    }
+
     @Test func invalidDefaultsToGlance() {
         UserDefaults.standard.set("nonsense", forKey: "sidebarState")
         let result = PanelController.restoredState()

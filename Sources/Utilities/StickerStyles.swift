@@ -56,11 +56,11 @@ struct StickerBadgeModifier: ViewModifier {
       .font(.system(size: 9, weight: .bold))
       .padding(.horizontal, 6)
       .padding(.vertical, 2)
+      .clipShape(Capsule())
       .overlay(
         Capsule()
           .stroke(color, lineWidth: 2)
       )
-      .clipShape(Capsule())
   }
 }
 

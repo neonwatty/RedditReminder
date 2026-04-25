@@ -21,7 +21,7 @@ struct CaptureFormView: View {
 
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("PROJECT").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                            Text("PROJECT").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                             Picker("", selection: $selectedProject) {
                                 Text("Select...").tag(nil as Project?)
                                 ForEach(projects.filter { !$0.archived }, id: \.id) { project in
@@ -32,13 +32,13 @@ struct CaptureFormView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("SUBREDDITS").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                            Text("SUBREDDITS").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                             subredditMultiSelect
                         }
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("WHAT HAPPENED?").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                        Text("WHAT HAPPENED?").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         TextEditor(text: $text)
                             .font(.system(size: 12))
                             .frame(minHeight: 80)
@@ -47,7 +47,7 @@ struct CaptureFormView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("NOTES TO SELF").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                        Text("NOTES TO SELF").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         TextField("e.g., mention the screenshot, link the demo...", text: $notes)
                             .textFieldStyle(.plain)
                             .font(.system(size: 11))
@@ -55,7 +55,7 @@ struct CaptureFormView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("MEDIA").font(.system(size: 9, weight: .medium)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                        Text("MEDIA").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                         dropZone
                         attachedFiles
                     }
