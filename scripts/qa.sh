@@ -20,6 +20,7 @@ W_STRIP=24
 W_GLANCE=200
 W_BROWSE=320
 W_CAPTURE=480
+W_SETTINGS=320
 
 passed=0
 failed=0
@@ -220,10 +221,26 @@ click_back_chevron
 assert_width   "Back chevron → Strip"                "$W_STRIP"
 
 echo ""
-bold "10. Restart persistence"
+bold "10. Settings: gear icon"
 echo ""
-click_strip    # back to Glance so we can verify it restarts at Glance
-assert_width   "Pre-restart: Glance"                 "$W_GLANCE"
+# Strip has no header — expand to Glance first so gear icon is visible
+click_strip
+assert_width   "Strip → Glance (header visible)"   "$W_GLANCE"
+# Click gear icon — positioned left side of header
+click_at_rel "winX + 20" "winY + 20"
+assert_width   "Gear icon → Settings"              "$W_SETTINGS"
+
+echo ""
+bold "11. Settings: back → previous state"
+echo ""
+click_back_chevron
+assert_width   "Back from Settings → Glance"        "$W_GLANCE"
+
+echo ""
+bold "12. Restart persistence"
+echo ""
+click_back_chevron  # Glance → Strip
+assert_width   "Pre-restart: Strip"                  "$W_STRIP"
 
 pkill -x "$APP_NAME" 2>/dev/null || true
 sleep 2
@@ -231,7 +248,11 @@ open "$APP_PATH"
 sleep "$LAUNCH_WAIT"
 
 assert_running "App restarts after kill"
-assert_width   "Restart in Glance mode"              "$W_GLANCE"
+assert_width   "Restart in Strip mode (persisted)"   "$W_STRIP"
+
+# Restore to Glance for clean state
+click_strip
+assert_width   "Back to Glance"                      "$W_GLANCE"
 
 # ─── summary ───────────────────────────────────────────────────────
 

@@ -9,25 +9,21 @@ struct CaptureCardView: View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Text(capture.project?.name ?? "Unknown")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(StickerColors.textPrimary)
                 Spacer()
                 HStack(spacing: 4) {
                     ForEach(capture.subreddits, id: \.id) { sub in
                         Text(sub.name)
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color(nsColor: AppColors.reddit))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color(nsColor: AppColors.reddit).opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .foregroundStyle(StickerColors.reddit)
+                            .stickerBadge(color: StickerColors.reddit)
                     }
                 }
             }
 
             Text(capture.text)
                 .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(StickerColors.textSecondary)
                 .lineLimit(compact ? 1 : 3)
 
             if !compact && !capture.mediaRefs.isEmpty {
@@ -43,47 +39,40 @@ struct CaptureCardView: View {
             }
         }
         .padding(10)
-        .background(Color.white.opacity(0.05))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .stickerCard()
     }
 
     private var captureFooter: some View {
         let isQueued = capture.status == .queued
-        let statusColor = isQueued ? Color(nsColor: AppColors.green) : Color.secondary
+        let statusColor = isQueued ? Color(nsColor: AppColors.green) : StickerColors.textSecondary
         return HStack {
             Text(capture.createdAt, style: .relative)
                 .font(.system(size: 10))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(StickerColors.textSecondary)
             Spacer()
             if isQueued, let onMarkPosted {
                 Button("Mark Posted", action: onMarkPosted)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Color(nsColor: AppColors.green))
             }
             Text(capture.status.rawValue)
-                .font(.system(size: 9, weight: .semibold))
                 .foregroundStyle(statusColor)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 1)
-                .background(isQueued
-                    ? Color(nsColor: AppColors.green).opacity(0.1)
-                    : Color.white.opacity(0.03))
-                .clipShape(RoundedRectangle(cornerRadius: 3))
+                .stickerBadge(color: isQueued ? Color(nsColor: AppColors.green) : StickerColors.border)
         }
     }
 
     private var mediaThumbnail: some View {
         RoundedRectangle(cornerRadius: 4)
-            .fill(Color.white.opacity(0.08))
+            .fill(StickerColors.card)
             .frame(width: 36, height: 36)
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(StickerColors.border, lineWidth: 1)
+            )
             .overlay(
                 Image(systemName: "photo")
                     .font(.system(size: 12))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(StickerColors.textSecondary)
             )
     }
 }

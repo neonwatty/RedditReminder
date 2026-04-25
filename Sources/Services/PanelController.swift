@@ -22,7 +22,11 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
 @MainActor
 @Observable
 final class PanelController {
-    var state: SidebarState = .glance
+    var state: SidebarState = .glance {
+        didSet {
+            UserDefaults.standard.set(state.rawValue, forKey: "sidebarState")
+        }
+    }
     var screenEdge: ScreenEdge = .right
 
     private var panel: NSPanel?
@@ -30,6 +34,7 @@ final class PanelController {
     private var autoCollapseTimer: Timer?
     private var restingState: SidebarState = .glance
     private var autoCollapseMinutes: Int = SidebarConstants.defaultAutoCollapseMinutes
+    private var previousState: SidebarState = .glance
 
     enum ScreenEdge { case left, right }
 
@@ -44,7 +49,7 @@ final class PanelController {
         panel.level = .floating
         panel.isMovableByWindowBackground = false
         panel.hasShadow = true
-        panel.backgroundColor = NSColor(red: 0.08, green: 0.08, blue: 0.16, alpha: 1.0)
+        panel.backgroundColor = NSColor(red: 0.07, green: 0.08, blue: 0.14, alpha: 1.0)
         panel.isOpaque = false
 
         let hosting = FirstMouseHostingView(rootView: AnyView(contentView))
@@ -52,6 +57,8 @@ final class PanelController {
 
         self.panel = panel
         self.hostingView = hosting
+
+        state = Self.restoredState()
 
         positionPanel()
         panel.orderFront(nil)
@@ -64,10 +71,21 @@ final class PanelController {
         resetAutoCollapseTimer()
     }
 
+    func goToSettings() {
+        guard state != .settings else { return }
+        // Don't save .strip as previousState — it has no header to navigate back from
+        previousState = (state == .strip) ? .glance : state
+        setState(.settings)
+    }
+
     func stepDown() {
-        let states = SidebarState.allCases
-        guard let idx = states.firstIndex(of: state), idx > 0 else { return }
-        setState(states[idx - 1])
+        if state == .settings {
+            setState(previousState)
+            return
+        }
+        let ladder: [SidebarState] = [.strip, .glance, .browse, .capture]
+        guard let idx = ladder.firstIndex(of: state), idx > 0 else { return }
+        setState(ladder[idx - 1])
     }
 
     func toggleCapture() {
@@ -87,6 +105,18 @@ final class PanelController {
         self.autoCollapseMinutes = minutes
         self.restingState = restingState
         resetAutoCollapseTimer()
+    }
+
+    static func restoredState(from defaults: UserDefaults = .standard) -> SidebarState {
+        guard let saved = defaults.string(forKey: "sidebarState"),
+              let restored = SidebarState(rawValue: saved) else {
+            return .glance
+        }
+        switch restored {
+        case .capture: return .browse
+        case .settings: return .glance
+        default: return restored
+        }
     }
 
     private func animateWidth() {

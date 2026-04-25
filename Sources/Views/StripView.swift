@@ -9,33 +9,37 @@ struct StripView: View {
         Button(action: onTap) {
             VStack(spacing: 12) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(StickerColors.textSecondary)
 
                 if queueCount > 0 {
                     ZStack {
                         Circle()
-                            .fill(Color(nsColor: AppColors.reddit))
+                            .fill(StickerColors.reddit)
                             .frame(width: 18, height: 18)
+                            .overlay(
+                                Circle()
+                                    .stroke(StickerColors.border, lineWidth: 2)
+                            )
                         Text("\(queueCount)")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 10, weight: .heavy))
                             .foregroundStyle(.white)
                     }
                 }
 
                 if hasUrgentEvent {
                     Circle()
-                        .fill(Color(nsColor: AppColors.reddit))
+                        .fill(StickerColors.reddit)
                         .frame(width: 8, height: 8)
-                        .shadow(color: Color(nsColor: AppColors.reddit).opacity(0.6), radius: 4)
+                        .shadow(color: StickerColors.reddit.opacity(0.6), radius: 4)
                 }
 
                 Spacer()
 
                 Text("REDDIT")
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.system(size: 9, weight: .heavy))
                     .tracking(2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(StickerColors.textSecondary)
                     .rotationEffect(.degrees(90))
                     .fixedSize()
                     .padding(.bottom, 16)

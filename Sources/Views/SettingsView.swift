@@ -13,7 +13,7 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                sectionLabel("Sidebar Behavior")
+                stickerSectionLabel("Sidebar Behavior", size: 10)
 
                 LabeledContent("Screen edge") {
                     Picker("", selection: $screenEdge) {
@@ -48,8 +48,8 @@ struct SettingsView: View {
                     .frame(maxWidth: 120)
                 }
 
-                Divider()
-                sectionLabel("Notifications")
+                StickerDivider()
+                stickerSectionLabel("Notifications", size: 10)
 
                 Toggle("macOS notifications", isOn: $notificationsEnabled)
 
@@ -68,11 +68,4 @@ struct SettingsView: View {
         }
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 10, weight: .medium))
-            .tracking(1.5)
-            .textCase(.uppercase)
-            .foregroundStyle(.tertiary)
-    }
 }

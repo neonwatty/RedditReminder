@@ -14,19 +14,19 @@ struct CalendarMonthView: View {
                 Button(action: previousMonth) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(StickerColors.textSecondary)
                 }
                 .buttonStyle(.plain)
 
                 Spacer()
                 Text(monthTitle)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .bold))
                 Spacer()
 
                 Button(action: nextMonth) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(StickerColors.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -35,7 +35,7 @@ struct CalendarMonthView: View {
                 ForEach(dayLabels, id: \.self) { label in
                     Text(label)
                         .font(.system(size: 9))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(StickerColors.textSecondary)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -53,12 +53,13 @@ struct CalendarMonthView: View {
             if let selected = selectedDay {
                 let dayWindows = windowsFor(day: selected)
                 if !dayWindows.isEmpty {
-                    Divider().padding(.vertical, 4)
+                    StickerDivider()
+                        .padding(.vertical, 4)
                     Text(dayDetailTitle(selected))
                         .font(.system(size: 9, weight: .medium))
                         .tracking(1)
                         .textCase(.uppercase)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(StickerColors.textSecondary)
 
                     ForEach(Array(dayWindows.enumerated()), id: \.offset) { _, window in
                         EventCardView(window: window)
@@ -77,13 +78,13 @@ struct CalendarMonthView: View {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: date))")
                     .font(.system(size: 10))
-                    .foregroundStyle(isToday ? Color(nsColor: AppColors.reddit) : .primary)
+                    .foregroundStyle(isToday ? StickerColors.reddit : .primary)
 
                 if !dots.isEmpty {
                     HStack(spacing: 1) {
                         ForEach(Array(dots.prefix(3).enumerated()), id: \.offset) { _, w in
                             Circle()
-                                .fill(dotColor(w.urgency))
+                                .fill(w.urgency.color)
                                 .frame(width: 4, height: 4)
                         }
                     }
@@ -93,8 +94,12 @@ struct CalendarMonthView: View {
             }
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
-            .background(isSelected ? Color.white.opacity(0.08) : Color.clear)
+            .background(isSelected ? StickerColors.card : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(isSelected ? StickerColors.border : Color.clear, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -139,12 +144,4 @@ struct CalendarMonthView: View {
         return "\(f.string(from: date)) — \(count) event\(count == 1 ? "" : "s")"
     }
 
-    private func dotColor(_ urgency: UrgencyLevel) -> Color {
-        switch urgency {
-        case .active, .high: return Color(nsColor: AppColors.reddit)
-        case .medium: return Color(nsColor: AppColors.green)
-        case .low: return Color(nsColor: AppColors.blue)
-        default: return .gray
-        }
-    }
 }

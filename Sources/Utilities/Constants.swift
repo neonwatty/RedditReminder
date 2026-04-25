@@ -6,6 +6,7 @@ enum SidebarState: String, CaseIterable {
   case glance
   case browse
   case capture
+  case settings
 }
 
 enum SidebarConstants {
@@ -13,6 +14,7 @@ enum SidebarConstants {
   static let glanceWidth: CGFloat = 200
   static let browseWidth: CGFloat = 320
   static let captureWidth: CGFloat = 480
+  static let settingsWidth: CGFloat = 320
   static let animationDuration: CGFloat = 0.35
   static let defaultAutoCollapseMinutes: Int = 5
 
@@ -22,6 +24,7 @@ enum SidebarConstants {
     case .glance: return glanceWidth
     case .browse: return browseWidth
     case .capture: return captureWidth
+    case .settings: return settingsWidth
     }
   }
 }
@@ -40,6 +43,8 @@ enum AppColors {
   static let green = NSColor(red: 0.13, green: 0.77, blue: 0.37, alpha: 1.0)
   static let blue = NSColor(red: 0.29, green: 0.62, blue: 1.0, alpha: 1.0)
   static let purple = NSColor(red: 0.66, green: 0.33, blue: 0.97, alpha: 1.0)
+  static let gold = NSColor(red: 0.81, green: 0.60, blue: 0.03, alpha: 1.0)
+  static let pink = NSColor(red: 0.93, green: 0.29, blue: 0.60, alpha: 1.0)
 }
 
 enum MediaConstants {
