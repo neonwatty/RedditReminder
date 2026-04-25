@@ -1,9 +1,18 @@
 import SwiftUI
+import SwiftData
 
 struct SidebarContainer: View {
     @Bindable var panelController: PanelController
-    var timingEngine: TimingEngine = TimingEngine()
-    var captures: [Capture] = []
+    @State private var timingEngine = TimingEngine()
+
+    @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
+    @Query(sort: \Project.name) private var projects: [Project]
+    @Query(sort: \Subreddit.name) private var subreddits: [Subreddit]
+    @Query private var allEvents: [SubredditEvent]
+
+    @Environment(\.modelContext) private var modelContext
+
+    private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
 
     var body: some View {
         ZStack {
@@ -33,19 +42,38 @@ struct SidebarContainer: View {
                     BrowseView(
                         captures: captures,
                         upcomingWindows: timingEngine.upcomingWindows,
-                        onNewCapture: { panelController.setState(.capture) }
+                        onNewCapture: { panelController.setState(.capture) },
+                        onMarkPosted: { capture in
+                            capture.markAsPosted()
+                            try? modelContext.save()
+                        }
                     )
                 case .capture:
                     CaptureFormView(
-                        projects: [],
-                        subreddits: [],
-                        onSave: { _, _, _, _, _ in
+                        projects: projects,
+                        subreddits: subreddits,
+                        onSave: { text, notes, project, subs, mediaURLs in
+                            let capture = Capture(
+                                text: text,
+                                notes: notes,
+                                mediaRefs: mediaURLs.map(\.lastPathComponent),
+                                project: project,
+                                subreddits: subs
+                            )
+                            modelContext.insert(capture)
+                            try? modelContext.save()
                             panelController.setState(.browse)
                         },
                         onCancel: { panelController.setState(.browse) }
                     )
                 }
             }
+        }
+        .onAppear {
+            timingEngine.refresh(events: activeEvents, captures: captures)
+        }
+        .onChange(of: captures.count) {
+            timingEngine.refresh(events: activeEvents, captures: captures)
         }
     }
 
