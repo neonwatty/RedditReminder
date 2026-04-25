@@ -1,1 +1,18 @@
-{}
+{
+  "r/SideProject": {
+    "peak_days": ["tue", "sat"],
+    "peak_hours_utc": [14, 15, 16]
+  },
+  "r/webdev": {
+    "peak_days": ["tue", "thu"],
+    "peak_hours_utc": [14, 15]
+  },
+  "r/MacApps": {
+    "peak_days": ["mon", "wed"],
+    "peak_hours_utc": [15, 16]
+  },
+  "r/indiehackers": {
+    "peak_days": ["tue", "thu"],
+    "peak_hours_utc": [14, 15, 16]
+  }
+}
