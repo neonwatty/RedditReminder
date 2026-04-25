@@ -2,12 +2,14 @@ import Testing
 import Foundation
 @testable import RedditReminder
 
+@Suite(.serialized)
 @MainActor
 struct PanelControllerTests {
     private let testDefaults = UserDefaults(suiteName: "PanelControllerTests")!
 
     init() {
         testDefaults.removePersistentDomain(forName: "PanelControllerTests")
+        UserDefaults.standard.removeObject(forKey: "sidebarState")
     }
 
     @Test func statePersistsToUserDefaults() {
@@ -15,7 +17,6 @@ struct PanelControllerTests {
         pc.state = .browse
         let saved = UserDefaults.standard.string(forKey: "sidebarState")
         #expect(saved == "browse")
-        UserDefaults.standard.removeObject(forKey: "sidebarState")
     }
 
     @Test func captureRestoresToBrowse() {
