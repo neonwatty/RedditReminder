@@ -74,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
         guard notificationsEnabled else {
             notificationService.cancelAll()
-            NSLog("RedditReminder: refresh complete — notifications disabled, all cancelled")
+            NSLog("RedditReminder: notifications disabled — cancelled all, skipping schedule")
             return
         }
 

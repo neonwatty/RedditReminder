@@ -51,6 +51,7 @@ struct SidebarContainer: View {
                             do {
                                 try modelContext.save()
                             } catch {
+                                modelContext.rollback()
                                 NSLog("RedditReminder: failed to save posted status: \(error)")
                             }
                         }
