@@ -36,8 +36,14 @@ struct SidebarContainer: View {
                         onNewCapture: { panelController.setState(.capture) }
                     )
                 case .capture:
-                    Text("Capture — Task 12")
-                        .foregroundStyle(.secondary)
+                    CaptureFormView(
+                        projects: [],
+                        subreddits: [],
+                        onSave: { _, _, _, _, _ in
+                            panelController.setState(.browse)
+                        },
+                        onCancel: { panelController.setState(.browse) }
+                    )
                 }
             }
         }
