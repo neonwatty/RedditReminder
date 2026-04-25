@@ -63,9 +63,10 @@ final class PanelController {
         self.panel = panel
         self.hostingView = hosting
 
-        // Position at glance width first so the hosting view lays out wide,
-        // then set restored state and animate to the correct width. This avoids
-        // the hosting view's intrinsic sizing fighting narrow cold-start widths.
+        // Position at glance width (200pt) first so NSHostingView completes its
+        // initial layout without fighting the frame. Then restore the saved state
+        // (e.g. .strip at 24pt) and animate to it. Without this, NSHostingView's
+        // intrinsic sizing overrides narrow widths on cold start.
         state = .glance
         positionPanel()
         panel.orderFront(nil)
