@@ -4,6 +4,9 @@ import SwiftData
 struct SidebarContainer: View {
     @Bindable var panelController: PanelController
     @State private var timingEngine = TimingEngine()
+    @State private var titleTapCount = 0
+    @State private var lastTapTime = Date.distantPast
+    @State private var showDevMenu = false
 
     @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
     @Query(sort: \Project.name) private var projects: [Project]
@@ -70,6 +73,10 @@ struct SidebarContainer: View {
                     SettingsView(panelController: panelController)
                 }
             }
+
+            if showDevMenu {
+                devMenuOverlay
+            }
         }
         .onAppear {
             timingEngine.refresh(events: activeEvents, captures: captures)
@@ -77,6 +84,60 @@ struct SidebarContainer: View {
         .onChange(of: captures.count) {
             timingEngine.refresh(events: activeEvents, captures: captures)
         }
+    }
+
+    private var devMenuOverlay: some View {
+        VStack(spacing: 8) {
+            Text("DEVELOPER")
+                .font(.system(size: 9, weight: .bold))
+                .tracking(2)
+                .foregroundStyle(.tertiary)
+
+            Button(action: {
+                QAFixtures.seed(context: modelContext)
+                showDevMenu = false
+            }) {
+                Text("Seed QA Data")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color(nsColor: AppColors.green))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+
+            Button(action: {
+                QAFixtures.clearAll(context: modelContext)
+                showDevMenu = false
+            }) {
+                Text("Clear All Data")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color(nsColor: AppColors.reddit))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+
+            Button(action: { showDevMenu = false }) {
+                Text("Dismiss")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(Color(red: 0.12, green: 0.12, blue: 0.20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 20)
+        .padding(.top, 60)
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 
     private var header: some View {
@@ -91,6 +152,19 @@ struct SidebarContainer: View {
             Text("RedditReminder")
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(Color(nsColor: AppColors.reddit))
+                .onTapGesture {
+                    let now = Date()
+                    if now.timeIntervalSince(lastTapTime) > 2 {
+                        titleTapCount = 1
+                    } else {
+                        titleTapCount += 1
+                    }
+                    lastTapTime = now
+                    if titleTapCount >= 5 {
+                        showDevMenu = true
+                        titleTapCount = 0
+                    }
+                }
             Spacer()
             Button(action: { panelController.stepDown() }) {
                 Image(systemName: "chevron.left")
