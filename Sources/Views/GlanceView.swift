@@ -6,10 +6,18 @@ struct GlanceView: View {
     let onCaptureCardTap: () -> Void
     let onNewCapture: () -> Void
 
+    @AppStorage("hasSeenShortcutOnboarding") private var hasSeenOnboarding = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
+                    if !hasSeenOnboarding {
+                        ShortcutOnboardingCard(onDismiss: {
+                            hasSeenOnboarding = true
+                        })
+                    }
+
                     if let next = upcomingWindows.first {
                         alertBanner(window: next)
                     }
