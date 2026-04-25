@@ -2,12 +2,14 @@ import Testing
 import Foundation
 @testable import RedditReminder
 
+@Suite(.serialized)
 @MainActor
 struct PanelControllerTests {
     private let testDefaults = UserDefaults(suiteName: "PanelControllerTests")!
 
     init() {
         testDefaults.removePersistentDomain(forName: "PanelControllerTests")
+        UserDefaults.standard.removeObject(forKey: "sidebarState")
     }
 
     @Test func statePersistsToUserDefaults() {
@@ -15,7 +17,6 @@ struct PanelControllerTests {
         pc.state = .browse
         let saved = UserDefaults.standard.string(forKey: "sidebarState")
         #expect(saved == "browse")
-        UserDefaults.standard.removeObject(forKey: "sidebarState")
     }
 
     @Test func captureRestoresToBrowse() {
@@ -45,5 +46,78 @@ struct PanelControllerTests {
     @Test func nilDefaultsToGlance() {
         let result = PanelController.restoredState(from: testDefaults)
         #expect(result == .glance)
+    }
+
+    // MARK: - setAutoCollapse
+
+    @Test func setAutoCollapseAcceptsValidInputs() {
+        let pc = PanelController()
+        pc.setAutoCollapse(minutes: 10, restingState: .strip)
+        pc.setAutoCollapse(minutes: 5, restingState: .glance)
+        pc.setAutoCollapse(minutes: 30, restingState: .browse)
+        // No crash = pass; values are private but timer is reset each call
+    }
+
+    @Test func setAutoCollapseZeroDoesNotCrash() {
+        let pc = PanelController()
+        pc.state = .browse
+        pc.setAutoCollapse(minutes: 0, restingState: .strip)
+        // Smoke test: zero minutes accepted without crash.
+        // Timer behavior is asynchronous and not verified here.
+        #expect(pc.state == .browse)
+    }
+
+    // MARK: - isWiderThan
+
+    @Test func isWiderThanComparesCorrectly() {
+        #expect(SidebarState.capture.isWiderThan(.browse))
+        #expect(SidebarState.browse.isWiderThan(.glance))
+        #expect(SidebarState.glance.isWiderThan(.strip))
+        #expect(!SidebarState.strip.isWiderThan(.glance))
+        #expect(!SidebarState.glance.isWiderThan(.browse))
+        #expect(!SidebarState.glance.isWiderThan(.glance))
+    }
+
+    // MARK: - stepDown / toggleCapture
+
+    @Test func stepDownFollowsLadder() {
+        let pc = PanelController()
+        pc.state = .capture
+        pc.stepDown()
+        #expect(pc.state == .browse)
+        pc.stepDown()
+        #expect(pc.state == .glance)
+        pc.stepDown()
+        #expect(pc.state == .strip)
+        pc.stepDown()
+        #expect(pc.state == .strip)  // can't go below strip
+    }
+
+    @Test func stepDownFromSettingsReturnsToPreviousState() {
+        let pc = PanelController()
+        pc.state = .browse
+        pc.goToSettings()
+        #expect(pc.state == .settings)
+        pc.stepDown()
+        #expect(pc.state == .browse)
+    }
+
+    @Test func goToSettingsFromStripReturnesToGlance() {
+        let pc = PanelController()
+        pc.state = .strip
+        pc.goToSettings()
+        #expect(pc.state == .settings)
+        pc.stepDown()
+        // Strip has no header — previousState saved as .glance instead
+        #expect(pc.state == .glance)
+    }
+
+    @Test func toggleCaptureFlipsBetweenCaptureAndBrowse() {
+        let pc = PanelController()
+        pc.state = .glance
+        pc.toggleCapture()
+        #expect(pc.state == .capture)
+        pc.toggleCapture()
+        #expect(pc.state == .browse)
     }
 }
