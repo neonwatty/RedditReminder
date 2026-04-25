@@ -180,7 +180,10 @@ jobs:
 
   release:
     name: Release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      always() && !cancelled() &&
+      needs.ci-gate.result == 'success' &&
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [ci-gate]
     runs-on: ubuntu-latest
     permissions:
