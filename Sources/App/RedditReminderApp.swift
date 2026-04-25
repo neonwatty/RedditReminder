@@ -20,6 +20,7 @@ struct RedditReminderApp: App {
             Color.clear
                 .frame(width: 1, height: 1)
                 .onAppear {
+                    appDelegate.modelContainer = container
                     let sidebarView = SidebarContainer(panelController: appDelegate.panelController)
                         .modelContainer(container)
                     appDelegate.panelController.setup(contentView: sidebarView)
