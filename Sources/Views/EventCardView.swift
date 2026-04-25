@@ -8,11 +8,11 @@ struct EventCardView: View {
 
         VStack(alignment: .leading, spacing: 3) {
             Text(window.event.name)
-                .font(.system(size: 11, weight: isUrgent ? .bold : .regular))
-                .foregroundStyle(isUrgent ? .primary : .secondary)
+                .font(.system(size: 11, weight: isUrgent ? .heavy : .bold))
+                .foregroundStyle(isUrgent ? StickerColors.textPrimary : StickerColors.textSecondary)
 
             if let sub = window.event.subreddit {
-                Text("\(sub.name) · \(window.event.isRecurring ? "recurring" : "one-off")")
+                Text("\(sub.name) \u{00B7} \(window.event.isRecurring ? "recurring" : "one-off")")
                     .font(.system(size: 10))
                     .foregroundStyle(urgencyColor)
             }
@@ -24,22 +24,12 @@ struct EventCardView: View {
             } else {
                 Text("No captures tagged yet")
                     .font(.system(size: 10))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(StickerColors.textSecondary)
             }
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isUrgent
-            ? Color(nsColor: AppColors.reddit).opacity(0.08)
-            : Color.white.opacity(0.05))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(isUrgent
-                    ? Color(nsColor: AppColors.reddit).opacity(0.3)
-                    : Color.white.opacity(0.06),
-                lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .stickerCard(borderColor: isUrgent ? Color(nsColor: AppColors.reddit) : StickerColors.border)
     }
 
     private var urgencyColor: Color {
@@ -47,7 +37,7 @@ struct EventCardView: View {
         case .active, .high: return Color(nsColor: AppColors.reddit)
         case .medium: return Color(nsColor: AppColors.green)
         case .low: return Color(nsColor: AppColors.blue)
-        default: return .secondary
+        default: return StickerColors.textSecondary
         }
     }
 }

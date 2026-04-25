@@ -18,7 +18,11 @@ struct BrowseView: View {
                 tabButton("Queue", tab: .queue)
                 tabButton("Calendar", tab: .calendar)
             }
-            .overlay(alignment: .bottom) { Divider() }
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(StickerColors.border)
+                    .frame(height: 2)
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
@@ -33,12 +37,7 @@ struct BrowseView: View {
 
             Button(action: onNewCapture) {
                 Text("+ New Capture")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(nsColor: AppColors.reddit))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .stickerButton(bgColor: Color(nsColor: AppColors.reddit))
             }
             .buttonStyle(.plain)
             .padding(10)
@@ -89,14 +88,14 @@ struct BrowseView: View {
     private func tabButton(_ title: String, tab: Tab) -> some View {
         Button(action: { activeTab = tab }) {
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(activeTab == tab ? Color(nsColor: AppColors.reddit) : .secondary)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(activeTab == tab ? StickerColors.gold : StickerColors.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .overlay(alignment: .bottom) {
                     if activeTab == tab {
                         Rectangle()
-                            .fill(Color(nsColor: AppColors.reddit))
+                            .fill(StickerColors.gold)
                             .frame(height: 2)
                     }
                 }
@@ -106,9 +105,9 @@ struct BrowseView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 9, weight: .medium))
+            .font(.system(size: 9, weight: .bold))
             .tracking(1.5)
             .textCase(.uppercase)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(StickerColors.textSecondary)
     }
 }
