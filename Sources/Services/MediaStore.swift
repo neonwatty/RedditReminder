@@ -34,6 +34,8 @@ final class MediaStore {
       } catch {
         NSLog("RedditReminder: failed to write thumbnail: \(error)")
       }
+    } else {
+      NSLog("RedditReminder: failed to encode thumbnail PNG for \(fileName)")
     }
 
     return fileName
@@ -58,6 +60,8 @@ final class MediaStore {
     let dir = rootDir.appendingPathComponent(captureId.uuidString)
     do {
       try fm.removeItem(at: dir)
+    } catch CocoaError.fileNoSuchFile {
+      // Directory already absent — nothing to clean up
     } catch {
       NSLog("RedditReminder: failed to delete media for \(captureId): \(error)")
     }

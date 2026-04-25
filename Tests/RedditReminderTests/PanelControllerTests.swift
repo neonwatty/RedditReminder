@@ -57,11 +57,12 @@ struct PanelControllerTests {
         // No crash = pass; values are private but timer is reset each call
     }
 
-    @Test func setAutoCollapseZeroDisablesTimer() {
+    @Test func setAutoCollapseZeroDoesNotCrash() {
         let pc = PanelController()
         pc.state = .browse
         pc.setAutoCollapse(minutes: 0, restingState: .strip)
-        // With minutes=0, timer should not fire — state remains unchanged
+        // Smoke test: zero minutes accepted without crash.
+        // Timer behavior is asynchronous and not verified here.
         #expect(pc.state == .browse)
     }
 
@@ -98,6 +99,16 @@ struct PanelControllerTests {
         #expect(pc.state == .settings)
         pc.stepDown()
         #expect(pc.state == .browse)
+    }
+
+    @Test func goToSettingsFromStripReturnesToGlance() {
+        let pc = PanelController()
+        pc.state = .strip
+        pc.goToSettings()
+        #expect(pc.state == .settings)
+        pc.stepDown()
+        // Strip has no header — previousState saved as .glance instead
+        #expect(pc.state == .glance)
     }
 
     @Test func toggleCaptureFlipsBetweenCaptureAndBrowse() {
