@@ -48,7 +48,12 @@ struct SidebarContainer: View {
                         onNewCapture: { panelController.setState(.capture) },
                         onMarkPosted: { capture in
                             capture.markAsPosted()
-                            try? modelContext.save()
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                modelContext.rollback()
+                                NSLog("RedditReminder: failed to save posted status: \(error)")
+                            }
                         }
                     )
                 case .capture:
@@ -64,8 +69,13 @@ struct SidebarContainer: View {
                                 subreddits: subs
                             )
                             modelContext.insert(capture)
-                            try? modelContext.save()
-                            panelController.setState(.browse)
+                            do {
+                                try modelContext.save()
+                                panelController.setState(.browse)
+                            } catch {
+                                modelContext.rollback()
+                                NSLog("RedditReminder: failed to save capture: \(error)")
+                            }
                         },
                         onCancel: { panelController.setState(.browse) }
                     )

@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @Bindable var panelController: PanelController
@@ -9,6 +10,14 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes = 60
     @AppStorage("nudgeWhenEmpty") private var nudgeWhenEmpty = true
+
+    private func syncAutoCollapse() {
+        guard let state = SidebarState(rawValue: restingState) else {
+            NSLog("RedditReminder: invalid restingState rawValue: \(restingState)")
+            return
+        }
+        panelController.setAutoCollapse(minutes: autoCollapseMinutes, restingState: state)
+    }
 
     var body: some View {
         ScrollView {
@@ -35,6 +44,7 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 200)
+                    .onChange(of: restingState) { syncAutoCollapse() }
                 }
 
                 LabeledContent("Auto-collapse") {
@@ -46,12 +56,18 @@ struct SettingsView: View {
                         Text("Never").tag(0)
                     }
                     .frame(maxWidth: 120)
+                    .onChange(of: autoCollapseMinutes) { syncAutoCollapse() }
                 }
 
                 StickerDivider()
                 stickerSectionLabel("Notifications", size: 10)
 
                 Toggle("macOS notifications", isOn: $notificationsEnabled)
+                    .onChange(of: notificationsEnabled) { _, enabled in
+                        if !enabled {
+                            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                        }
+                    }
 
                 LabeledContent("Default lead time") {
                     Picker("", selection: $defaultLeadTimeMinutes) {
