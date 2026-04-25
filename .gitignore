@@ -4,8 +4,12 @@
 # Brainstorm session state (local only)
 .superpowers/
 
-# Build artifacts (future)
+# Build artifacts
 .build/
+build/
 DerivedData/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
+
+# Node (semantic-release tooling only)
+node_modules/
