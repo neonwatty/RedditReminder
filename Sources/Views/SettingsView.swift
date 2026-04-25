@@ -35,6 +35,14 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 200)
+                    .onChange(of: restingState) { _, newVal in
+                        if let state = SidebarState(rawValue: newVal) {
+                            panelController.setAutoCollapse(
+                                minutes: autoCollapseMinutes,
+                                restingState: state
+                            )
+                        }
+                    }
                 }
 
                 LabeledContent("Auto-collapse") {
@@ -46,6 +54,14 @@ struct SettingsView: View {
                         Text("Never").tag(0)
                     }
                     .frame(maxWidth: 120)
+                    .onChange(of: autoCollapseMinutes) { _, newVal in
+                        if let state = SidebarState(rawValue: restingState) {
+                            panelController.setAutoCollapse(
+                                minutes: newVal,
+                                restingState: state
+                            )
+                        }
+                    }
                 }
 
                 StickerDivider()

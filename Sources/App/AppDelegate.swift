@@ -71,6 +71,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let activeEvents = events.filter(\.isActive)
         timingEngine.refresh(events: activeEvents, captures: captures)
 
+        let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
+        guard notificationsEnabled else {
+            notificationService.cancelAll()
+            NSLog("RedditReminder: refresh complete — notifications disabled, all cancelled")
+            return
+        }
+
         // Track which event IDs have active windows
         var activeEventIds: Set<String> = []
 
