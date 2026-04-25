@@ -42,10 +42,23 @@ final class HeuristicsStore {
   }
 
   private func loadBundled(from bundle: Bundle) {
-    guard let url = bundle.url(forResource: "peak-times", withExtension: "json"),
-      let data = try? Data(contentsOf: url),
-      let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: Any]]
-    else { return }
+    guard let url = bundle.url(forResource: "peak-times", withExtension: "json") else {
+      NSLog("RedditReminder: peak-times.json not found in bundle")
+      return
+    }
+
+    let json: [String: [String: Any]]
+    do {
+      let data = try Data(contentsOf: url)
+      guard let parsed = try JSONSerialization.jsonObject(with: data) as? [String: [String: Any]] else {
+        NSLog("RedditReminder: peak-times.json has unexpected structure")
+        return
+      }
+      json = parsed
+    } catch {
+      NSLog("RedditReminder: failed to load peak-times.json: \(error)")
+      return
+    }
 
     for (sub, info) in json {
       if let days = info["peak_days"] as? [String],

@@ -29,7 +29,11 @@ final class MediaStore {
     let thumbnail = generateThumbnail(from: image, maxSize: MediaConstants.thumbnailMaxSize)
     if let thumbData = pngData(from: thumbnail) {
       let thumbURL = thumbDir.appendingPathComponent(fileName)
-      try? thumbData.write(to: thumbURL)
+      do {
+        try thumbData.write(to: thumbURL)
+      } catch {
+        NSLog("RedditReminder: failed to write thumbnail: \(error)")
+      }
     }
 
     return fileName
@@ -52,7 +56,11 @@ final class MediaStore {
 
   func deleteAll(captureId: UUID) {
     let dir = rootDir.appendingPathComponent(captureId.uuidString)
-    try? fm.removeItem(at: dir)
+    do {
+      try fm.removeItem(at: dir)
+    } catch {
+      NSLog("RedditReminder: failed to delete media for \(captureId): \(error)")
+    }
   }
 
   private func generateThumbnail(from image: NSImage, maxSize: CGFloat) -> NSImage {
