@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct RedditReminderApp: App {
@@ -6,8 +7,12 @@ struct RedditReminderApp: App {
 
     var body: some Scene {
         WindowGroup("RedditReminderKeepalive") {
-            Text("RedditReminder")
+            Color.clear
                 .frame(width: 1, height: 1)
+                .onAppear {
+                    let container = SidebarContainer(panelController: appDelegate.panelController)
+                    appDelegate.panelController.setup(contentView: container)
+                }
         }
         .defaultSize(width: 1, height: 1)
         .windowStyle(.hiddenTitleBar)
