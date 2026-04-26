@@ -7,7 +7,9 @@ final class GlobalShortcut {
   private var runLoopSource: CFRunLoopSource?
   private var tapThread: Thread?
   private var tapRunLoop: CFRunLoop?
-  private var handler: (() -> Void)?
+  // Written once in register() on MainActor, read only inside Task { @MainActor in }
+  // from the event tap callback — both sides execute on MainActor.
+  private nonisolated(unsafe) var handler: (() -> Void)?
 
   func register(handler: @escaping () -> Void) {
     self.handler = handler

@@ -1,10 +1,19 @@
 import SwiftUI
 import SwiftData
 
+struct CaptureFormResult {
+    let text: String
+    let notes: String?
+    let links: [String]
+    let project: Project?
+    let subreddits: [Subreddit]
+    let mediaURLs: [URL]
+}
+
 struct CaptureFormView: View {
     @Query(sort: \Project.name) private var projects: [Project]
     @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
-    let onSave: (String, String?, [String], Project?, [Subreddit], [URL]) -> Void
+    let onSave: (CaptureFormResult) -> Void
     let onCancel: () -> Void
 
     @State private var text = ""
@@ -139,13 +148,21 @@ struct CaptureFormView: View {
 
     private func save() {
         let subs = subreddits.filter { selectedSubreddits.contains($0.id) }
-        onSave(text, notes.isEmpty ? nil : notes, links, selectedProject, subs, droppedFiles)
+        onSave(CaptureFormResult(
+            text: text,
+            notes: notes.isEmpty ? nil : notes,
+            links: links,
+            project: selectedProject,
+            subreddits: subs,
+            mediaURLs: droppedFiles
+        ))
     }
 
     private func addLink() {
         let trimmed = newLinkText.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         let url = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+        guard URL(string: url) != nil else { return }
         links.append(url)
         newLinkText = ""
     }

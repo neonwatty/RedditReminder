@@ -56,14 +56,14 @@ struct SidebarContainer: View {
                     )
                 case .capture:
                     CaptureFormView(
-                        onSave: { text, notes, links, optionalProject, subs, mediaURLs in
+                        onSave: { result in
                             let capture = Capture(
-                                text: text,
-                                notes: notes,
-                                links: links,
-                                mediaRefs: mediaURLs.map(\.lastPathComponent),
-                                project: optionalProject,
-                                subreddits: subs
+                                text: result.text,
+                                notes: result.notes,
+                                links: result.links,
+                                mediaRefs: result.mediaURLs.map(\.lastPathComponent),
+                                project: result.project,
+                                subreddits: result.subreddits
                             )
                             modelContext.insert(capture)
                             do {

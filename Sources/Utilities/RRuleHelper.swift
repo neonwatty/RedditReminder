@@ -27,16 +27,17 @@ enum RRuleHelper {
     after: Date, time: DateComponents, count: Int, cal: Calendar
   ) -> [Date] {
     var results: [Date] = []
-    // Start from tomorrow
-    var day = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: after))!
+    guard var day = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: after)) else { return [] }
 
     for _ in 0..<count {
       var c = cal.dateComponents([.year, .month, .day], from: day)
-      c.hour = time.hour; c.minute = time.minute
+      c.hour = time.hour
+      c.minute = time.minute
       if let date = cal.date(from: c), date > after {
         results.append(date)
       }
-      day = cal.date(byAdding: .day, value: 1, to: day)!
+      guard let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { break }
+      day = nextDay
     }
     return results
   }
@@ -55,21 +56,24 @@ enum RRuleHelper {
     // Check if today's target time is still in the future
     if daysAhead == 7 {
       var todayComponents = cal.dateComponents([.year, .month, .day], from: after)
-      todayComponents.hour = time.hour; todayComponents.minute = time.minute
+      todayComponents.hour = time.hour
+      todayComponents.minute = time.minute
       if let todayDate = cal.date(from: todayComponents), todayDate > after {
         daysAhead = 0
       }
     }
 
-    var candidate = cal.date(byAdding: .day, value: daysAhead, to: cal.startOfDay(for: after))!
+    guard var candidate = cal.date(byAdding: .day, value: daysAhead, to: cal.startOfDay(for: after)) else { return [] }
 
     for _ in 0..<count {
       var c = cal.dateComponents([.year, .month, .day], from: candidate)
-      c.hour = time.hour; c.minute = time.minute
+      c.hour = time.hour
+      c.minute = time.minute
       if let date = cal.date(from: c), date > after {
         results.append(date)
       }
-      candidate = cal.date(byAdding: .day, value: 7, to: candidate)!
+      guard let nextCandidate = cal.date(byAdding: .day, value: 7, to: candidate) else { break }
+      candidate = nextCandidate
     }
     return results
   }

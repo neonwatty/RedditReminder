@@ -42,17 +42,19 @@ struct ChannelsView: View {
         }
     }
 
+    private func normalizedSubredditName(_ raw: String) -> String? {
+        let trimmed = raw.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        return trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+    }
+
     private var canAdd: Bool {
-        let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return false }
-        let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+        guard let name = normalizedSubredditName(newSubredditName) else { return false }
         return !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() })
     }
 
     private func addSubreddit() {
-        let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+        guard let name = normalizedSubredditName(newSubredditName) else { return }
         guard !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() }) else { return }
 
         let nextOrder = (subreddits.map(\.sortOrder).max() ?? -1) + 1

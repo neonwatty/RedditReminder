@@ -51,3 +51,54 @@ import Foundation
     let window = TimingEngine.nextWindow(for: event, after: Date())
     #expect(window == nil)
 }
+
+@Test @MainActor func refreshCountsQueuedCapturesBySubreddit() {
+    let sub1 = Subreddit(name: "r/SideProject")
+    let sub2 = Subreddit(name: "r/MacApps")
+
+    let fireDate = Date().addingTimeInterval(6 * 3600)
+    let event = SubredditEvent(name: "Post time", subreddit: sub1, oneOffDate: fireDate)
+
+    let queued1 = Capture(text: "Cap 1", subreddits: [sub1])
+    let queued2 = Capture(text: "Cap 2", subreddits: [sub1, sub2])
+    let posted = Capture(text: "Cap 3", subreddits: [sub1])
+    posted.markAsPosted()
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event], captures: [queued1, queued2, posted])
+
+    #expect(engine.upcomingWindows.count == 1)
+    #expect(engine.upcomingWindows.first?.matchingCaptureCount == 2)
+}
+
+@Test @MainActor func refreshExcludesCapturesForOtherSubreddits() {
+    let sub1 = Subreddit(name: "r/SideProject")
+    let sub2 = Subreddit(name: "r/MacApps")
+
+    let fireDate = Date().addingTimeInterval(6 * 3600)
+    let event = SubredditEvent(name: "Post time", subreddit: sub2, oneOffDate: fireDate)
+
+    let capture = Capture(text: "Cap 1", subreddits: [sub1])
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event], captures: [capture])
+
+    #expect(engine.upcomingWindows.count == 1)
+    #expect(engine.upcomingWindows.first?.matchingCaptureCount == 0)
+}
+
+@Test @MainActor func refreshSortsWindowsByFireDate() {
+    let sub = Subreddit(name: "r/SideProject")
+
+    let later = Date().addingTimeInterval(12 * 3600)
+    let sooner = Date().addingTimeInterval(3 * 3600)
+    let event1 = SubredditEvent(name: "Later", subreddit: sub, oneOffDate: later)
+    let event2 = SubredditEvent(name: "Sooner", subreddit: sub, oneOffDate: sooner)
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event1, event2], captures: [])
+
+    #expect(engine.upcomingWindows.count == 2)
+    #expect(engine.upcomingWindows[0].event.name == "Sooner")
+    #expect(engine.upcomingWindows[1].event.name == "Later")
+}
