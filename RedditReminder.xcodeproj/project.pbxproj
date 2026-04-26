@@ -21,11 +21,13 @@
 		35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA306067C4690F4D1CDAC2D /* Subreddit.swift */; };
 		3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0972EE8B384E16C0A49F8555 /* AppDelegate.swift */; };
 		42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
+		4D52E2A23BEE6747615CD993 /* SubredditRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */; };
 		4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599273192FBCFDD93D1241B0 /* Project.swift */; };
 		53913174FE1B50F35E71F943 /* StripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C6D67956AA868C08076F76 /* StripView.swift */; };
 		55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */; };
 		5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */; };
 		59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1122ADEB6045619C303C31 /* MediaStore.swift */; };
+		6559B6F6894A0EEE0C24A90A /* CaptureFormResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */; };
 		6AB79B2FD74969002DBBC316 /* ChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DDADF6ECF30ECDD255DED4 /* ChannelsView.swift */; };
 		70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */; };
 		7CD67ED8F5DC8F6C943BE8A6 /* ShortcutOnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0393A914335AAD76177A0BEF /* ShortcutOnboardingCard.swift */; };
@@ -66,6 +68,7 @@
 		0972EE8B384E16C0A49F8555 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		09DDADF6ECF30ECDD255DED4 /* ChannelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsView.swift; sourceTree = "<group>"; };
 		0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleHelperTests.swift; sourceTree = "<group>"; };
+		18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureFormResult.swift; sourceTree = "<group>"; };
 		20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStoreTests.swift; sourceTree = "<group>"; };
 		2587FDCA2CF244148425F802 /* CalendarMonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarMonthView.swift; sourceTree = "<group>"; };
 		2907084ECC960F75B01FFF68 /* SidebarContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarContainer.swift; sourceTree = "<group>"; };
@@ -80,6 +83,7 @@
 		560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsStoreTests.swift; sourceTree = "<group>"; };
 		56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		599273192FBCFDD93D1241B0 /* Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project.swift; sourceTree = "<group>"; };
+		5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditRow.swift; sourceTree = "<group>"; };
 		5DB4E56FCDA7A1CB1F24566D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		5FD6C46310DB68B2C81414AF /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
 		614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditEvent.swift; sourceTree = "<group>"; };
@@ -170,6 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				AEE4E14F7A70E1A66FA994A3 /* Capture.swift */,
+				18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */,
 				599273192FBCFDD93D1241B0 /* Project.swift */,
 				9FA306067C4690F4D1CDAC2D /* Subreddit.swift */,
 				614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */,
@@ -214,6 +219,7 @@
 				0393A914335AAD76177A0BEF /* ShortcutOnboardingCard.swift */,
 				2907084ECC960F75B01FFF68 /* SidebarContainer.swift */,
 				66C6D67956AA868C08076F76 /* StripView.swift */,
+				5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -332,6 +338,7 @@
 				E540E51D10808143C9CC1B5A /* CalendarTimelineView.swift in Sources */,
 				F3CF29763AE56B1639138AA1 /* Capture.swift in Sources */,
 				1775ADA388C6665458778DFD /* CaptureCardView.swift in Sources */,
+				6559B6F6894A0EEE0C24A90A /* CaptureFormResult.swift in Sources */,
 				1AD1095D15AF2B7E0E3327CD /* CaptureFormView.swift in Sources */,
 				6AB79B2FD74969002DBBC316 /* ChannelsView.swift in Sources */,
 				81C26D97123D840A9130AF7E /* Constants.swift in Sources */,
@@ -355,6 +362,7 @@
 				53913174FE1B50F35E71F943 /* StripView.swift in Sources */,
 				35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */,
 				19F277D9FFDA1E43A857A149 /* SubredditEvent.swift in Sources */,
+				4D52E2A23BEE6747615CD993 /* SubredditRow.swift in Sources */,
 				1FB2F2B5269BA2F36BF13259 /* TimingEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

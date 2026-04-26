@@ -1,15 +1,6 @@
 import SwiftUI
 import SwiftData
 
-struct CaptureFormResult {
-    let text: String
-    let notes: String?
-    let links: [String]
-    let project: Project?
-    let subreddits: [Subreddit]
-    let mediaURLs: [URL]
-}
-
 struct CaptureFormView: View {
     @Query(sort: \Project.name) private var projects: [Project]
     @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]

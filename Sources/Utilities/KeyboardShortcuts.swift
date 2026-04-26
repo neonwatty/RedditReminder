@@ -1,14 +1,17 @@
+@preconcurrency import CoreFoundation
 import AppKit
 import Carbon.HIToolbox
 
 @MainActor
 final class GlobalShortcut {
   private var eventTap: CFMachPort?
-  private var runLoopSource: CFRunLoopSource?
   private var tapThread: Thread?
-  private var tapRunLoop: CFRunLoop?
-  // Written once in register() on MainActor, read only inside Task { @MainActor in }
-  // from the event tap callback — both sides execute on MainActor.
+
+  // These properties are written/read across isolation boundaries (main thread
+  // ↔ background event-tap thread). Access is safe because register() completes
+  // before the thread reads, and unregister() runs after disabling the tap.
+  private nonisolated(unsafe) var runLoopSource: CFRunLoopSource?
+  private nonisolated(unsafe) var tapRunLoop: CFRunLoop?
   private nonisolated(unsafe) var handler: (() -> Void)?
 
   func register(handler: @escaping () -> Void) {
@@ -38,12 +41,13 @@ final class GlobalShortcut {
     }
 
     eventTap = tap
-    runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+    let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+    runLoopSource = source
 
-    // Run the event tap on a dedicated background thread to avoid
-    // blocking the main thread on every system-wide keystroke.
+    // Capture locals for the thread closure so it doesn't cross isolation
+    // boundaries to access @MainActor properties at runtime.
     let thread = Thread { [weak self] in
-      guard let source = self?.runLoopSource else { return }
+      guard let source else { return }
       let rl = CFRunLoopGetCurrent()
       self?.tapRunLoop = rl
       CFRunLoopAddSource(rl, source, .commonModes)
