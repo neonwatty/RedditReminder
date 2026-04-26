@@ -3,7 +3,7 @@ import SwiftUI
 struct CaptureFormView: View {
     let projects: [Project]
     let subreddits: [Subreddit]
-    let onSave: (String, String?, Project, [Subreddit], [URL]) -> Void
+    let onSave: (String, String?, Project?, [Subreddit], [URL]) -> Void
     let onCancel: () -> Void
 
     @State private var text = ""
@@ -21,7 +21,7 @@ struct CaptureFormView: View {
 
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("PROJECT").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                            Text("PROJECT (optional)").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
                             Picker("", selection: $selectedProject) {
                                 Text("Select...").tag(nil as Project?)
                                 ForEach(projects.filter { !$0.archived }, id: \.id) { project in
@@ -106,13 +106,12 @@ struct CaptureFormView: View {
     }
 
     private var canSave: Bool {
-        !text.isEmpty && selectedProject != nil && !selectedSubreddits.isEmpty
+        !text.isEmpty && !selectedSubreddits.isEmpty
     }
 
     private func save() {
-        guard let project = selectedProject else { return }
         let subs = subreddits.filter { selectedSubreddits.contains($0.id) }
-        onSave(text, notes.isEmpty ? nil : notes, project, subs, droppedFiles)
+        onSave(text, notes.isEmpty ? nil : notes, selectedProject, subs, droppedFiles)
     }
 
     private var subredditMultiSelect: some View {

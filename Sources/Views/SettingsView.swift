@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 import UserNotifications
 
 struct SettingsView: View {
     @Bindable var panelController: PanelController
+
+    @Query(sort: \Subreddit.name) private var subreddits: [Subreddit]
+    @Environment(\.modelContext) private var modelContext
 
     @AppStorage("screenEdge") private var screenEdge = "right"
     @AppStorage("restingState") private var restingState = "glance"
@@ -10,6 +14,8 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes = 60
     @AppStorage("nudgeWhenEmpty") private var nudgeWhenEmpty = true
+
+    @State private var newSubredditName = ""
 
     private func syncAutoCollapse() {
         guard let state = SidebarState(rawValue: restingState) else {
@@ -79,8 +85,82 @@ struct SettingsView: View {
                 }
 
                 Toggle("Nudge when queue empty", isOn: $nudgeWhenEmpty)
+
+                StickerDivider()
+                stickerSectionLabel("Subreddits", size: 10)
+
+                subredditAddRow
+
+                ForEach(subreddits, id: \.id) { sub in
+                    HStack {
+                        Text(sub.name)
+                            .font(.system(size: 12))
+                            .foregroundStyle(StickerColors.textPrimary)
+                        Spacer()
+                        Button(action: { deleteSubreddit(sub) }) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 11))
+                                .foregroundStyle(StickerColors.reddit)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.vertical, 2)
+                }
             }
             .padding(16)
+        }
+    }
+
+    private var subredditAddRow: some View {
+        HStack(spacing: 6) {
+            TextField("r/NewSubreddit", text: $newSubredditName)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12))
+                .stickerInput()
+                .onSubmit { addSubreddit() }
+
+            Button(action: addSubreddit) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(canAddSubreddit ? StickerColors.green : StickerColors.textSecondary)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canAddSubreddit)
+        }
+    }
+
+    private var canAddSubreddit: Bool {
+        let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+        let normalized = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+        return !subreddits.contains { $0.name.lowercased() == normalized.lowercased() }
+    }
+
+    private func addSubreddit() {
+        let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+
+        guard !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() }) else { return }
+
+        let sub = Subreddit(name: name)
+        modelContext.insert(sub)
+        do {
+            try modelContext.save()
+            newSubredditName = ""
+        } catch {
+            modelContext.rollback()
+            NSLog("RedditReminder: failed to add subreddit: \(error)")
+        }
+    }
+
+    private func deleteSubreddit(_ sub: Subreddit) {
+        modelContext.delete(sub)
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            NSLog("RedditReminder: failed to delete subreddit: \(error)")
         }
     }
 

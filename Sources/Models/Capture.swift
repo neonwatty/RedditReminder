@@ -23,8 +23,8 @@ final class Capture {
         text: String,
         notes: String? = nil,
         mediaRefs: [String] = [],
-        project: Project,
-        subreddits: [Subreddit]
+        project: Project? = nil,
+        subreddits: [Subreddit] = []
     ) {
         self.id = UUID()
         self.text = text
