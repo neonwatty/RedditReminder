@@ -42,6 +42,16 @@ final class TimingEngine {
     func refresh(events: [SubredditEvent], captures: [Capture]) {
         let now = Date()
         let horizon = now.addingTimeInterval(24 * 3600)
+
+        // Pre-index: build a set of subreddit IDs per queued capture once,
+        // then look up by subreddit ID in O(1) instead of O(captures × subreddits).
+        var queuedCountBySubredditId: [UUID: Int] = [:]
+        for capture in captures where capture.status == .queued {
+            for sub in capture.subreddits {
+                queuedCountBySubredditId[sub.id, default: 0] += 1
+            }
+        }
+
         var windows: [UpcomingWindow] = []
 
         for event in events where event.isActive {
@@ -51,11 +61,7 @@ final class TimingEngine {
 
             let hours = fireDate.timeIntervalSince(now) / 3600
             let urgency = Self.urgencyLevel(hoursUntilWindow: hours)
-
-            let matchCount = captures.filter { capture in
-                capture.status == .queued &&
-                    capture.subreddits.contains(where: { $0.name == event.subreddit?.name })
-            }.count
+            let matchCount = event.subreddit.map { queuedCountBySubredditId[$0.id] ?? 0 } ?? 0
 
             windows.append(UpcomingWindow(
                 event: event,

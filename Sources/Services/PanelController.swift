@@ -14,7 +14,9 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func mouseDown(with event: NSEvent) {
-        window?.makeKey()
+        if window?.isKeyWindow == false {
+            window?.makeKey()
+        }
         super.mouseDown(with: event)
     }
 }

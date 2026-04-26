@@ -5,6 +5,7 @@ import Carbon.HIToolbox
 final class GlobalShortcut {
   private var eventTap: CFMachPort?
   private var runLoopSource: CFRunLoopSource?
+  private var tapThread: Thread?
   private var handler: (() -> Void)?
 
   func register(handler: @escaping () -> Void) {
@@ -35,8 +36,19 @@ final class GlobalShortcut {
 
     eventTap = tap
     runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-    CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
-    CGEvent.tapEnable(tap: tap, enable: true)
+
+    // Run the event tap on a dedicated background thread to avoid
+    // blocking the main thread on every system-wide keystroke.
+    let thread = Thread {
+      guard let source = self.runLoopSource else { return }
+      CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+      CGEvent.tapEnable(tap: tap, enable: true)
+      CFRunLoopRun()
+    }
+    thread.name = "RedditReminder.EventTap"
+    thread.qualityOfService = .userInteractive
+    thread.start()
+    tapThread = thread
   }
 
   func unregister() {
@@ -44,14 +56,17 @@ final class GlobalShortcut {
       CGEvent.tapEnable(tap: tap, enable: false)
     }
     if let source = runLoopSource {
+      // Stop the background run loop
       CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
     }
+    tapThread?.cancel()
     eventTap = nil
     runLoopSource = nil
+    tapThread = nil
     handler = nil
   }
 
-  private func handleEvent(
+  private nonisolated func handleEvent(
     proxy: CGEventTapProxy, type: CGEventType, event: CGEvent
   ) -> Unmanaged<CGEvent>? {
     guard type == .keyDown else { return Unmanaged.passRetained(event) }
