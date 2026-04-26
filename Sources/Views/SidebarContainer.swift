@@ -140,12 +140,29 @@ struct SidebarContainer: View {
 
     private var header: some View {
         HStack {
-            Button(action: { panelController.goToSettings() }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(StickerColors.textSecondary)
+            HStack(spacing: 10) {
+                Button(action: { panelController.goToSettings() }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(
+                            panelController.state == .settings
+                                ? StickerColors.gold
+                                : StickerColors.textSecondary
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button(action: { panelController.goToChannels() }) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(
+                            panelController.state == .channels
+                                ? StickerColors.gold
+                                : StickerColors.textSecondary
+                        )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             Text("RedditReminder")
                 .font(.system(size: 13, weight: .heavy))
