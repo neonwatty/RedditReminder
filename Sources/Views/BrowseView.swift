@@ -44,8 +44,7 @@ struct BrowseView: View {
 
     @ViewBuilder
     private var queueContent: some View {
-        let queued = captures.filter { $0.status == .queued }
-        let posted = captures.filter { $0.status == .posted }
+        let (queued, posted) = partitionCaptures()
 
         if !queued.isEmpty {
             stickerSectionLabel("Queued · \(queued.count)")
@@ -63,6 +62,18 @@ struct BrowseView: View {
                     .opacity(0.5)
             }
         }
+    }
+
+    private func partitionCaptures() -> (queued: [Capture], posted: [Capture]) {
+        var queued: [Capture] = []
+        var posted: [Capture] = []
+        for capture in captures {
+            switch capture.status {
+            case .queued: queued.append(capture)
+            case .posted: posted.append(capture)
+            }
+        }
+        return (queued, posted)
     }
 
     @ViewBuilder

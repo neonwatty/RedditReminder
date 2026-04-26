@@ -52,3 +52,8 @@ import Foundation
     )
     #expect(!event.isRecurring)
 }
+
+@Test func captureHasEmptyLinksByDefault() {
+    let capture = Capture(text: "Test", subreddits: [])
+    #expect(capture.links.isEmpty)
+}

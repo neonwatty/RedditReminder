@@ -11,6 +11,7 @@ final class Capture {
     var id: UUID
     var text: String
     var notes: String?
+    var links: [String]
     var mediaRefs: [String]
     var status: CaptureStatus
     var createdAt: Date
@@ -22,6 +23,7 @@ final class Capture {
     init(
         text: String,
         notes: String? = nil,
+        links: [String] = [],
         mediaRefs: [String] = [],
         project: Project? = nil,
         subreddits: [Subreddit] = []
@@ -29,6 +31,7 @@ final class Capture {
         self.id = UUID()
         self.text = text
         self.notes = notes
+        self.links = links
         self.mediaRefs = mediaRefs
         self.status = .queued
         self.createdAt = Date()

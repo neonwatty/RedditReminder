@@ -1,9 +1,10 @@
 import SwiftUI
+import SwiftData
 
 struct CaptureFormView: View {
-    let projects: [Project]
-    let subreddits: [Subreddit]
-    let onSave: (String, String?, Project?, [Subreddit], [URL]) -> Void
+    @Query(sort: \Project.name) private var projects: [Project]
+    @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
+    let onSave: (CaptureFormResult) -> Void
     let onCancel: () -> Void
 
     @State private var text = ""
@@ -12,6 +13,8 @@ struct CaptureFormView: View {
     @State private var selectedSubreddits: Set<UUID> = []
     @State private var droppedFiles: [URL] = []
     @State private var isDragOver = false
+    @State private var links: [String] = []
+    @State private var newLinkText = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -52,6 +55,31 @@ struct CaptureFormView: View {
                             .textFieldStyle(.plain)
                             .font(.system(size: 11))
                             .stickerInput()
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("LINKS").font(.system(size: 9, weight: .bold)).tracking(0.5).foregroundStyle(StickerColors.textSecondary)
+                        if !links.isEmpty {
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(Array(links.enumerated()), id: \.offset) { idx, link in
+                                    LinkChipView(url: link, onRemove: { links.remove(at: idx) })
+                                }
+                            }
+                        }
+                        HStack(spacing: 6) {
+                            TextField("Paste a URL...", text: $newLinkText)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 11))
+                                .stickerInput()
+                                .onSubmit { addLink() }
+                            Button(action: addLink) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(newLinkText.isEmpty ? StickerColors.textSecondary : StickerColors.blue)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(newLinkText.isEmpty)
+                        }
                     }
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -111,7 +139,23 @@ struct CaptureFormView: View {
 
     private func save() {
         let subs = subreddits.filter { selectedSubreddits.contains($0.id) }
-        onSave(text, notes.isEmpty ? nil : notes, selectedProject, subs, droppedFiles)
+        onSave(CaptureFormResult(
+            text: text,
+            notes: notes.isEmpty ? nil : notes,
+            links: links,
+            project: selectedProject,
+            subreddits: subs,
+            mediaURLs: droppedFiles
+        ))
+    }
+
+    private func addLink() {
+        let trimmed = newLinkText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        let url = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+        guard URL(string: url) != nil else { return }
+        links.append(url)
+        newLinkText = ""
     }
 
     private var subredditMultiSelect: some View {

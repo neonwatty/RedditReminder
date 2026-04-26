@@ -120,4 +120,58 @@ struct PanelControllerTests {
         pc.toggleCapture()
         #expect(pc.state == .browse)
     }
+
+    // MARK: - goToChannels / channels restoration
+
+    @Test func channelsRestoresToGlance() {
+        testDefaults.set("channels", forKey: "sidebarState")
+        let result = PanelController.restoredState(from: testDefaults)
+        #expect(result == .glance)
+    }
+
+    @Test func goToChannelsSetsState() {
+        let pc = PanelController()
+        pc.state = .browse
+        pc.goToChannels()
+        #expect(pc.state == .channels)
+    }
+
+    @Test func goToChannelsSavesPreviousState() {
+        let pc = PanelController()
+        pc.state = .browse
+        pc.goToChannels()
+        pc.stepDown()
+        #expect(pc.state == .browse)
+    }
+
+    @Test func goToChannelsFromStripSavesGlance() {
+        let pc = PanelController()
+        pc.state = .strip
+        pc.goToChannels()
+        #expect(pc.state == .channels)
+        pc.stepDown()
+        #expect(pc.state == .glance)
+    }
+
+    @Test func goToChannelsWhenAlreadyInChannelsIsNoop() {
+        let pc = PanelController()
+        pc.state = .browse
+        pc.goToChannels()
+        #expect(pc.state == .channels)
+        pc.goToChannels()
+        #expect(pc.state == .channels)
+    }
+
+    @Test func toggleCaptureFromChannels() {
+        let pc = PanelController()
+        pc.state = .channels
+        pc.toggleCapture()
+        #expect(pc.state == .capture)
+    }
+
+    @Test func isWiderThanIncludesChannels() {
+        #expect(SidebarState.channels.isWiderThan(.glance))
+        #expect(!SidebarState.channels.isWiderThan(.browse))
+        #expect(!SidebarState.channels.isWiderThan(.capture))
+    }
 }

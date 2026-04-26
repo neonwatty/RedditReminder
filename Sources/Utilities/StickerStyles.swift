@@ -56,14 +56,15 @@ struct StickerCardModifier: ViewModifier {
       .clipShape(RoundedRectangle(cornerRadius: 10))
       .overlay(
         RoundedRectangle(cornerRadius: 10)
-          .stroke(borderColor, lineWidth: 2)
+          .stroke(borderColor, lineWidth: 3)
       )
-      .shadow(color: borderColor.opacity(0.5), radius: 0, x: 2, y: 2)
+      .shadow(color: borderColor, radius: 0, x: 4, y: 4)
   }
 }
 
 struct StickerButtonModifier: ViewModifier {
   var bgColor: Color = StickerColors.gold
+  @State private var isHovered = false
 
   func body(content: Content) -> some View {
     content
@@ -75,9 +76,17 @@ struct StickerButtonModifier: ViewModifier {
       .clipShape(RoundedRectangle(cornerRadius: 8))
       .overlay(
         RoundedRectangle(cornerRadius: 8)
-          .stroke(StickerColors.border, lineWidth: 2)
+          .stroke(StickerColors.border, lineWidth: 3)
       )
-      .shadow(color: StickerColors.border.opacity(0.5), radius: 0, x: 2, y: 2)
+      .shadow(
+        color: StickerColors.border,
+        radius: 0,
+        x: isHovered ? 4 : 3,
+        y: isHovered ? 4 : 3
+      )
+      .offset(y: isHovered ? -2 : 0)
+      .animation(.easeOut(duration: 0.15), value: isHovered)
+      .onHover { hovering in isHovered = hovering }
   }
 }
 
@@ -89,6 +98,7 @@ struct StickerBadgeModifier: ViewModifier {
       .font(.system(size: 9, weight: .bold))
       .padding(.horizontal, 6)
       .padding(.vertical, 2)
+      .background(color.opacity(0.1))
       .clipShape(Capsule())
       .overlay(
         Capsule()
@@ -105,8 +115,9 @@ struct StickerInputModifier: ViewModifier {
       .clipShape(RoundedRectangle(cornerRadius: 8))
       .overlay(
         RoundedRectangle(cornerRadius: 8)
-          .stroke(StickerColors.border, lineWidth: 2)
+          .stroke(StickerColors.border, lineWidth: 3)
       )
+      .shadow(color: StickerColors.border, radius: 0, x: 3, y: 3)
   }
 }
 

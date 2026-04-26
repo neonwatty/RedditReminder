@@ -14,7 +14,9 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     override func mouseDown(with event: NSEvent) {
-        window?.makeKey()
+        if window?.isKeyWindow == false {
+            window?.makeKey()
+        }
         super.mouseDown(with: event)
     }
 }
@@ -52,7 +54,7 @@ final class PanelController {
         panel.isMovableByWindowBackground = false
         panel.hasShadow = true
         panel.backgroundColor = NSColor(red: 0.07, green: 0.08, blue: 0.14, alpha: 1.0)
-        panel.isOpaque = false
+        panel.isOpaque = true
         panel.contentMinSize = NSSize(width: 1, height: 1)
         panel.minSize = NSSize(width: 1, height: 1)
 
@@ -73,14 +75,14 @@ final class PanelController {
 
         if restored != .glance {
             state = restored
-            animateWidth()
+            animateFrame()
         }
         resetAutoCollapseTimer()
     }
 
     func setState(_ newState: SidebarState) {
         state = newState
-        animateWidth()
+        animateFrame()
         resetAutoCollapseTimer()
     }
 
@@ -91,8 +93,14 @@ final class PanelController {
         setState(.settings)
     }
 
+    func goToChannels() {
+        guard state != .channels else { return }
+        previousState = (state == .strip) ? .glance : state
+        setState(.channels)
+    }
+
     func stepDown() {
-        if state == .settings {
+        if state == .settings || state == .channels {
             setState(previousState)
             return
         }
@@ -128,25 +136,33 @@ final class PanelController {
         switch restored {
         case .capture: return .browse
         case .settings: return .glance
+        case .channels: return .glance
         default: return restored
         }
     }
 
-    private func animateWidth() {
-        guard let panel else { return }
+    private func animateFrame() {
+        guard let panel, let screen = NSScreen.main else { return }
+        let screenFrame = screen.visibleFrame
         let targetWidth = SidebarConstants.width(for: state)
+        let targetHeight = SidebarConstants.height(for: state, screenHeight: screenFrame.height)
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = SidebarConstants.animationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
             var frame = panel.frame
-            let widthDelta = targetWidth - frame.width
 
+            // Width: expand from the anchored edge
+            let widthDelta = targetWidth - frame.width
             if screenEdge == .right {
                 frame.origin.x -= widthDelta
             }
             frame.size.width = targetWidth
+
+            // Height: anchor to top of visible frame
+            frame.size.height = targetHeight
+            frame.origin.y = screenFrame.maxY - targetHeight
 
             panel.animator().setFrame(frame, display: true)
         }
@@ -156,6 +172,7 @@ final class PanelController {
         guard let panel, let screen = NSScreen.main else { return }
         let screenFrame = screen.visibleFrame
         let width = SidebarConstants.width(for: state)
+        let height = SidebarConstants.height(for: state, screenHeight: screenFrame.height)
 
         let x: CGFloat
         if screenEdge == .right {
@@ -166,9 +183,9 @@ final class PanelController {
 
         let frame = NSRect(
             x: x,
-            y: screenFrame.minY,
+            y: screenFrame.maxY - height,
             width: width,
-            height: screenFrame.height
+            height: height
         )
         panel.setFrame(frame, display: true)
     }

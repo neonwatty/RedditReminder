@@ -34,6 +34,19 @@ struct CaptureCardView: View {
                 }
             }
 
+            if !compact && !capture.links.isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(Array(capture.links.prefix(3).enumerated()), id: \.offset) { _, link in
+                        LinkChipView(url: link)
+                    }
+                    if capture.links.count > 3 {
+                        Text("+\(capture.links.count - 3)")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(StickerColors.textSecondary)
+                    }
+                }
+            }
+
             if !compact {
                 captureFooter
             }

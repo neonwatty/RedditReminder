@@ -9,8 +9,6 @@ struct SidebarContainer: View {
     @State private var showDevMenu = false
 
     @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
-    @Query(sort: \Project.name) private var projects: [Project]
-    @Query(sort: \Subreddit.name) private var subreddits: [Subreddit]
     @Query private var allEvents: [SubredditEvent]
 
     @Environment(\.modelContext) private var modelContext
@@ -58,15 +56,14 @@ struct SidebarContainer: View {
                     )
                 case .capture:
                     CaptureFormView(
-                        projects: projects,
-                        subreddits: subreddits,
-                        onSave: { text, notes, optionalProject, subs, mediaURLs in
+                        onSave: { result in
                             let capture = Capture(
-                                text: text,
-                                notes: notes,
-                                mediaRefs: mediaURLs.map(\.lastPathComponent),
-                                project: optionalProject,
-                                subreddits: subs
+                                text: result.text,
+                                notes: result.notes,
+                                links: result.links,
+                                mediaRefs: result.mediaURLs.map(\.lastPathComponent),
+                                project: result.project,
+                                subreddits: result.subreddits
                             )
                             modelContext.insert(capture)
                             do {
@@ -79,6 +76,8 @@ struct SidebarContainer: View {
                         },
                         onCancel: { panelController.setState(.browse) }
                     )
+                case .channels:
+                    ChannelsView()
                 case .settings:
                     SettingsView(panelController: panelController)
                 }
@@ -137,12 +136,29 @@ struct SidebarContainer: View {
 
     private var header: some View {
         HStack {
-            Button(action: { panelController.goToSettings() }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(StickerColors.textSecondary)
+            HStack(spacing: 10) {
+                Button(action: { panelController.goToSettings() }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(
+                            panelController.state == .settings
+                                ? StickerColors.gold
+                                : StickerColors.textSecondary
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button(action: { panelController.goToChannels() }) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(
+                            panelController.state == .channels
+                                ? StickerColors.gold
+                                : StickerColors.textSecondary
+                        )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             Text("RedditReminder")
                 .font(.system(size: 13, weight: .heavy))

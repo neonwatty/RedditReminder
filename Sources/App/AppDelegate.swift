@@ -55,6 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        // Use a fresh context to avoid contention with the view's context,
+        // but stay on @MainActor since SwiftData model objects aren't Sendable.
         let context = ModelContext(container)
 
         let events: [SubredditEvent]
@@ -70,7 +72,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let activeEvents = events.filter(\.isActive)
         timingEngine.refresh(events: activeEvents, captures: captures)
+        scheduleNotifications(activeEvents: activeEvents)
+    }
 
+    private func scheduleNotifications(activeEvents: [SubredditEvent]) {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
         guard notificationsEnabled else {
             notificationService.cancelAll()
@@ -78,9 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        // Track which event IDs have active windows
         var activeEventIds: Set<String> = []
-
         let nudgeEnabled = UserDefaults.standard.bool(forKey: "nudgeWhenEmpty")
 
         for window in timingEngine.upcomingWindows {
@@ -104,7 +107,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        // Cancel notifications for events no longer in the active window set
         let allEventIds = Set(activeEvents.map { $0.id.uuidString })
         let staleIds = allEventIds.subtracting(activeEventIds)
         for staleId in staleIds {

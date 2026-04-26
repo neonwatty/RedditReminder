@@ -12,39 +12,69 @@ enum RRuleHelper {
   static func nextOccurrences(rrule: String, after: Date, count: Int) -> [Date] {
     guard let parsed = parse(rrule) else { return [] }
 
-    var results: [Date] = []
     let cal = Calendar.current
-    var candidate = cal.startOfDay(for: after)
+    let time = cal.dateComponents([.hour, .minute], from: after)
 
-    // Search up to 365 days ahead
-    for _ in 0..<365 {
-      candidate = cal.date(byAdding: .day, value: 1, to: candidate)!
+    switch parsed {
+    case .daily:
+      return nextDailyOccurrences(after: after, time: time, count: count, cal: cal)
+    case .weekly(let targetWeekday):
+      return nextWeeklyOccurrences(after: after, targetWeekday: targetWeekday, time: time, count: count, cal: cal)
+    }
+  }
 
-      switch parsed {
-      case .weekly(let targetWeekday):
-        let weekday = cal.component(.weekday, from: candidate)
-        if weekday == targetWeekday {
-          let time = cal.dateComponents([.hour, .minute], from: after)
-          var components = cal.dateComponents([.year, .month, .day], from: candidate)
-          components.hour = time.hour
-          components.minute = time.minute
-          if let date = cal.date(from: components), date > after {
-            results.append(date)
-          }
-        }
-      case .daily:
-        let time = cal.dateComponents([.hour, .minute], from: after)
-        var components = cal.dateComponents([.year, .month, .day], from: candidate)
-        components.hour = time.hour
-        components.minute = time.minute
-        if let date = cal.date(from: components), date > after {
-          results.append(date)
-        }
+  private static func nextDailyOccurrences(
+    after: Date, time: DateComponents, count: Int, cal: Calendar
+  ) -> [Date] {
+    var results: [Date] = []
+    guard var day = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: after)) else { return [] }
+
+    for _ in 0..<count {
+      var c = cal.dateComponents([.year, .month, .day], from: day)
+      c.hour = time.hour
+      c.minute = time.minute
+      if let date = cal.date(from: c), date > after {
+        results.append(date)
       }
+      guard let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { break }
+      day = nextDay
+    }
+    return results
+  }
 
-      if results.count >= count { break }
+  private static func nextWeeklyOccurrences(
+    after: Date, targetWeekday: Int, time: DateComponents, count: Int, cal: Calendar
+  ) -> [Date] {
+    var results: [Date] = []
+    let currentWeekday = cal.component(.weekday, from: after)
+
+    // Calculate days until the next target weekday (skip today unless
+    // its target time hasn't passed yet)
+    var daysAhead = (targetWeekday - currentWeekday + 7) % 7
+    if daysAhead == 0 { daysAhead = 7 } // same weekday → next week by default
+
+    // Check if today's target time is still in the future
+    if daysAhead == 7 {
+      var todayComponents = cal.dateComponents([.year, .month, .day], from: after)
+      todayComponents.hour = time.hour
+      todayComponents.minute = time.minute
+      if let todayDate = cal.date(from: todayComponents), todayDate > after {
+        daysAhead = 0
+      }
     }
 
+    guard var candidate = cal.date(byAdding: .day, value: daysAhead, to: cal.startOfDay(for: after)) else { return [] }
+
+    for _ in 0..<count {
+      var c = cal.dateComponents([.year, .month, .day], from: candidate)
+      c.hour = time.hour
+      c.minute = time.minute
+      if let date = cal.date(from: c), date > after {
+        results.append(date)
+      }
+      guard let nextCandidate = cal.date(byAdding: .day, value: 7, to: candidate) else { break }
+      candidate = nextCandidate
+    }
     return results
   }
 
