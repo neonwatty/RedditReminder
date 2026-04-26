@@ -26,6 +26,8 @@
 		70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */; };
 		7CD67ED8F5DC8F6C943BE8A6 /* ShortcutOnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0393A914335AAD76177A0BEF /* ShortcutOnboardingCard.swift */; };
 		81C26D97123D840A9130AF7E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB4E56FCDA7A1CB1F24566D /* Constants.swift */; };
+		8DBA29F143961F25741DAA8B /* SidebarHeightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */; };
+		92CC8D6FA4F8AB0BA1C0E71B /* ChannelsStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */; };
 		AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */; };
 		B9D3BFE8CE05FE6BCCB4FF46 /* SidebarContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2907084ECC960F75B01FFF68 /* SidebarContainer.swift */; };
 		C08610209A9D352D685CC62C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A3EA2A16B7A969EEE23612 /* SettingsView.swift */; };
@@ -90,6 +92,8 @@
 		AEE4E14F7A70E1A66FA994A3 /* Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capture.swift; sourceTree = "<group>"; };
 		B338E8D9C979B250564A392E /* QAFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QAFixtures.swift; sourceTree = "<group>"; };
 		B727389070814347602E1AB3 /* TimingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngineTests.swift; sourceTree = "<group>"; };
+		E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarHeightTests.swift; sourceTree = "<group>"; };
+		E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsStateTests.swift; sourceTree = "<group>"; };
 		F5A3EA2A16B7A969EEE23612 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,11 +114,13 @@
 		465002D9A45996043976CEED /* RedditReminderTests */ = {
 			isa = PBXGroup;
 			children = (
+				E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */,
 				560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */,
 				20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */,
 				9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */,
 				4C9729B349E72502E22A9A25 /* PanelControllerTests.swift */,
 				0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */,
+				E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */,
 				B727389070814347602E1AB3 /* TimingEngineTests.swift */,
 			);
 			path = RedditReminderTests;
@@ -289,11 +295,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92CC8D6FA4F8AB0BA1C0E71B /* ChannelsStateTests.swift in Sources */,
 				5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */,
 				70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */,
 				AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */,
 				FF8BF82A6287E5C03DD74E42 /* PanelControllerTests.swift in Sources */,
 				041E25F2F96423AFDC87DC12 /* RRuleHelperTests.swift in Sources */,
+				8DBA29F143961F25741DAA8B /* SidebarHeightTests.swift in Sources */,
 				24F1E695ED63B7FB413361C5 /* TimingEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
