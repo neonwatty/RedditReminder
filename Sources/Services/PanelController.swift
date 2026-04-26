@@ -73,14 +73,14 @@ final class PanelController {
 
         if restored != .glance {
             state = restored
-            animateWidth()
+            animateFrame()
         }
         resetAutoCollapseTimer()
     }
 
     func setState(_ newState: SidebarState) {
         state = newState
-        animateWidth()
+        animateFrame()
         resetAutoCollapseTimer()
     }
 
@@ -139,21 +139,28 @@ final class PanelController {
         }
     }
 
-    private func animateWidth() {
-        guard let panel else { return }
+    private func animateFrame() {
+        guard let panel, let screen = NSScreen.main else { return }
+        let screenFrame = screen.visibleFrame
         let targetWidth = SidebarConstants.width(for: state)
+        let targetHeight = SidebarConstants.height(for: state, screenHeight: screenFrame.height)
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = SidebarConstants.animationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
             var frame = panel.frame
-            let widthDelta = targetWidth - frame.width
 
+            // Width: expand from the anchored edge
+            let widthDelta = targetWidth - frame.width
             if screenEdge == .right {
                 frame.origin.x -= widthDelta
             }
             frame.size.width = targetWidth
+
+            // Height: anchor to top of visible frame
+            frame.size.height = targetHeight
+            frame.origin.y = screenFrame.maxY - targetHeight
 
             panel.animator().setFrame(frame, display: true)
         }
@@ -163,6 +170,7 @@ final class PanelController {
         guard let panel, let screen = NSScreen.main else { return }
         let screenFrame = screen.visibleFrame
         let width = SidebarConstants.width(for: state)
+        let height = SidebarConstants.height(for: state, screenHeight: screenFrame.height)
 
         let x: CGFloat
         if screenEdge == .right {
@@ -173,9 +181,9 @@ final class PanelController {
 
         let frame = NSRect(
             x: x,
-            y: screenFrame.minY,
+            y: screenFrame.maxY - height,
             width: width,
-            height: screenFrame.height
+            height: height
         )
         panel.setFrame(frame, display: true)
     }
