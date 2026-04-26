@@ -1,8 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct CaptureFormView: View {
-    let projects: [Project]
-    let subreddits: [Subreddit]
+    @Query(sort: \Project.name) private var projects: [Project]
+    @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
     let onSave: (String, String?, [String], Project?, [Subreddit], [URL]) -> Void
     let onCancel: () -> Void
 

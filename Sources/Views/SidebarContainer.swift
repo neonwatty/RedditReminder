@@ -9,8 +9,6 @@ struct SidebarContainer: View {
     @State private var showDevMenu = false
 
     @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
-    @Query(sort: \Project.name) private var projects: [Project]
-    @Query(sort: \Subreddit.name) private var subreddits: [Subreddit]
     @Query private var allEvents: [SubredditEvent]
 
     @Environment(\.modelContext) private var modelContext
@@ -58,8 +56,6 @@ struct SidebarContainer: View {
                     )
                 case .capture:
                     CaptureFormView(
-                        projects: projects,
-                        subreddits: subreddits,
                         onSave: { text, notes, links, optionalProject, subs, mediaURLs in
                             let capture = Capture(
                                 text: text,

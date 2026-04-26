@@ -2,11 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct ChannelsView: View {
-    @Query(sort: \Subreddit.name) private var subreddits: [Subreddit]
+    @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
     @Environment(\.modelContext) private var modelContext
 
     @State private var expandedSubredditId: UUID?
     @State private var newSubredditName = ""
+    @State private var draggingSubreddit: Subreddit?
 
     var body: some View {
         ScrollView {
@@ -53,7 +54,8 @@ struct ChannelsView: View {
         let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
         guard !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() }) else { return }
 
-        let sub = Subreddit(name: name)
+        let nextOrder = (subreddits.map(\.sortOrder).max() ?? -1) + 1
+        let sub = Subreddit(name: name, sortOrder: nextOrder)
         modelContext.insert(sub)
         do {
             try modelContext.save()
@@ -70,99 +72,94 @@ struct ChannelsView: View {
         VStack(alignment: .leading, spacing: 6) {
             stickerSectionLabel("Reddit")
             ForEach(subreddits, id: \.id) { sub in
-                if expandedSubredditId == sub.id {
-                    expandedRow(sub)
-                } else {
-                    collapsedRow(sub)
-                }
+                subredditRow(sub)
+                    .onDrag {
+                        draggingSubreddit = sub
+                        return NSItemProvider(object: sub.id.uuidString as NSString)
+                    }
+                    .onDrop(of: [.text], delegate: SubredditDropDelegate(
+                        target: sub,
+                        dragging: $draggingSubreddit,
+                        subreddits: subreddits,
+                        modelContext: modelContext
+                    ))
             }
         }
     }
 
-    private func collapsedRow(_ sub: Subreddit) -> some View {
-        Button(action: { expandedSubredditId = sub.id }) {
-            HStack {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(StickerColors.reddit)
-                        .frame(width: 8, height: 8)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
-                        .foregroundStyle(StickerColors.textSecondary)
-                    Text(sub.name)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(StickerColors.textPrimary)
+    private func subredditRow(_ sub: Subreddit) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header — always visible, toggles expand/collapse
+            Button(action: { toggleExpanded(sub) }) {
+                HStack {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(StickerColors.reddit)
+                            .frame(width: 8, height: 8)
+                        Image(systemName: expandedSubredditId == sub.id ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 10))
+                            .foregroundStyle(expandedSubredditId == sub.id ? StickerColors.gold : StickerColors.textSecondary)
+                        Text(sub.name)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(StickerColors.textPrimary)
+                    }
+                    Spacer()
+                    if expandedSubredditId == sub.id {
+                        Button(action: { deleteSubreddit(sub) }) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 11))
+                                .foregroundStyle(StickerColors.reddit)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        Text(peakDaysSummary(sub))
+                            .foregroundStyle(StickerColors.textSecondary)
+                            .stickerBadge(color: StickerColors.border)
+                    }
                 }
-                Spacer()
-                Text(peakDaysSummary(sub))
-                    .foregroundStyle(StickerColors.textSecondary)
-                    .stickerBadge(color: StickerColors.border)
+            }
+            .buttonStyle(.plain)
+            .padding(10)
+
+            // Expanded detail — conditionally shown
+            if expandedSubredditId == sub.id {
+                VStack(alignment: .leading, spacing: 10) {
+                    StickerDivider()
+
+                    // Peak Days
+                    stickerSectionLabel("Peak Days", size: 9)
+                    peakDayChips(sub)
+
+                    // Peak Hours
+                    stickerSectionLabel("Peak Hours (UTC)", size: 9)
+                    peakHourChips(sub)
+
+                    // Reset
+                    HStack {
+                        Spacer()
+                        Button(action: { resetDefaults(sub) }) {
+                            Text("Reset to defaults")
+                                .font(.system(size: 9))
+                                .foregroundStyle(StickerColors.textSecondary)
+                                .underline()
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
             }
         }
-        .buttonStyle(.plain)
-        .padding(10)
-        .stickerCard()
+        .stickerCard(borderColor: expandedSubredditId == sub.id ? StickerColors.gold : StickerColors.border)
+        .animation(.easeInOut(duration: 0.2), value: expandedSubredditId)
     }
 
-    private func expandedRow(_ sub: Subreddit) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(StickerColors.reddit)
-                        .frame(width: 8, height: 8)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundStyle(StickerColors.gold)
-                    Text(sub.name)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(StickerColors.textPrimary)
-                }
-                Spacer()
-                Button(action: { deleteSubreddit(sub) }) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 11))
-                        .foregroundStyle(StickerColors.reddit)
-                }
-                .buttonStyle(.plain)
-            }
-
-            // Name
-            stickerSectionLabel("Name", size: 9)
-            TextField("Subreddit name", text: Binding(
-                get: { sub.name },
-                set: { newName in
-                    sub.name = newName
-                    try? modelContext.save()
-                }
-            ))
-            .textFieldStyle(.plain)
-            .font(.system(size: 12))
-            .stickerInput()
-
-            // Peak Days
-            stickerSectionLabel("Peak Days", size: 9)
-            peakDayChips(sub)
-
-            // Peak Hours
-            stickerSectionLabel("Peak Hours (UTC)", size: 9)
-            peakHourChips(sub)
-
-            // Reset
-            HStack {
-                Spacer()
-                Button(action: { resetDefaults(sub) }) {
-                    Text("Reset to defaults")
-                        .font(.system(size: 9))
-                        .foregroundStyle(StickerColors.textSecondary)
-                        .underline()
-                }
-                .buttonStyle(.plain)
-            }
+    private func toggleExpanded(_ sub: Subreddit) {
+        if expandedSubredditId == sub.id {
+            expandedSubredditId = nil
+        } else {
+            expandedSubredditId = sub.id
         }
-        .padding(12)
-        .stickerCard(borderColor: StickerColors.gold)
-        .onTapGesture { } // absorb taps so card doesn't collapse
     }
 
     // MARK: - Peak Day Chips
@@ -304,5 +301,38 @@ struct ChannelsView: View {
         .padding(10)
         .stickerCard()
         .opacity(0.4)
+    }
+}
+
+// MARK: - Drag & Drop
+
+private struct SubredditDropDelegate: DropDelegate {
+    let target: Subreddit
+    @Binding var dragging: Subreddit?
+    let subreddits: [Subreddit]
+    let modelContext: ModelContext
+
+    func performDrop(info: DropInfo) -> Bool {
+        dragging = nil
+        return true
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let source = dragging, source.id != target.id else { return }
+        guard let fromIndex = subreddits.firstIndex(where: { $0.id == source.id }),
+              let toIndex = subreddits.firstIndex(where: { $0.id == target.id }) else { return }
+
+        var reordered = subreddits
+        let item = reordered.remove(at: fromIndex)
+        reordered.insert(item, at: toIndex)
+
+        for (i, sub) in reordered.enumerated() {
+            sub.sortOrder = i
+        }
+        try? modelContext.save()
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
 }

@@ -7,18 +7,20 @@ enum QAFixtures {
     clearAll(context: context)
 
     // 4 subreddits — some with peak overrides, some without
-    let sideProject = Subreddit(name: "r/SideProject")
+    let sideProject = Subreddit(name: "r/SideProject", sortOrder: 0)
     let swiftUI = Subreddit(
       name: "r/SwiftUI",
+      sortOrder: 1,
       peakDaysOverride: ["mon", "wed", "fri"],
       peakHoursUtcOverride: [14, 15, 16, 17, 18]
     )
     let macOS = Subreddit(
       name: "r/macOS",
+      sortOrder: 2,
       peakDaysOverride: ["tue", "thu"],
       peakHoursUtcOverride: [10, 11, 12, 13, 14]
     )
-    let iosProg = Subreddit(name: "r/iOSProgramming")
+    let iosProg = Subreddit(name: "r/iOSProgramming", sortOrder: 3)
     context.insert(sideProject)
     context.insert(swiftUI)
     context.insert(macOS)
