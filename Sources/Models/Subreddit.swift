@@ -8,7 +8,7 @@ final class Subreddit {
     var peakDaysOverride: [String]?
     var peakHoursUtcOverride: [Int]?
 
-    @Relationship(inverse: \SubredditEvent.subreddit)
+    @Relationship(deleteRule: .cascade, inverse: \SubredditEvent.subreddit)
     var events: [SubredditEvent]
 
     init(
