@@ -16,6 +16,7 @@ struct SettingsView: View {
     @AppStorage("nudgeWhenEmpty") private var nudgeWhenEmpty = true
 
     @State private var newSubredditName = ""
+    @State private var subredditToDelete: Subreddit?
 
     private func syncAutoCollapse() {
         guard let state = SidebarState(rawValue: restingState) else {
@@ -97,7 +98,7 @@ struct SettingsView: View {
                             .font(.system(size: 12))
                             .foregroundStyle(StickerColors.textPrimary)
                         Spacer()
-                        Button(action: { deleteSubreddit(sub) }) {
+                        Button(action: { subredditToDelete = sub }) {
                             Image(systemName: "trash")
                                 .font(.system(size: 11))
                                 .foregroundStyle(StickerColors.reddit)
@@ -108,6 +109,22 @@ struct SettingsView: View {
                 }
             }
             .padding(16)
+        }
+        .alert("Delete Subreddit?", isPresented: Binding(
+            get: { subredditToDelete != nil },
+            set: { if !$0 { subredditToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { subredditToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let sub = subredditToDelete {
+                    deleteSubreddit(sub)
+                    subredditToDelete = nil
+                }
+            }
+        } message: {
+            if let sub = subredditToDelete {
+                Text("Remove \(sub.name) and its events?")
+            }
         }
     }
 
@@ -129,19 +146,21 @@ struct SettingsView: View {
         }
     }
 
-    private var canAddSubreddit: Bool {
+    /// Returns the normalized name if valid and not a duplicate, nil otherwise.
+    private func validatedSubredditName() -> String? {
         let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return false }
-        let normalized = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
-        return !subreddits.contains { $0.name.lowercased() == normalized.lowercased() }
+        guard !trimmed.isEmpty else { return nil }
+        let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
+        guard !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() }) else { return nil }
+        return name
+    }
+
+    private var canAddSubreddit: Bool {
+        validatedSubredditName() != nil
     }
 
     private func addSubreddit() {
-        let trimmed = newSubredditName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        let name = trimmed.hasPrefix("r/") ? trimmed : "r/\(trimmed)"
-
-        guard !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() }) else { return }
+        guard let name = validatedSubredditName() else { return }
 
         let sub = Subreddit(name: name)
         modelContext.insert(sub)
