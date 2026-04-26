@@ -60,10 +60,11 @@ struct SidebarContainer: View {
                     CaptureFormView(
                         projects: projects,
                         subreddits: subreddits,
-                        onSave: { text, notes, optionalProject, subs, mediaURLs in
+                        onSave: { text, notes, links, optionalProject, subs, mediaURLs in
                             let capture = Capture(
                                 text: text,
                                 notes: notes,
+                                links: links,
                                 mediaRefs: mediaURLs.map(\.lastPathComponent),
                                 project: optionalProject,
                                 subreddits: subs

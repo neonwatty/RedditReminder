@@ -22,6 +22,7 @@
 		42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
 		4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599273192FBCFDD93D1241B0 /* Project.swift */; };
 		53913174FE1B50F35E71F943 /* StripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C6D67956AA868C08076F76 /* StripView.swift */; };
+		55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */; };
 		5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */; };
 		59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1122ADEB6045619C303C31 /* MediaStore.swift */; };
 		70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */; };
@@ -97,6 +98,7 @@
 		E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarHeightTests.swift; sourceTree = "<group>"; };
 		E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsStateTests.swift; sourceTree = "<group>"; };
 		F5A3EA2A16B7A969EEE23612 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkChipView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -201,6 +203,7 @@
 				32CD3A5FC6E7983BBA907CB4 /* CaptureFormView.swift */,
 				713CD0ACC229354496B78963 /* EventCardView.swift */,
 				3D98059F1147872F9CF81808 /* GlanceView.swift */,
+				FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */,
 				F5A3EA2A16B7A969EEE23612 /* SettingsView.swift */,
 				0393A914335AAD76177A0BEF /* ShortcutOnboardingCard.swift */,
 				2907084ECC960F75B01FFF68 /* SidebarContainer.swift */,
@@ -327,6 +330,7 @@
 				E0718F0D864C93466EDE5853 /* GlanceView.swift in Sources */,
 				EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */,
 				E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */,
+				55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
 				C39F0B757AA89B7E596CE04B /* PanelController.swift in Sources */,
