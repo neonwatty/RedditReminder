@@ -92,7 +92,7 @@ final class PanelController {
     }
 
     func stepDown() {
-        if state == .settings {
+        if state == .settings || state == .channels {
             setState(previousState)
             return
         }
@@ -128,6 +128,7 @@ final class PanelController {
         switch restored {
         case .capture: return .browse
         case .settings: return .glance
+        case .channels: return .glance
         default: return restored
         }
     }

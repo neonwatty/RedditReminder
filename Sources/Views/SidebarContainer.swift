@@ -79,6 +79,8 @@ struct SidebarContainer: View {
                         },
                         onCancel: { panelController.setState(.browse) }
                     )
+                case .channels:
+                    Text("Channels") // placeholder — replaced in Task 9
                 case .settings:
                     SettingsView(panelController: panelController)
                 }
