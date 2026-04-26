@@ -91,6 +91,12 @@ final class PanelController {
         setState(.settings)
     }
 
+    func goToChannels() {
+        guard state != .channels else { return }
+        previousState = (state == .strip) ? .glance : state
+        setState(.channels)
+    }
+
     func stepDown() {
         if state == .settings || state == .channels {
             setState(previousState)
