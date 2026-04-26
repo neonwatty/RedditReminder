@@ -47,11 +47,12 @@ enum RRuleHelper {
     var results: [Date] = []
     let currentWeekday = cal.component(.weekday, from: after)
 
-    // Calculate days until the target weekday (1-7 days, never 0)
+    // Calculate days until the next target weekday (skip today unless
+    // its target time hasn't passed yet)
     var daysAhead = (targetWeekday - currentWeekday + 7) % 7
-    if daysAhead == 0 { daysAhead = 7 } // same weekday → next week
+    if daysAhead == 0 { daysAhead = 7 } // same weekday → next week by default
 
-    // But check if today's target time is still in the future
+    // Check if today's target time is still in the future
     if daysAhead == 7 {
       var todayComponents = cal.dateComponents([.year, .month, .day], from: after)
       todayComponents.hour = time.hour; todayComponents.minute = time.minute

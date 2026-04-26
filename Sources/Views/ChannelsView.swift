@@ -19,6 +19,7 @@ struct ChannelsView: View {
             }
             .padding(12)
         }
+        .onDisappear { savePendingChanges() }
     }
 
     // MARK: - Add Row
@@ -76,8 +77,7 @@ struct ChannelsView: View {
                     sub: sub,
                     isExpanded: expandedSubredditId == sub.id,
                     onToggle: { toggleExpanded(sub) },
-                    onDelete: { deleteSubreddit(sub) },
-                    onCollapseSave: { savePendingChanges() }
+                    onDelete: { deleteSubreddit(sub) }
                 )
                 .onDrag {
                     draggingSubreddit = sub
@@ -108,7 +108,12 @@ struct ChannelsView: View {
 
     private func savePendingChanges() {
         if modelContext.hasChanges {
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                modelContext.rollback()
+                NSLog("RedditReminder: failed to save pending channel changes: \(error)")
+            }
         }
     }
 
@@ -168,14 +173,13 @@ struct ChannelsView: View {
     }
 }
 
-// MARK: - Extracted SubredditRow (own Equatable boundary)
+// MARK: - SubredditRow (isolates re-evaluation scope)
 
 private struct SubredditRow: View {
     @Bindable var sub: Subreddit
     let isExpanded: Bool
     let onToggle: () -> Void
     let onDelete: () -> Void
-    let onCollapseSave: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -356,7 +360,12 @@ private struct SubredditDropDelegate: DropDelegate {
         for (i, sub) in reordered.enumerated() {
             sub.sortOrder = i
         }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            NSLog("RedditReminder: failed to save subreddit reorder: \(error)")
+        }
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {

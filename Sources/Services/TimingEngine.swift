@@ -43,7 +43,7 @@ final class TimingEngine {
         let now = Date()
         let horizon = now.addingTimeInterval(24 * 3600)
 
-        // Pre-index: build a set of subreddit IDs per queued capture once,
+        // Pre-index: count queued captures per subreddit ID once,
         // then look up by subreddit ID in O(1) instead of O(captures × subreddits).
         var queuedCountBySubredditId: [UUID: Int] = [:]
         for capture in captures where capture.status == .queued {

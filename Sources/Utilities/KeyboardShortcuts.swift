@@ -6,6 +6,7 @@ final class GlobalShortcut {
   private var eventTap: CFMachPort?
   private var runLoopSource: CFRunLoopSource?
   private var tapThread: Thread?
+  private var tapRunLoop: CFRunLoop?
   private var handler: (() -> Void)?
 
   func register(handler: @escaping () -> Void) {
@@ -39,9 +40,11 @@ final class GlobalShortcut {
 
     // Run the event tap on a dedicated background thread to avoid
     // blocking the main thread on every system-wide keystroke.
-    let thread = Thread {
-      guard let source = self.runLoopSource else { return }
-      CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+    let thread = Thread { [weak self] in
+      guard let source = self?.runLoopSource else { return }
+      let rl = CFRunLoopGetCurrent()
+      self?.tapRunLoop = rl
+      CFRunLoopAddSource(rl, source, .commonModes)
       CGEvent.tapEnable(tap: tap, enable: true)
       CFRunLoopRun()
     }
@@ -55,13 +58,13 @@ final class GlobalShortcut {
     if let tap = eventTap {
       CGEvent.tapEnable(tap: tap, enable: false)
     }
-    if let source = runLoopSource {
-      // Stop the background run loop
-      CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+    if let rl = tapRunLoop {
+      CFRunLoopStop(rl)
     }
     tapThread?.cancel()
     eventTap = nil
     runLoopSource = nil
+    tapRunLoop = nil
     tapThread = nil
     handler = nil
   }
