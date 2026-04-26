@@ -6,47 +6,73 @@ enum QAFixtures {
   static func seed(context: ModelContext) {
     clearAll(context: context)
 
-    // 3 subreddits
+    // 4 subreddits — some with peak overrides, some without
     let sideProject = Subreddit(name: "r/SideProject")
-    let swiftUI = Subreddit(name: "r/SwiftUI")
-    let macOS = Subreddit(name: "r/macOS")
+    let swiftUI = Subreddit(
+      name: "r/SwiftUI",
+      peakDaysOverride: ["mon", "wed", "fri"],
+      peakHoursUtcOverride: [14, 15, 16, 17, 18]
+    )
+    let macOS = Subreddit(
+      name: "r/macOS",
+      peakDaysOverride: ["tue", "thu"],
+      peakHoursUtcOverride: [10, 11, 12, 13, 14]
+    )
+    let iosProg = Subreddit(name: "r/iOSProgramming")
     context.insert(sideProject)
     context.insert(swiftUI)
     context.insert(macOS)
+    context.insert(iosProg)
 
-    // 1 project linking 2 subreddits
+    // Project
     let project = Project(name: "BullhornApp", projectDescription: "Social media scheduler")
     context.insert(project)
 
-    // 5 captures: 3 queued, 2 posted
+    // Captures with varying link counts
     let c1 = Capture(
-      text: "Just shipped v2 with new scheduling engine", project: project,
-      subreddits: [sideProject, swiftUI])
+      text: "Just shipped v2 with new scheduling engine",
+      links: ["https://github.com/neonwatty/bullhorn/releases/v2.0"],
+      project: project,
+      subreddits: [sideProject, swiftUI]
+    )
     context.insert(c1)
 
     let c2 = Capture(
-      text: "Built a macOS sidebar for Reddit posting reminders", project: project,
-      subreddits: [sideProject, macOS])
+      text: "Built a macOS sidebar for Reddit posting reminders",
+      links: [
+        "https://github.com/neonwatty/reddit-reminder",
+        "https://reddit-reminder.app"
+      ],
+      project: project,
+      subreddits: [sideProject, macOS]
+    )
     context.insert(c2)
 
     let c3 = Capture(
-      text: "SwiftData + NSPanel: lessons from building a floating sidebar", project: project,
-      subreddits: [swiftUI])
+      text: "SwiftData + NSPanel: lessons from building a floating sidebar",
+      project: project,
+      subreddits: [swiftUI]
+    )
     context.insert(c3)
 
     let c4 = Capture(
-      text: "How I use sticker bomb design in a native macOS app", project: project,
-      subreddits: [macOS])
+      text: "How I use sticker bomb design in a native macOS app",
+      project: project,
+      subreddits: [macOS]
+    )
     c4.markAsPosted()
     context.insert(c4)
 
     let c5 = Capture(
-      text: "XcodeGen + Makefile: reproducible macOS builds", project: project,
-      subreddits: [swiftUI, macOS])
+      text: "XcodeGen + Makefile: reproducible macOS builds",
+      links: ["https://github.com/neonwatty/reddit-reminder/blob/main/Makefile"],
+      project: project,
+      subreddits: [swiftUI, macOS]
+    )
     c5.markAsPosted()
     context.insert(c5)
 
-    // 2 events: one upcoming (7 days), one overdue (yesterday)
+    // Events
     let upcoming = SubredditEvent(
       name: "Weekly SideProject",
       subreddit: sideProject,
