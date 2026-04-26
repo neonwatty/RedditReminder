@@ -54,7 +54,7 @@ final class PanelController {
         panel.isMovableByWindowBackground = false
         panel.hasShadow = true
         panel.backgroundColor = NSColor(red: 0.07, green: 0.08, blue: 0.14, alpha: 1.0)
-        panel.isOpaque = false
+        panel.isOpaque = true
         panel.contentMinSize = NSSize(width: 1, height: 1)
         panel.minSize = NSSize(width: 1, height: 1)
 
