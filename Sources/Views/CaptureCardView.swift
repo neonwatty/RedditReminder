@@ -5,6 +5,8 @@ struct CaptureCardView: View {
     let capture: Capture
     var urgency: UrgencyLevel = .none
     var onTap: (() -> Void)? = nil
+    var onMarkPosted: (() -> Void)? = nil
+    var onDelete: (() -> Void)? = nil
 
     var body: some View {
         Button(action: { onTap?() }) {
@@ -47,6 +49,12 @@ struct CaptureCardView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .contextMenu {
+            Button("Edit") { onTap?() }
+            Button("Mark as Posted") { onMarkPosted?() }
+            Divider()
+            Button("Delete", role: .destructive) { onDelete?() }
+        }
     }
 
     private var urgencyDotColor: Color? {
