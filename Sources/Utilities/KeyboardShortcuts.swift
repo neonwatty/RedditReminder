@@ -1,21 +1,23 @@
 @preconcurrency import CoreFoundation
 import AppKit
 import Carbon.HIToolbox
+import os
 
 @MainActor
 final class GlobalShortcut {
   private var eventTap: CFMachPort?
   private var tapThread: Thread?
 
-  // These properties are written/read across isolation boundaries (main thread
-  // ↔ background event-tap thread). Access is safe because register() completes
-  // before the thread reads, and unregister() runs after disabling the tap.
-  private nonisolated(unsafe) var runLoopSource: CFRunLoopSource?
-  private nonisolated(unsafe) var tapRunLoop: CFRunLoop?
-  private nonisolated(unsafe) var handler: (() -> Void)?
+  private struct TapState: Sendable {
+    var runLoopSource: CFRunLoopSource?
+    var tapRunLoop: CFRunLoop?
+    var handler: (@Sendable () -> Void)?
+  }
 
-  func register(handler: @escaping () -> Void) {
-    self.handler = handler
+  private let state = OSAllocatedUnfairLock(initialState: TapState())
+
+  func register(handler: @escaping @Sendable () -> Void) {
+    state.withLock { $0.handler = handler }
 
     let mask: CGEventMask = (1 << CGEventType.keyDown.rawValue)
     let callback: CGEventTapCallBack = { proxy, type, event, refcon in
@@ -42,14 +44,12 @@ final class GlobalShortcut {
 
     eventTap = tap
     let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-    runLoopSource = source
+    state.withLock { $0.runLoopSource = source }
 
-    // Capture locals for the thread closure so it doesn't cross isolation
-    // boundaries to access @MainActor properties at runtime.
-    let thread = Thread { [weak self] in
+    let thread = Thread { [state] in
       guard let source else { return }
       let rl = CFRunLoopGetCurrent()
-      self?.tapRunLoop = rl
+      state.withLock { $0.tapRunLoop = rl }
       CFRunLoopAddSource(rl, source, .commonModes)
       CGEvent.tapEnable(tap: tap, enable: true)
       CFRunLoopRun()
@@ -64,15 +64,18 @@ final class GlobalShortcut {
     if let tap = eventTap {
       CGEvent.tapEnable(tap: tap, enable: false)
     }
-    if let rl = tapRunLoop {
+    let rl = state.withLock { $0.tapRunLoop }
+    if let rl {
       CFRunLoopStop(rl)
     }
     tapThread?.cancel()
     eventTap = nil
-    runLoopSource = nil
-    tapRunLoop = nil
+    state.withLock {
+      $0.runLoopSource = nil
+      $0.tapRunLoop = nil
+      $0.handler = nil
+    }
     tapThread = nil
-    handler = nil
   }
 
   private nonisolated func handleEvent(
@@ -88,8 +91,9 @@ final class GlobalShortcut {
     let isR = keyCode == 15
 
     if isCmd && isShift && isR {
-      Task { @MainActor in
-        self.handler?()
+      let handler = state.withLock { $0.handler }
+      if let handler {
+        Task { @MainActor in handler() }
       }
       return nil  // consume the event
     }

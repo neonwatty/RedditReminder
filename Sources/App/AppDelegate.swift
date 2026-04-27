@@ -11,12 +11,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var modelContainer: ModelContainer?
 
     private let globalShortcut = GlobalShortcut()
-    private var refreshTimer: Timer?
+    private var refreshTask: Task<Void, Never>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Register global shortcut
         globalShortcut.register { [weak self] in
-            self?.menuBarController.togglePopover()
+            MainActor.assumeIsolated {
+                self?.menuBarController.togglePopover()
+            }
         }
 
         // Request notification permission
@@ -24,25 +26,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             _ = await notificationService.requestPermission()
         }
 
-        // Start 5-minute refresh timer
-        startRefreshTimer()
+        // Start 5-minute refresh loop
+        startRefreshLoop()
 
-        NSLog("RedditReminder: launched, ⌘⇧R registered, refresh timer started")
+        NSLog("RedditReminder: launched, ⌘⇧R registered, refresh loop started")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         globalShortcut.unregister()
-        refreshTimer?.invalidate()
+        refreshTask?.cancel()
     }
 
-    private func startRefreshTimer() {
-        refreshTimer?.invalidate()
-        refreshTimer = Timer.scheduledTimer(
-            withTimeInterval: 5 * 60,
-            repeats: true
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.runRefreshCycle()
+    private func startRefreshLoop() {
+        refreshTask?.cancel()
+        refreshTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(300))
+                guard !Task.isCancelled else { break }
+                runRefreshCycle()
             }
         }
     }
@@ -53,9 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        // Use a fresh context to avoid contention with the view's context,
-        // but stay on @MainActor since SwiftData model objects aren't Sendable.
-        let context = ModelContext(container)
+        let context = container.mainContext
 
         let events: [SubredditEvent]
         let captures: [Capture]
