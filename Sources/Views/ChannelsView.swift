@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ChannelsView: View {
+    let notificationService: NotificationService
     @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
     @Environment(\.modelContext) private var modelContext
 
@@ -122,6 +123,9 @@ struct ChannelsView: View {
     // MARK: - Helpers
 
     private func deleteSubreddit(_ sub: Subreddit) {
+        for event in sub.events {
+            notificationService.cancelNotifications(eventId: event.id.uuidString)
+        }
         withAnimation(.easeInOut(duration: 0.2)) {
             expandedSubredditId = nil
         }

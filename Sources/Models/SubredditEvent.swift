@@ -28,7 +28,7 @@ final class SubredditEvent {
         self.name = name
         self.rrule = rrule
         self.oneOffDate = oneOffDate
-        self.reminderLeadMinutes = reminderLeadMinutes
+        self.reminderLeadMinutes = max(0, reminderLeadMinutes)
         self.isActive = isActive
         self.subreddit = subreddit
     }

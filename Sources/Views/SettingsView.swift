@@ -1,8 +1,8 @@
 import SwiftUI
-import UserNotifications
 
 struct SettingsView: View {
     @Bindable var panelController: PanelController
+    let notificationService: NotificationService
 
     @AppStorage("screenEdge") private var screenEdge = "right"
     @AppStorage("restingState") private var restingState = "glance"
@@ -65,7 +65,7 @@ struct SettingsView: View {
                 Toggle("macOS notifications", isOn: $notificationsEnabled)
                     .onChange(of: notificationsEnabled) { _, enabled in
                         if !enabled {
-                            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                            notificationService.cancelAll()
                         }
                     }
 

@@ -87,7 +87,7 @@ import Foundation
     #expect(engine.upcomingWindows.first?.matchingCaptureCount == 0)
 }
 
-@Test @MainActor func refreshSortsWindowsByFireDate() {
+@Test @MainActor func refreshSortsWindowsByEventDate() {
     let sub = Subreddit(name: "r/SideProject")
 
     let later = Date().addingTimeInterval(12 * 3600)

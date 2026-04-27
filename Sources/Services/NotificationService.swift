@@ -6,10 +6,15 @@ protocol NotificationCenterProtocol: Sendable {
   func add(_ request: UNNotificationRequest, withCompletionHandler handler: (@Sendable (Error?) -> Void)?)
   func removePendingNotificationRequests(withIdentifiers identifiers: [String])
   func removeAllPendingNotificationRequests()
+  func getAuthorizationStatus() async -> UNAuthorizationStatus
 }
 
 extension UNUserNotificationCenter: @retroactive @unchecked Sendable {}
-extension UNUserNotificationCenter: NotificationCenterProtocol {}
+extension UNUserNotificationCenter: NotificationCenterProtocol {
+  func getAuthorizationStatus() async -> UNAuthorizationStatus {
+    await notificationSettings().authorizationStatus
+  }
+}
 
 @MainActor
 final class NotificationService {
@@ -17,6 +22,10 @@ final class NotificationService {
 
   init(center: any NotificationCenterProtocol = UNUserNotificationCenter.current()) {
     self.center = center
+  }
+
+  func checkPermissionStatus() async -> UNAuthorizationStatus {
+    await center.getAuthorizationStatus()
   }
 
   func requestPermission() async -> Bool {
