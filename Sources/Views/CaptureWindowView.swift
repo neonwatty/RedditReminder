@@ -187,26 +187,13 @@ struct CaptureWindowView: View {
                                 .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 1, dash: [6]))
                                 .frame(height: 48)
                                 .overlay {
-                                    Text("Drop images here or ")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(.secondary)
-                                    + Text("browse")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(.blue)
+                                    Text("Drop images here or ").font(.system(size: 11)).foregroundStyle(.secondary)
+                                    + Text("browse").font(.system(size: 11)).foregroundStyle(.blue)
                                 }
                                 .background(isDragOver ? Color.blue.opacity(0.05) : Color.clear)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
-                                    for provider in providers {
-                                        _ = provider.loadObject(ofClass: URL.self) { url, _ in
-                                            if let url {
-                                                Task { @MainActor in
-                                                    droppedFiles.append(url)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    return true
+                                    handleFileDrop(providers)
                                 }
                         }
                     }
@@ -286,7 +273,14 @@ struct CaptureWindowView: View {
         )
         onSave(result)
     }
-
+    private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
+        for provider in providers {
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                if let url { Task { @MainActor in droppedFiles.append(url) } }
+            }
+        }
+        return true
+    }
     private func addLink() {
         let trimmed = newLinkText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -294,7 +288,6 @@ struct CaptureWindowView: View {
         links.append(url)
         newLinkText = ""
     }
-
     private func populateFromMode() {
         if case .edit(let capture) = mode {
             text = capture.text
@@ -303,45 +296,5 @@ struct CaptureWindowView: View {
             selectedSubreddits = Set(capture.subreddits.map(\.id))
             links = capture.links
         }
-    }
-}
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 6
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = computeLayout(proposal: proposal, subviews: subviews)
-        return result.size
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = computeLayout(proposal: proposal, subviews: subviews)
-        for (index, offset) in result.offsets.enumerated() {
-            subviews[index].place(at: CGPoint(x: bounds.minX + offset.x, y: bounds.minY + offset.y), proposal: .unspecified)
-        }
-    }
-
-    private func computeLayout(proposal: ProposedViewSize, subviews: Subviews) -> (offsets: [CGPoint], size: CGSize) {
-        let maxWidth = proposal.width ?? .infinity
-        var offsets: [CGPoint] = []
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var lineHeight: CGFloat = 0
-        var maxX: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if currentX + size.width > maxWidth, currentX > 0 {
-                currentX = 0
-                currentY += lineHeight + spacing
-                lineHeight = 0
-            }
-            offsets.append(CGPoint(x: currentX, y: currentY))
-            lineHeight = max(lineHeight, size.height)
-            currentX += size.width + spacing
-            maxX = max(maxX, currentX - spacing)
-        }
-
-        return (offsets, CGSize(width: maxX, height: currentY + lineHeight))
     }
 }
