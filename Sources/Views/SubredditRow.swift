@@ -7,7 +7,7 @@ struct SubredditRow: View {
     let onToggle: () -> Void
     let onDelete: () -> Void
 
-    private static let redditOrange = Color(red: 1.0, green: 0.27, blue: 0.0)
+    private static let redditOrange = AppColors.redditOrange
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

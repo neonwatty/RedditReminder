@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class MenuBarController {
+final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     var badgeCount: Int = 0
     var isUrgent: Bool = false
     var isPopoverVisible: Bool = false
@@ -12,6 +12,11 @@ final class MenuBarController {
     private var popover: NSPopover?
     private var captureWindow: NSWindow?
     private var preferencesWindow: NSWindow?
+
+    /// Called from PopoverContentView to open new capture; wired to ⌘N.
+    var onNewCapture: (() -> Void)?
+    /// Called from PopoverContentView to open preferences; wired to ⌘,.
+    var onOpenPreferences: (() -> Void)?
 
     func setup(popoverContent: some View) {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -28,9 +33,12 @@ final class MenuBarController {
         pop.behavior = .transient
         pop.animates = true
         pop.contentViewController = NSHostingController(rootView: popoverContent)
+        pop.delegate = self
 
         self.statusItem = item
         self.popover = pop
+
+        installMenuShortcuts()
     }
 
     @objc private func statusItemClicked() {
@@ -49,9 +57,13 @@ final class MenuBarController {
         }
     }
 
-    func showCaptureWindow(content: some View) {
+    func showCaptureWindow(title: String = "New Capture", content: some View) {
+        // Always recreate window content so edit-after-edit shows fresh data
         if let existing = captureWindow {
+            existing.title = title
+            existing.contentView = NSHostingView(rootView: content)
             existing.makeKeyAndOrderFront(nil)
+            dismissPopover()
             return
         }
 
@@ -61,10 +73,11 @@ final class MenuBarController {
             backing: .buffered,
             defer: false
         )
-        window.title = "New Capture"
+        window.title = title
         window.center()
         window.contentView = NSHostingView(rootView: content)
         window.isReleasedWhenClosed = false
+        window.delegate = self
         window.makeKeyAndOrderFront(nil)
 
         dismissPopover()
@@ -92,6 +105,7 @@ final class MenuBarController {
         window.center()
         window.contentView = NSHostingView(rootView: content)
         window.isReleasedWhenClosed = false
+        window.delegate = self
         window.makeKeyAndOrderFront(nil)
 
         dismissPopover()
@@ -113,7 +127,7 @@ final class MenuBarController {
 
         if isUrgent {
             let config = NSImage.SymbolConfiguration(
-                paletteColors: [NSColor(red: 1.0, green: 0.27, blue: 0.0, alpha: 1.0)]
+                paletteColors: [AppColors.reddit]
             )
             button.image = NSImage(
                 systemSymbolName: "r.circle.fill",
@@ -135,5 +149,68 @@ final class MenuBarController {
             button.title = ""
             button.imagePosition = .imageOnly
         }
+    }
+
+    // MARK: - NSPopoverDelegate
+
+    nonisolated func popoverDidClose(_ notification: Notification) {
+        Task { @MainActor in
+            self.isPopoverVisible = false
+        }
+    }
+
+    // MARK: - NSWindowDelegate
+
+    nonisolated func windowWillClose(_ notification: Notification) {
+        let window = notification.object as? NSWindow
+        Task { @MainActor in
+            if window === self.captureWindow {
+                self.captureWindow = nil
+            } else if window === self.preferencesWindow {
+                self.preferencesWindow = nil
+            }
+        }
+    }
+
+    // MARK: - Menu Shortcuts (⌘N, ⌘,)
+
+    private func installMenuShortcuts() {
+        let mainMenu = NSMenu()
+
+        let appMenu = NSMenu()
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = appMenu
+        appMenu.addItem(
+            withTitle: "Preferences…",
+            action: #selector(handleOpenPreferences),
+            keyEquivalent: ","
+        )
+        appMenu.addItem(NSMenuItem.separator())
+        appMenu.addItem(
+            withTitle: "Quit RedditReminder",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+        mainMenu.addItem(appMenuItem)
+
+        let fileMenu = NSMenu(title: "File")
+        let fileMenuItem = NSMenuItem()
+        fileMenuItem.submenu = fileMenu
+        fileMenu.addItem(
+            withTitle: "New Capture",
+            action: #selector(handleNewCapture),
+            keyEquivalent: "n"
+        )
+        mainMenu.addItem(fileMenuItem)
+
+        NSApp.mainMenu = mainMenu
+    }
+
+    @objc private func handleNewCapture() {
+        onNewCapture?()
+    }
+
+    @objc private func handleOpenPreferences() {
+        onOpenPreferences?()
     }
 }

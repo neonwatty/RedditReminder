@@ -1,9 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// Backward-compatibility alias for old callers (SidebarContainer)
-typealias ChannelsView = ChannelsTabView
-
 struct ChannelsTabView: View {
     let notificationService: NotificationService
 
@@ -32,11 +29,11 @@ struct ChannelsTabView: View {
                 Button(action: addSubreddit) {
                     Image(systemName: "plus")
                         .font(.system(size: 14, weight: .light))
-                        .foregroundStyle(canAdd ? Color(red: 1.0, green: 0.27, blue: 0.0) : .secondary)
+                        .foregroundStyle(canAdd ? AppColors.redditOrange : .secondary)
                         .frame(width: 26, height: 26)
                         .background(
                             canAdd
-                                ? Color(red: 1.0, green: 0.27, blue: 0.0).opacity(0.15)
+                                ? AppColors.redditOrange.opacity(0.15)
                                 : Color.clear
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 6))

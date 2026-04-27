@@ -11,7 +11,7 @@ struct PreferencesView: View {
         case notifications = "Notifications"
     }
 
-    private static let redditOrange = Color(red: 1.0, green: 0.27, blue: 0.0)
+    private static let redditOrange = AppColors.redditOrange
 
     var body: some View {
         VStack(spacing: 0) {

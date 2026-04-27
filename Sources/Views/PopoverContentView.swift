@@ -49,6 +49,8 @@ struct PopoverContentView: View {
         .frame(width: 350)
         .onAppear {
             timingEngine.refresh(events: activeEvents, captures: captures)
+            menuBarController.onNewCapture = { [self] in openNewCapture() }
+            menuBarController.onOpenPreferences = { [self] in openPreferences() }
         }
         .onChange(of: captures.count) {
             timingEngine.refresh(events: activeEvents, captures: captures)
@@ -74,7 +76,7 @@ struct PopoverContentView: View {
             Button(action: openNewCapture) {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .light))
-                    .foregroundStyle(Color(red: 1.0, green: 0.27, blue: 0.0))
+                    .foregroundStyle(AppColors.redditOrange)
             }
             .buttonStyle(.plain)
             .padding(.leading, 8)
@@ -107,7 +109,7 @@ struct PopoverContentView: View {
                 .foregroundStyle(.secondary)
             Button("+ New Capture", action: openNewCapture)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color(red: 1.0, green: 0.27, blue: 0.0))
+                .foregroundStyle(AppColors.redditOrange)
                 .buttonStyle(.plain)
             Spacer()
         }
@@ -127,7 +129,7 @@ struct PopoverContentView: View {
         )
         .modelContainer(modelContext.container)
 
-        menuBarController.showCaptureWindow(content: formView)
+        menuBarController.showCaptureWindow(title: "New Capture", content: formView)
     }
 
     private func openCaptureForEditing(_ capture: Capture) {
@@ -143,7 +145,7 @@ struct PopoverContentView: View {
         )
         .modelContainer(modelContext.container)
 
-        menuBarController.showCaptureWindow(content: formView)
+        menuBarController.showCaptureWindow(title: "Edit Capture", content: formView)
     }
 
     private func openPreferences() {

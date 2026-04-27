@@ -18,7 +18,7 @@ struct CaptureCardView: View {
                         if let sub = capture.subreddits.first {
                             Text(sub.name)
                                 .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(Color(red: 1.0, green: 0.27, blue: 0.0))
+                                .foregroundStyle(AppColors.redditOrange)
                         }
 
                         if !capture.links.isEmpty || !capture.mediaRefs.isEmpty || capture.notes != nil {

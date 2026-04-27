@@ -4,7 +4,7 @@ struct EventBannerView: View {
     let upcomingWindows: [TimingEngine.UpcomingWindow]
     var onTap: ((TimingEngine.UpcomingWindow) -> Void)? = nil
 
-    private static let redditOrange = Color(red: 1.0, green: 0.27, blue: 0.0)
+    private static let redditOrange = AppColors.redditOrange
 
     var body: some View {
         if let next = upcomingWindows.first {
@@ -71,9 +71,13 @@ struct EventBannerView: View {
         }
     }
 
+    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
     private func relativeTime(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
     }
 }
