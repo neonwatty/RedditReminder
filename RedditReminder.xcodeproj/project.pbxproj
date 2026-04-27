@@ -22,6 +22,7 @@
 		35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA306067C4690F4D1CDAC2D /* Subreddit.swift */; };
 		3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0972EE8B384E16C0A49F8555 /* AppDelegate.swift */; };
 		42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
+		474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A523CACB82BF88E46FD3E /* MenuBarController.swift */; };
 		4D52E2A23BEE6747615CD993 /* SubredditRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */; };
 		4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599273192FBCFDD93D1241B0 /* Project.swift */; };
 		53913174FE1B50F35E71F943 /* StripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C6D67956AA868C08076F76 /* StripView.swift */; };
@@ -36,6 +37,7 @@
 		81C26D97123D840A9130AF7E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB4E56FCDA7A1CB1F24566D /* Constants.swift */; };
 		8DBA29F143961F25741DAA8B /* SidebarHeightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */; };
 		92CC8D6FA4F8AB0BA1C0E71B /* ChannelsStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */; };
+		9308DC394CD017D3E527EF59 /* MenuBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */; };
 		AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */; };
 		B104E0E65566B8E4EFDFE190 /* EdgeCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B476048A63AF84F93F85A4 /* EdgeCaseTests.swift */; };
 		B3807D895E708C33AAA6D242 /* HeuristicsTimezoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274444AB5DE03A36248F96F2 /* HeuristicsTimezoneTests.swift */; };
@@ -112,9 +114,11 @@
 		AE1122ADEB6045619C303C31 /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		AEE4E14F7A70E1A66FA994A3 /* Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capture.swift; sourceTree = "<group>"; };
 		B338E8D9C979B250564A392E /* QAFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QAFixtures.swift; sourceTree = "<group>"; };
+		B58A523CACB82BF88E46FD3E /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		B727389070814347602E1AB3 /* TimingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngineTests.swift; sourceTree = "<group>"; };
 		BCDF7C9AE7CE03536B3CF9FF /* CRUDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRUDTests.swift; sourceTree = "<group>"; };
 		E10A5C24D239D46D9C9057BC /* SidebarHeightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarHeightTests.swift; sourceTree = "<group>"; };
+		E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarControllerTests.swift; sourceTree = "<group>"; };
 		E64D4C9A714683AEFF10B1BC /* ChannelsStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsStateTests.swift; sourceTree = "<group>"; };
 		F2B476048A63AF84F93F85A4 /* EdgeCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeCaseTests.swift; sourceTree = "<group>"; };
 		F5A3EA2A16B7A969EEE23612 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -145,6 +149,7 @@
 				560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */,
 				274444AB5DE03A36248F96F2 /* HeuristicsTimezoneTests.swift */,
 				20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */,
+				E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */,
 				9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */,
 				3D5124BE8F9D4637788D2557 /* NotificationServiceTests.swift */,
 				4C9729B349E72502E22A9A25 /* PanelControllerTests.swift */,
@@ -205,6 +210,7 @@
 			children = (
 				6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */,
 				AE1122ADEB6045619C303C31 /* MediaStore.swift */,
+				B58A523CACB82BF88E46FD3E /* MenuBarController.swift */,
 				050BB3D18ECE13E70E7CED42 /* NotificationService.swift */,
 				5FD6C46310DB68B2C81414AF /* PanelController.swift */,
 				4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */,
@@ -340,6 +346,7 @@
 				5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */,
 				B3807D895E708C33AAA6D242 /* HeuristicsTimezoneTests.swift in Sources */,
 				70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */,
+				9308DC394CD017D3E527EF59 /* MenuBarControllerTests.swift in Sources */,
 				AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */,
 				7AB3BE6F02539F0147F73E23 /* NotificationServiceTests.swift in Sources */,
 				FF8BF82A6287E5C03DD74E42 /* PanelControllerTests.swift in Sources */,
@@ -373,6 +380,7 @@
 				E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */,
 				55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
+				474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
 				C39F0B757AA89B7E596CE04B /* PanelController.swift in Sources */,
 				4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */,
