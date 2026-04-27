@@ -3,7 +3,7 @@ import SwiftData
 
 struct GeneralTabView: View {
     @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes: Int = 60
-    @AppStorage("defaultProjectId") private var defaultProjectId: String = ""
+    @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
 
     @Query(sort: \Project.name) private var projects: [Project]
 

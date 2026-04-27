@@ -124,9 +124,9 @@ private func makeContainer() throws -> ModelContainer {
     QAFixtures.seed(context: context)
 
     #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 4)
-    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 1)
-    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 5)
-    #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 2)
+    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 2)
+    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 6)
+    #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 3)
 }
 
 @Test @MainActor func qaFixturesClearAllOnEmptyDoesNotCrash() throws {

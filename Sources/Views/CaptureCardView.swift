@@ -53,7 +53,7 @@ struct CaptureCardView: View {
         switch urgency {
         case .active, .high: AppColors.redditOrange
         case .medium: Color.green
-        default: nil
+        case .none, .low, .expired: nil
         }
     }
 

@@ -26,9 +26,11 @@ enum QAFixtures {
     context.insert(macOS)
     context.insert(iosProg)
 
-    // Project
+    // Projects
     let project = Project(name: "BullhornApp", projectDescription: "Social media scheduler")
+    let project2 = Project(name: "WeekendHacks", projectDescription: "Weekend side projects")
     context.insert(project)
+    context.insert(project2)
 
     // Captures with varying link counts
     let c1 = Capture(
@@ -74,20 +76,37 @@ enum QAFixtures {
     c5.markAsPosted()
     context.insert(c5)
 
-    // Events
-    let upcoming = SubredditEvent(
-      name: "Weekly SideProject",
-      subreddit: sideProject,
-      oneOffDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())
+    let c6 = Capture(
+      text: "Weekend hack: building a Reddit bot in Swift",
+      project: project2,
+      subreddits: [iosProg, sideProject]
     )
-    context.insert(upcoming)
+    context.insert(c6)
 
-    let overdue = SubredditEvent(
+    // Events — mix of urgency levels for dot testing
+    let imminent = SubredditEvent(
+      name: "SideProject Saturday",
+      subreddit: sideProject,
+      oneOffDate: Date().addingTimeInterval(1 * 3600)  // +1hr → high (orange dot)
+    )
+    context.insert(imminent)
+
+    let soonish = SubredditEvent(
       name: "SwiftUI Show & Tell",
       subreddit: swiftUI,
-      oneOffDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())
+      oneOffDate: Date().addingTimeInterval(6 * 3600)  // +6hr → medium (green dot)
     )
-    context.insert(overdue)
+    context.insert(soonish)
+
+    let farOut = SubredditEvent(
+      name: "macOS Weekly",
+      subreddit: macOS,
+      oneOffDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())  // +7d → none (no dot)
+    )
+    context.insert(farOut)
+
+    // Seed default project preference
+    UserDefaults.standard.set(project.id.uuidString, forKey: SettingsKey.defaultProjectId)
 
     do {
       try context.save()
@@ -105,6 +124,7 @@ enum QAFixtures {
       try context.delete(model: Project.self)
       try context.delete(model: Subreddit.self)
       try context.save()
+      UserDefaults.standard.removeObject(forKey: SettingsKey.defaultProjectId)
       NSLog("RedditReminder: all data cleared")
     } catch {
       NSLog("RedditReminder: failed to clear data: \(error)")
