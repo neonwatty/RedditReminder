@@ -117,7 +117,7 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
 
 // MARK: - Permission status check
 
-@Test(arguments: [UNAuthorizationStatus.authorized, .denied, .notDetermined])
+@Test(arguments: [UNAuthorizationStatus.authorized, .denied, .notDetermined, .provisional])
 @MainActor func checkPermissionStatus(expected: UNAuthorizationStatus) async {
     let mock = MockNotificationCenter()
     mock.mockAuthorizationStatus = expected

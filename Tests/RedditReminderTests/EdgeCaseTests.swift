@@ -165,6 +165,12 @@ private func makeContainer() throws -> ModelContainer {
     #expect(event.oneOffDate == nil)
 }
 
+@Test func negativeLeadMinutesClampedToZero() {
+    let sub = Subreddit(name: "r/Test")
+    let event = SubredditEvent(name: "Test", subreddit: sub, reminderLeadMinutes: -30)
+    #expect(event.reminderLeadMinutes == 0)
+}
+
 @Test func captureDefaultsAreCorrect() {
     let capture = Capture(text: "Test")
     #expect(capture.status == .queued)

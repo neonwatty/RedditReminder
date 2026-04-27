@@ -70,12 +70,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let activeEvents = events.filter(\.isActive)
         timingEngine.refresh(events: activeEvents, captures: captures)
+        let windows = timingEngine.upcomingWindows
         Task {
-            await scheduleNotifications(activeEvents: activeEvents)
+            await scheduleNotifications(activeEvents: activeEvents, windows: windows)
         }
     }
 
-    private func scheduleNotifications(activeEvents: [SubredditEvent]) async {
+    private func scheduleNotifications(
+        activeEvents: [SubredditEvent],
+        windows: [TimingEngine.UpcomingWindow]
+    ) async {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
         guard notificationsEnabled else {
             notificationService.cancelAll()
@@ -85,14 +89,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let status = await notificationService.checkPermissionStatus()
         guard status == .authorized else {
-            // Still clean up stale notifications even when not authorized,
-            // so previously-scheduled notifications don't linger.
-            let allEventIds = Set(activeEvents.map { $0.id.uuidString })
-            let windowEventIds = Set(timingEngine.upcomingWindows.map { $0.event.id.uuidString })
-            for staleId in allEventIds.subtracting(windowEventIds) {
-                notificationService.cancelNotifications(eventId: staleId)
-            }
-            NSLog("RedditReminder: notification permission not authorized (\(status.rawValue)) — skipping schedule")
+            notificationService.cancelAll()
+            NSLog("RedditReminder: notification permission not authorized (\(status.rawValue)) — cancelled all, skipping schedule")
             return
         }
 
@@ -100,13 +98,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let nudgeEnabled = UserDefaults.standard.object(forKey: "nudgeWhenEmpty") as? Bool ?? true
 
         let now = Date()
-        for window in timingEngine.upcomingWindows {
+        for window in windows {
             let eventId = window.event.id.uuidString
             activeEventIds.insert(eventId)
 
             // Skip scheduling if notification fire time is already past
             // (e.g., event in 30 min but lead time is 60 min).
-            // A past-dated UNCalendarNotificationTrigger has undefined behavior.
+            // A past-dated UNCalendarNotificationTrigger fires immediately.
             guard window.notificationFireDate > now else { continue }
 
             notificationService.scheduleWindowNotification(
@@ -132,6 +130,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             notificationService.cancelNotifications(eventId: staleId)
         }
 
-        NSLog("RedditReminder: refresh complete — \(timingEngine.upcomingWindows.count) windows, \(staleIds.count) cancelled")
+        NSLog("RedditReminder: refresh complete — \(windows.count) windows, \(staleIds.count) cancelled")
     }
 }

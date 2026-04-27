@@ -243,7 +243,7 @@ import Foundation
     let window = engine.upcomingWindows[0]
     #expect(window.eventDate == eventTime)
     let expectedNotifTime = eventTime.addingTimeInterval(-3600) // 60 min before
-    #expect(abs(window.notificationFireDate.timeIntervalSince(expectedNotifTime)) < 1)
+    #expect(window.notificationFireDate == expectedNotifTime)
 }
 
 @Test @MainActor func zeroLeadTimeNotificationFireDateEqualsEventDate() {
