@@ -57,6 +57,12 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         }
     }
 
+    func openPopover() {
+        guard let popover, let button = statusItem?.button, !popover.isShown else { return }
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        isPopoverVisible = true
+    }
+
     func showCaptureWindow(title: String = "New Capture", content: some View) {
         // Always recreate window content so edit-after-edit shows fresh data
         if let existing = captureWindow {

@@ -14,6 +14,8 @@ struct PopoverContentView: View {
 
     @State private var timingEngine = TimingEngine()
     @State private var filterSubredditId: UUID?
+    @State private var toastMessage: String?
+    @State private var toastTask: Task<Void, Never>?
 
     private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
     private var queuedCaptures: [Capture] { captures.filter { $0.status == .queued } }
@@ -41,12 +43,9 @@ struct PopoverContentView: View {
                         EventBannerView(
                             upcomingWindows: timingEngine.upcomingWindows,
                             onTap: { window in
+                                let tappedId = window.event.subreddit?.id
                                 withAnimation(.easeInOut(duration: 0.15)) {
-                                    if filterSubredditId == window.event.subreddit?.id {
-                                        filterSubredditId = nil
-                                    } else {
-                                        filterSubredditId = window.event.subreddit?.id
-                                    }
+                                    filterSubredditId = filterSubredditId == tappedId ? nil : tappedId
                                 }
                             }
                         )
@@ -69,6 +68,20 @@ struct PopoverContentView: View {
 
             footer
         }
+        .overlay(alignment: .top) {
+            if let message = toastMessage {
+                Text(message)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(AppColors.redditOrange.opacity(0.9))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .padding(.top, 48)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .background(AppColors.popoverBg)
         .frame(width: 350)
         .frame(maxHeight: maxPopoverHeight)
         .onAppear {
@@ -91,13 +104,13 @@ struct PopoverContentView: View {
 
     private func urgencyForCapture(_ capture: Capture) -> UrgencyLevel {
         let captureSubIds = Set(capture.subreddits.map(\.id))
-        var highest: UrgencyLevel = .none
-        for window in timingEngine.upcomingWindows {
-            if let subId = window.event.subreddit?.id, captureSubIds.contains(subId) {
-                highest = max(highest, window.urgency)
+        return timingEngine.upcomingWindows
+            .filter { window in
+                guard let subId = window.event.subreddit?.id else { return false }
+                return captureSubIds.contains(subId)
             }
-        }
-        return highest
+            .map(\.urgency)
+            .max() ?? .none
     }
 
     // MARK: - Header / Footer / Empty states
@@ -200,8 +213,9 @@ struct PopoverContentView: View {
         let formView = CaptureWindowView(
             mode: .create,
             onSave: { result in
-                saveCapture(result)
+                let ok = saveCapture(result)
                 menuBarController.closeCaptureWindow()
+                showToastAfterReopen(ok ? "Draft saved" : "Save failed")
             },
             onCancel: {
                 menuBarController.closeCaptureWindow()
@@ -216,8 +230,9 @@ struct PopoverContentView: View {
         let formView = CaptureWindowView(
             mode: .edit(capture),
             onSave: { result in
-                updateCapture(capture, with: result)
+                let ok = updateCapture(capture, with: result)
                 menuBarController.closeCaptureWindow()
+                showToastAfterReopen(ok ? "Draft updated" : "Save failed")
             },
             onCancel: {
                 menuBarController.closeCaptureWindow()
@@ -235,26 +250,40 @@ struct PopoverContentView: View {
         menuBarController.showPreferencesWindow(content: prefsView)
     }
 
-    private func saveCapture(_ result: CaptureFormResult) {
+    @discardableResult
+    private func saveCapture(_ result: CaptureFormResult) -> Bool {
         let capture = Capture(
-            text: result.text,
-            notes: result.notes,
-            links: result.links,
+            text: result.text, notes: result.notes, links: result.links,
             mediaRefs: result.mediaURLs.map(\.lastPathComponent),
-            project: result.project,
-            subreddits: result.subreddits
+            project: result.project, subreddits: result.subreddits
         )
         modelContext.insert(capture)
-        try? modelContext.save()
+        do { try modelContext.save(); return true }
+        catch { NSLog("RedditReminder: save failed: \(error)"); return false }
     }
 
-    private func updateCapture(_ capture: Capture, with result: CaptureFormResult) {
+    @discardableResult
+    private func updateCapture(_ capture: Capture, with result: CaptureFormResult) -> Bool {
         capture.text = result.text
         capture.notes = result.notes
         capture.links = result.links
         capture.mediaRefs = result.mediaURLs.map(\.lastPathComponent)
         capture.project = result.project
         capture.subreddits = result.subreddits
-        try? modelContext.save()
+        do { try modelContext.save(); return true }
+        catch { NSLog("RedditReminder: update failed: \(error)"); return false }
+    }
+
+    private func showToastAfterReopen(_ message: String) {
+        toastTask?.cancel()
+        menuBarController.openPopover()
+        toastTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { toastMessage = message }
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { toastMessage = nil }
+        }
     }
 }

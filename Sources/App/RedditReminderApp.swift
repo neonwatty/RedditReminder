@@ -21,7 +21,15 @@ struct RedditReminderApp: App {
                 .frame(width: 1, height: 1)
                 .onAppear {
                     appDelegate.modelContainer = container
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("--seed-qa") {
+                        QAFixtures.seed(context: container.mainContext)
+                    } else {
+                        DefaultSubreddits.seedIfEmpty(context: container.mainContext)
+                    }
+                    #else
                     DefaultSubreddits.seedIfEmpty(context: container.mainContext)
+                    #endif
                     appDelegate.runRefreshCycle()
                     let popoverView = PopoverContentView(
                         menuBarController: appDelegate.menuBarController,

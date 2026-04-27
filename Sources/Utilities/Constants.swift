@@ -19,6 +19,17 @@ enum AppColors {
   static let purple = NSColor(red: 0.66, green: 0.33, blue: 0.97, alpha: 1.0)
   static let gold = NSColor(red: 0.81, green: 0.60, blue: 0.03, alpha: 1.0)
   static let pink = NSColor(red: 0.93, green: 0.29, blue: 0.60, alpha: 1.0)
+
+  // Solid popover background — warm cream (light) / warm charcoal (dark)
+  static let popoverBg = Color(nsColor: NSColor(name: nil) { appearance in
+    appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+      ? NSColor(red: 0.13, green: 0.12, blue: 0.11, alpha: 1.0)
+      : NSColor(red: 0.98, green: 0.97, blue: 0.95, alpha: 1.0)
+  })
+}
+
+enum SettingsKey {
+  static let defaultProjectId = "defaultProjectId"
 }
 
 enum MediaConstants {

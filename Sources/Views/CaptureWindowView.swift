@@ -285,8 +285,8 @@ struct CaptureWindowView: View {
     private func populateFromMode() {
         switch mode {
         case .create:
-            let defaultId = UserDefaults.standard.string(forKey: "defaultProjectId") ?? ""
-            if let uuid = UUID(uuidString: defaultId) {
+            if let defaultId = UserDefaults.standard.string(forKey: SettingsKey.defaultProjectId),
+               let uuid = UUID(uuidString: defaultId) {
                 selectedProject = projects.first { $0.id == uuid }
             }
         case .edit(let capture):
