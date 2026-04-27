@@ -46,51 +46,10 @@ struct CaptureWindowView: View {
                     }
 
                     fieldSection("SUBREDDIT") {
-                        Menu {
-                            ForEach(subreddits, id: \.id) { sub in
-                                Button(action: {
-                                    if selectedSubreddits.contains(sub.id) {
-                                        selectedSubreddits.remove(sub.id)
-                                    } else {
-                                        selectedSubreddits.insert(sub.id)
-                                    }
-                                }) {
-                                    HStack {
-                                        Text(sub.name)
-                                        if selectedSubreddits.contains(sub.id) {
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                if selectedSubreddits.isEmpty {
-                                    Text("Select subreddit...")
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    let names = subreddits
-                                        .filter { selectedSubreddits.contains($0.id) }
-                                        .map(\.name)
-                                        .joined(separator: ", ")
-                                    Text(names)
-                                        .foregroundStyle(Self.redditOrange)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.secondary)
-                            }
-                            .font(.system(size: 12))
-                            .padding(8)
-                            .background(.quaternary.opacity(0.3))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                            )
-                        }
-                        .menuStyle(.borderlessButton)
+                        CaptureSubredditPicker(
+                            subreddits: subreddits,
+                            selectedSubreddits: $selectedSubreddits
+                        )
                     }
 
                     fieldSection("PROJECT", optional: true) {
@@ -125,77 +84,11 @@ struct CaptureWindowView: View {
                     }
 
                     fieldSection("LINKS") {
-                        FlowLayout(spacing: 6) {
-                            ForEach(Array(links.enumerated()), id: \.offset) { index, link in
-                                LinkChipView(url: link, onRemove: {
-                                    links.remove(at: index)
-                                })
-                            }
-
-                            HStack(spacing: 4) {
-                                TextField("Add link...", text: $newLinkText)
-                                    .font(.system(size: 10))
-                                    .textFieldStyle(.plain)
-                                    .frame(width: 120)
-                                    .onSubmit { addLink() }
-
-                                if !newLinkText.isEmpty {
-                                    Button(action: addLink) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(Self.redditOrange)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 0.5, dash: [4]))
-                            )
-                        }
+                        CaptureLinksSection(links: $links, newLinkText: $newLinkText)
                     }
 
                     fieldSection("MEDIA") {
-                        VStack(spacing: 8) {
-                            if !droppedFiles.isEmpty {
-                                FlowLayout(spacing: 6) {
-                                    ForEach(Array(droppedFiles.enumerated()), id: \.offset) { index, url in
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "doc")
-                                                .font(.system(size: 9))
-                                            Text(url.lastPathComponent)
-                                                .font(.system(size: 10))
-                                                .lineLimit(1)
-                                            Button(action: { droppedFiles.remove(at: index) }) {
-                                                Image(systemName: "xmark")
-                                                    .font(.system(size: 7, weight: .bold))
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(.quaternary.opacity(0.3))
-                                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                                    }
-                                }
-                            }
-
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 1, dash: [6]))
-                                .frame(height: 48)
-                                .overlay {
-                                    Text("Drop images here or ").font(.system(size: 11)).foregroundStyle(.secondary)
-                                    + Text("browse").font(.system(size: 11)).foregroundStyle(.blue)
-                                }
-                                .background(isDragOver ? Color.blue.opacity(0.05) : Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
-                                    handleFileDrop(providers)
-                                }
-                        }
+                        CaptureMediaSection(droppedFiles: $droppedFiles, isDragOver: $isDragOver)
                     }
                 }
                 .padding(16)
@@ -267,20 +160,6 @@ struct CaptureWindowView: View {
             notes: notes.isEmpty ? nil : notes, links: links,
             project: selectedProject, subreddits: selectedSubs, mediaURLs: droppedFiles
         ))
-    }
-    private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
-        for provider in providers {
-            _ = provider.loadObject(ofClass: URL.self) { url, _ in
-                if let url { Task { @MainActor in droppedFiles.append(url) } }
-            }
-        }
-        return true
-    }
-    private func addLink() {
-        let trimmed = newLinkText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        links.append(trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)")
-        newLinkText = ""
     }
     private func populateFromMode() {
         switch mode {
