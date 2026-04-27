@@ -1,7 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct GeneralTabView: View {
     @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes: Int = 60
+    @AppStorage("defaultProjectId") private var defaultProjectId: String = ""
+
+    @Query(sort: \Project.name) private var projects: [Project]
 
     var body: some View {
         Form {
@@ -25,6 +29,14 @@ struct GeneralTabView: View {
                     Text("30 minutes").tag(30)
                     Text("1 hour").tag(60)
                     Text("2 hours").tag(120)
+                }
+                .font(.system(size: 12))
+
+                Picker("Default project", selection: $defaultProjectId) {
+                    Text("None").tag("")
+                    ForEach(projects.filter { !$0.archived }, id: \.id) { project in
+                        Text(project.name).tag(project.id.uuidString)
+                    }
                 }
                 .font(.system(size: 12))
             }

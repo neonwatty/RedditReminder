@@ -3,6 +3,7 @@ import SwiftData
 
 struct CaptureCardView: View {
     let capture: Capture
+    var urgency: UrgencyLevel = .none
     var onTap: (() -> Void)? = nil
 
     var body: some View {
@@ -33,12 +34,27 @@ struct CaptureCardView: View {
                 }
 
                 Spacer(minLength: 0)
+
+                if let dotColor = urgencyDotColor {
+                    Circle()
+                        .fill(dotColor)
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 4)
+                }
             }
             .padding(.vertical, 10)
             .padding(.horizontal, 16)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    private var urgencyDotColor: Color? {
+        switch urgency {
+        case .active, .high: AppColors.redditOrange
+        case .medium: Color.green
+        default: nil
+        }
     }
 
     private var attachmentSummary: String {
