@@ -186,26 +186,22 @@ struct PopoverContentView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            Text("No captures yet")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
-            Button("+ New Capture", action: openNewCapture)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(AppColors.redditOrange)
-                .buttonStyle(.plain)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
+        OnboardingEmptyView(onNewCapture: openNewCapture)
     }
 
     private var filteredEmptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Spacer()
+            Image(systemName: "tray")
+                .font(.system(size: 20))
+                .foregroundStyle(.tertiary)
             Text("No captures for this subreddit")
-                .font(.system(size: 13))
+                .font(.system(size: 12))
                 .foregroundStyle(.secondary)
+            Button("+ New Capture", action: openNewCapture)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(AppColors.redditOrange)
+                .buttonStyle(.plain)
             Spacer()
         }
         .frame(maxWidth: .infinity)
