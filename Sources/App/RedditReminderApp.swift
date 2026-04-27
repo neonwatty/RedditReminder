@@ -23,13 +23,13 @@ struct RedditReminderApp: App {
                     appDelegate.modelContainer = container
                     DefaultSubreddits.seedIfEmpty(context: container.mainContext)
                     appDelegate.runRefreshCycle()
-                    let sidebarView = SidebarContainer(
-                        panelController: appDelegate.panelController,
+                    let popoverView = PopoverContentView(
+                        menuBarController: appDelegate.menuBarController,
                         notificationService: appDelegate.notificationService,
                         onCaptureChanged: { [weak appDelegate] in appDelegate?.runRefreshCycle() }
                     )
                     .modelContainer(container)
-                    appDelegate.panelController.setup(contentView: sidebarView)
+                    appDelegate.menuBarController.setup(popoverContent: popoverView)
                 }
         }
         .defaultSize(width: 1, height: 1)
