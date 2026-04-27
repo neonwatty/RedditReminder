@@ -3,6 +3,8 @@ import SwiftData
 
 struct SidebarContainer: View {
     @Bindable var panelController: PanelController
+    let notificationService: NotificationService
+    let onCaptureChanged: @MainActor () -> Void
     @State private var timingEngine = TimingEngine()
     @State private var titleTapCount = 0
     @State private var lastTapTime = Date.distantPast
@@ -77,9 +79,9 @@ struct SidebarContainer: View {
                         onCancel: { panelController.setState(.browse) }
                     )
                 case .channels:
-                    ChannelsView()
+                    ChannelsView(notificationService: notificationService)
                 case .settings:
-                    SettingsView(panelController: panelController)
+                    SettingsView(panelController: panelController, notificationService: notificationService)
                 }
             }
 
@@ -92,6 +94,7 @@ struct SidebarContainer: View {
         }
         .onChange(of: captures.count) {
             timingEngine.refresh(events: activeEvents, captures: captures)
+            onCaptureChanged()
         }
     }
 

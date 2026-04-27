@@ -15,7 +15,7 @@ struct CalendarTimelineView: View {
     private var groupedByDate: [(date: Date, windows: [TimingEngine.UpcomingWindow])] {
         let cal = Calendar.current
         let grouped = Dictionary(grouping: windows) { window in
-            cal.startOfDay(for: window.fireDate)
+            cal.startOfDay(for: window.eventDate)
         }
         return grouped.sorted { $0.key < $1.key }.map { (date: $0.key, windows: $0.value) }
     }

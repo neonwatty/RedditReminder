@@ -223,3 +223,61 @@ import Foundation
     #expect(soonWindow?.urgency == .active)
     #expect(laterWindow?.urgency == .low)
 }
+
+// MARK: - Lead time
+
+@Test @MainActor func leadTimeSubtractedFromNotificationFireDate() {
+    let sub = Subreddit(name: "r/Test")
+    let eventTime = Date().addingTimeInterval(6 * 3600) // 6h from now
+    let event = SubredditEvent(
+        name: "With Lead",
+        subreddit: sub,
+        oneOffDate: eventTime,
+        reminderLeadMinutes: 60
+    )
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event], captures: [])
+
+    #expect(engine.upcomingWindows.count == 1)
+    let window = engine.upcomingWindows[0]
+    #expect(window.eventDate == eventTime)
+    let expectedNotifTime = eventTime.addingTimeInterval(-3600) // 60 min before
+    #expect(window.notificationFireDate == expectedNotifTime)
+}
+
+@Test @MainActor func zeroLeadTimeNotificationFireDateEqualsEventDate() {
+    let sub = Subreddit(name: "r/Test")
+    let eventTime = Date().addingTimeInterval(3 * 3600)
+    let event = SubredditEvent(
+        name: "No Lead",
+        subreddit: sub,
+        oneOffDate: eventTime,
+        reminderLeadMinutes: 0
+    )
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event], captures: [])
+
+    #expect(engine.upcomingWindows.count == 1)
+    let window = engine.upcomingWindows[0]
+    #expect(window.notificationFireDate == window.eventDate)
+}
+
+@Test @MainActor func urgencyBasedOnEventDateNotNotificationDate() {
+    let sub = Subreddit(name: "r/Test")
+    // Event in 18h (urgency: .low), but notification fires at 18h - 2h = 16h
+    let event = SubredditEvent(
+        name: "FarEvent",
+        subreddit: sub,
+        oneOffDate: Date().addingTimeInterval(18 * 3600),
+        reminderLeadMinutes: 120
+    )
+
+    let engine = TimingEngine()
+    engine.refresh(events: [event], captures: [])
+
+    #expect(engine.upcomingWindows.count == 1)
+    // Urgency should be based on event date (18h = .low), not notification date (16h)
+    #expect(engine.upcomingWindows[0].urgency == .low)
+}

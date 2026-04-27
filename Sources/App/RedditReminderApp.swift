@@ -22,8 +22,13 @@ struct RedditReminderApp: App {
                 .onAppear {
                     appDelegate.modelContainer = container
                     DefaultSubreddits.seedIfEmpty(context: container.mainContext)
-                    let sidebarView = SidebarContainer(panelController: appDelegate.panelController)
-                        .modelContainer(container)
+                    appDelegate.runRefreshCycle()
+                    let sidebarView = SidebarContainer(
+                        panelController: appDelegate.panelController,
+                        notificationService: appDelegate.notificationService,
+                        onCaptureChanged: { [weak appDelegate] in appDelegate?.runRefreshCycle() }
+                    )
+                    .modelContainer(container)
                     appDelegate.panelController.setup(contentView: sidebarView)
                 }
         }

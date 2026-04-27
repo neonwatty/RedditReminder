@@ -126,7 +126,7 @@ struct CalendarMonthView: View {
     }
 
     private func windowsFor(day: Date) -> [TimingEngine.UpcomingWindow] {
-        windows.filter { cal.isDate($0.fireDate, inSameDayAs: day) }
+        windows.filter { cal.isDate($0.eventDate, inSameDayAs: day) }
     }
 
     private func previousMonth() {

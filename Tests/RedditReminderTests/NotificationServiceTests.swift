@@ -26,6 +26,12 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     func removeAllPendingNotificationRequests() {
         removedAll = true
     }
+
+    var mockAuthorizationStatus: UNAuthorizationStatus = .authorized
+
+    func getAuthorizationStatus() async -> UNAuthorizationStatus {
+        mockAuthorizationStatus
+    }
 }
 
 // MARK: - Permission
@@ -107,6 +113,17 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     service.cancelAll()
 
     #expect(mock.removedAll == true)
+}
+
+// MARK: - Permission status check
+
+@Test(arguments: [UNAuthorizationStatus.authorized, .denied, .notDetermined, .provisional])
+@MainActor func checkPermissionStatus(expected: UNAuthorizationStatus) async {
+    let mock = MockNotificationCenter()
+    mock.mockAuthorizationStatus = expected
+    let service = NotificationService(center: mock)
+    let status = await service.checkPermissionStatus()
+    #expect(status == expected)
 }
 
 // MARK: - Trigger correctness

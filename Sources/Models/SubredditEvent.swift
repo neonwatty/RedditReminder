@@ -7,7 +7,9 @@ final class SubredditEvent {
     var name: String
     var rrule: String?
     var oneOffDate: Date?
-    var reminderLeadMinutes: Int
+    var reminderLeadMinutes: Int {
+        didSet { reminderLeadMinutes = max(0, reminderLeadMinutes) }
+    }
     var isActive: Bool
 
     var subreddit: Subreddit?
@@ -28,7 +30,7 @@ final class SubredditEvent {
         self.name = name
         self.rrule = rrule
         self.oneOffDate = oneOffDate
-        self.reminderLeadMinutes = reminderLeadMinutes
+        self.reminderLeadMinutes = max(0, reminderLeadMinutes)
         self.isActive = isActive
         self.subreddit = subreddit
     }

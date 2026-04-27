@@ -5,7 +5,8 @@ import Foundation
 final class TimingEngine {
     struct UpcomingWindow {
         let event: SubredditEvent
-        let fireDate: Date
+        let eventDate: Date
+        let notificationFireDate: Date
         let urgency: UrgencyLevel
         let matchingCaptureCount: Int
     }
@@ -55,22 +56,26 @@ final class TimingEngine {
         var windows: [UpcomingWindow] = []
 
         for event in events where event.isActive {
-            guard let fireDate = Self.nextWindow(for: event, after: now),
-                  fireDate <= horizon
+            guard let eventDate = Self.nextWindow(for: event, after: now),
+                  eventDate <= horizon
             else { continue }
 
-            let hours = fireDate.timeIntervalSince(now) / 3600
+            let hours = eventDate.timeIntervalSince(now) / 3600
             let urgency = Self.urgencyLevel(hoursUntilWindow: hours)
             let matchCount = event.subreddit.map { queuedCountBySubredditId[$0.id] ?? 0 } ?? 0
 
+            let leadSeconds = TimeInterval(event.reminderLeadMinutes) * 60
+            let notificationFireDate = eventDate.addingTimeInterval(-leadSeconds)
+
             windows.append(UpcomingWindow(
                 event: event,
-                fireDate: fireDate,
+                eventDate: eventDate,
+                notificationFireDate: notificationFireDate,
                 urgency: urgency,
                 matchingCaptureCount: matchCount
             ))
         }
 
-        upcomingWindows = windows.sorted { $0.fireDate < $1.fireDate }
+        upcomingWindows = windows.sorted { $0.eventDate < $1.eventDate }
     }
 }
