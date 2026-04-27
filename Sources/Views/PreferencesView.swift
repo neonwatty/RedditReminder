@@ -7,6 +7,7 @@ struct PreferencesView: View {
 
     enum Tab: String, CaseIterable {
         case channels = "Channels"
+        case projects = "Projects"
         case general = "General"
         case notifications = "Notifications"
     }
@@ -42,6 +43,8 @@ struct PreferencesView: View {
             switch selectedTab {
             case .channels:
                 ChannelsTabView(notificationService: notificationService)
+            case .projects:
+                ProjectsTabView()
             case .general:
                 GeneralTabView()
             case .notifications:

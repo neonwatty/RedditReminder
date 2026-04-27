@@ -28,6 +28,7 @@
 		4D52E2A23BEE6747615CD993 /* SubredditRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */; };
 		4E5E03721C36CF2033FB15BF /* CaptureWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975C23592B958F445105973E /* CaptureWindowView.swift */; };
 		4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599273192FBCFDD93D1241B0 /* Project.swift */; };
+		CC33DD44EE55FF66AA770001 /* ProjectsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33DD44EE55FF66AA770002 /* ProjectsTabView.swift */; };
 		55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */; };
 		5631C865F36CC064CD9AF7A2 /* HeuristicsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */; };
 		59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1122ADEB6045619C303C31 /* MediaStore.swift */; };
@@ -76,6 +77,7 @@
 		AA11BB22CC33DD44EE550006 /* CaptureMediaSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureMediaSection.swift; sourceTree = "<group>"; };
 		20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStoreTests.swift; sourceTree = "<group>"; };
 		274444AB5DE03A36248F96F2 /* HeuristicsTimezoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsTimezoneTests.swift; sourceTree = "<group>"; };
+		CC33DD44EE55FF66AA770002 /* ProjectsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsTabView.swift; sourceTree = "<group>"; };
 		28906380DECDA56AD0DDE325 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		317B217ED06D209DAFACA344 /* RedditReminderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RedditReminderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3878A1D04F7AC0E3D464CB7B /* CaptureLinksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureLinksTests.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */,
 				07A63D3714291E8917CA1694 /* PopoverContentView.swift */,
 				28906380DECDA56AD0DDE325 /* PreferencesView.swift */,
+				CC33DD44EE55FF66AA770002 /* ProjectsTabView.swift */,
 				5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */,
 			);
 			path = Views;
@@ -369,6 +372,7 @@
 				EA437C7902BEFE4C1F701586 /* PopoverContentView.swift in Sources */,
 				B64C0B3A5EF8D5A8827074C1 /* PreferencesView.swift in Sources */,
 				4ED4F0F35E3D250D13E85CF6 /* Project.swift in Sources */,
+				CC33DD44EE55FF66AA770001 /* ProjectsTabView.swift in Sources */,
 				17050D203FEDB10BDE6F431A /* QAFixtures.swift in Sources */,
 				FE03D040E4D6926755545F71 /* RRuleHelper.swift in Sources */,
 				1A56E70BA5F05C6021393E22 /* RedditReminderApp.swift in Sources */,
