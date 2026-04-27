@@ -1,91 +1,57 @@
 import SwiftUI
+import SwiftData
 
 struct CaptureCardView: View {
     let capture: Capture
-    let compact: Bool
-    var onMarkPosted: (() -> Void)? = nil
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack {
-                Text(capture.project?.name ?? "Unknown")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(StickerColors.textPrimary)
-                Spacer()
-                HStack(spacing: 4) {
-                    ForEach(capture.subreddits, id: \.id) { sub in
-                        Text(sub.name)
-                            .foregroundStyle(StickerColors.reddit)
-                            .stickerBadge(color: StickerColors.reddit)
+        Button(action: { onTap?() }) {
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(capture.text)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+
+                    HStack(spacing: 6) {
+                        if let sub = capture.subreddits.first {
+                            Text(sub.name)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(AppColors.redditOrange)
+                        }
+
+                        if !capture.links.isEmpty || !capture.mediaRefs.isEmpty || capture.notes != nil {
+                            Text("·")
+                                .font(.system(size: 9))
+                                .foregroundStyle(.secondary)
+                            Text(attachmentSummary)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
-            }
 
-            Text(capture.text)
-                .font(.system(size: 11))
-                .foregroundStyle(StickerColors.textSecondary)
-                .lineLimit(compact ? 1 : 3)
-
-            if !compact && !capture.mediaRefs.isEmpty {
-                HStack(spacing: 4) {
-                    ForEach(capture.mediaRefs.prefix(4), id: \.self) { _ in
-                        mediaThumbnail
-                    }
-                }
+                Spacer(minLength: 0)
             }
-
-            if !compact && !capture.links.isEmpty {
-                HStack(spacing: 4) {
-                    ForEach(Array(capture.links.prefix(3).enumerated()), id: \.offset) { _, link in
-                        LinkChipView(url: link)
-                    }
-                    if capture.links.count > 3 {
-                        Text("+\(capture.links.count - 3)")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(StickerColors.textSecondary)
-                    }
-                }
-            }
-
-            if !compact {
-                captureFooter
-            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .contentShape(Rectangle())
         }
-        .padding(10)
-        .stickerCard()
+        .buttonStyle(.plain)
     }
 
-    private var captureFooter: some View {
-        let isQueued = capture.status == .queued
-        let statusColor = isQueued ? Color(nsColor: AppColors.green) : StickerColors.textSecondary
-        return HStack {
-            Text(capture.createdAt, style: .relative)
-                .font(.system(size: 10))
-                .foregroundStyle(StickerColors.textSecondary)
-            Spacer()
-            if isQueued, let onMarkPosted {
-                Button("Mark Posted", action: onMarkPosted)
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color(nsColor: AppColors.green))
-            }
-            Text(capture.status.rawValue)
-                .foregroundStyle(statusColor)
-                .stickerBadge(color: isQueued ? Color(nsColor: AppColors.green) : StickerColors.border)
+    private var attachmentSummary: String {
+        var parts: [String] = []
+        if !capture.links.isEmpty {
+            parts.append("\(capture.links.count) link\(capture.links.count == 1 ? "" : "s")")
         }
-    }
-
-    private var mediaThumbnail: some View {
-        RoundedRectangle(cornerRadius: 4)
-            .fill(StickerColors.card)
-            .frame(width: 36, height: 36)
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(StickerColors.border, lineWidth: 1)
-            )
-            .overlay(
-                Image(systemName: "photo")
-                    .font(.system(size: 12))
-                    .foregroundStyle(StickerColors.textSecondary)
-            )
+        if !capture.mediaRefs.isEmpty {
+            parts.append("\(capture.mediaRefs.count) image\(capture.mediaRefs.count == 1 ? "" : "s")")
+        }
+        if capture.notes != nil {
+            parts.append("notes")
+        }
+        return parts.joined(separator: " · ")
     }
 }

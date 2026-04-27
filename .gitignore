@@ -4,6 +4,9 @@
 # Brainstorm session state (local only)
 .superpowers/
 
+# Git worktrees
+.worktrees/
+
 # Build artifacts
 .build/
 build/

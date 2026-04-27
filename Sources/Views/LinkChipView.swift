@@ -7,29 +7,25 @@ struct LinkChipView: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: "link")
-                .font(.system(size: 10))
+                .font(.system(size: 9))
             Text(displayURL)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 10, weight: .medium))
                 .lineLimit(1)
                 .truncationMode(.middle)
             if let onRemove {
                 Button(action: onRemove) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(StickerColors.textSecondary)
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .foregroundStyle(StickerColors.blue)
+        .foregroundStyle(.blue)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(StickerColors.blue.opacity(0.1))
+        .background(Color.blue.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 6))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(StickerColors.blue.opacity(0.4), lineWidth: 2)
-        )
     }
 
     private var displayURL: String {

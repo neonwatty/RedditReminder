@@ -1,78 +1,78 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - SubredditRow (isolates re-evaluation scope)
-
 struct SubredditRow: View {
     @Bindable var sub: Subreddit
     let isExpanded: Bool
     let onToggle: () -> Void
     let onDelete: () -> Void
 
+    private static let redditOrange = AppColors.redditOrange
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             Button(action: onToggle) {
                 HStack {
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(StickerColors.reddit)
-                            .frame(width: 8, height: 8)
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: 10))
-                            .foregroundStyle(isExpanded ? StickerColors.gold : StickerColors.textSecondary)
+                            .foregroundStyle(isExpanded ? Self.redditOrange : .secondary)
                         Text(sub.name)
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(StickerColors.textPrimary)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.primary)
                     }
                     Spacer()
                     if isExpanded {
-                        Button(action: onDelete) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 11))
-                                .foregroundStyle(StickerColors.reddit)
-                        }
-                        .buttonStyle(.plain)
+                        Button("Remove", action: onDelete)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.red)
+                            .buttonStyle(.plain)
                     } else {
                         Text(peakDaysSummary)
-                            .foregroundStyle(StickerColors.textSecondary)
-                            .stickerBadge(color: StickerColors.border)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
             .buttonStyle(.plain)
             .padding(10)
 
-            // Expanded detail
             if isExpanded {
                 VStack(alignment: .leading, spacing: 10) {
-                    StickerDivider()
+                    Divider()
 
-                    stickerSectionLabel("Peak Days", size: 9)
+                    Text("PEAK DAYS")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.3)
                     peakDayChips
 
-                    stickerSectionLabel("Peak Hours (UTC)", size: 9)
+                    Text("PEAK HOURS (UTC)")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.3)
                     peakHourChips
 
                     HStack {
                         Spacer()
-                        Button(action: resetDefaults) {
-                            Text("Reset to defaults")
-                                .font(.system(size: 9))
-                                .foregroundStyle(StickerColors.textSecondary)
-                                .underline()
-                        }
-                        .buttonStyle(.plain)
+                        Button("Reset to defaults", action: resetDefaults)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .underline()
+                            .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 10)
                 .padding(.bottom, 10)
             }
         }
-        .stickerCard(borderColor: isExpanded ? StickerColors.gold : StickerColors.border)
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.separator, lineWidth: 0.5)
+        )
     }
-
-    // MARK: - Peak Day Chips
 
     private static let allDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     private static let dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
@@ -83,16 +83,16 @@ struct SubredditRow: View {
                 let isOn = sub.peakDaysOverride?.contains(key) ?? false
                 Button(action: { toggleDay(key) }) {
                     Text(display)
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10, weight: .medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(isOn ? StickerColors.gold.opacity(0.2) : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .background(isOn ? Self.redditOrange.opacity(0.12) : Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(isOn ? StickerColors.gold : StickerColors.border, lineWidth: 2)
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(isOn ? Self.redditOrange : Color(NSColor.separatorColor), lineWidth: 0.5)
                         )
-                        .foregroundStyle(isOn ? StickerColors.gold : StickerColors.textSecondary)
+                        .foregroundStyle(isOn ? Self.redditOrange : .secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -107,30 +107,28 @@ struct SubredditRow: View {
             days.append(day)
         }
         sub.peakDaysOverride = days.isEmpty ? nil : days
-        // No save here — saved on collapse or navigation away
     }
-
-    // MARK: - Peak Hour Chips
 
     private static let displayHours = [0, 2, 4, 6, 8, 10, 12, 14, 15, 16, 17, 18, 20, 22]
 
     private var peakHourChips: some View {
         let columns = [GridItem(.adaptive(minimum: 30), spacing: 3)]
+        let hours = Self.displayHours
         return LazyVGrid(columns: columns, spacing: 3) {
-            ForEach(Self.displayHours, id: \.self) { hour in
+            ForEach(hours, id: \.self) { hour in
                 let isOn = sub.peakHoursUtcOverride?.contains(hour) ?? false
                 Button(action: { toggleHour(hour) }) {
                     Text("\(hour)")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 9, weight: .medium))
                         .frame(minWidth: 24)
                         .padding(.vertical, 3)
-                        .background(isOn ? StickerColors.green.opacity(0.2) : Color.clear)
+                        .background(isOn ? Color.green.opacity(0.12) : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
-                                .stroke(isOn ? StickerColors.green : StickerColors.border, lineWidth: 2)
+                                .stroke(isOn ? Color.green : Color(NSColor.separatorColor), lineWidth: 0.5)
                         )
-                        .foregroundStyle(isOn ? StickerColors.green : StickerColors.textSecondary)
+                        .foregroundStyle(isOn ? .green : .secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -146,10 +144,7 @@ struct SubredditRow: View {
             hours.sort()
         }
         sub.peakHoursUtcOverride = hours.isEmpty ? nil : hours
-        // No save here — saved on collapse or navigation away
     }
-
-    // MARK: - Helpers
 
     private var peakDaysSummary: String {
         guard let days = sub.peakDaysOverride, !days.isEmpty else { return "defaults" }
@@ -159,11 +154,8 @@ struct SubredditRow: View {
     private func resetDefaults() {
         sub.peakDaysOverride = nil
         sub.peakHoursUtcOverride = nil
-        // No save here — saved on collapse or navigation away
     }
 }
-
-// MARK: - Drag & Drop
 
 struct SubredditDropDelegate: DropDelegate {
     let target: Subreddit

@@ -3,7 +3,7 @@ import SwiftData
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let panelController = PanelController()
+    let menuBarController = MenuBarController()
     let timingEngine = TimingEngine()
     let notificationService = NotificationService()
     let heuristicsStore = HeuristicsStore()
@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Register global shortcut
         globalShortcut.register { [weak self] in
-            self?.panelController.toggleCapture()
+            self?.menuBarController.togglePopover()
         }
 
         // Request notification permission
@@ -71,6 +71,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let activeEvents = events.filter(\.isActive)
         timingEngine.refresh(events: activeEvents, captures: captures)
         let windows = timingEngine.upcomingWindows
+
+        let queuedCount = captures.filter { $0.status == .queued }.count
+        menuBarController.badgeCount = queuedCount
+        menuBarController.isUrgent = timingEngine.upcomingWindows.contains { $0.urgency >= .high }
+        menuBarController.updateIcon()
+
         Task {
             await scheduleNotifications(activeEvents: activeEvents, windows: windows)
         }
