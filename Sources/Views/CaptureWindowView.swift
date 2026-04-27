@@ -259,19 +259,14 @@ struct CaptureWindowView: View {
     private var canSave: Bool {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !selectedSubreddits.isEmpty
     }
-
     private func save() {
         guard canSave else { return }
         let selectedSubs = subreddits.filter { selectedSubreddits.contains($0.id) }
-        let result = CaptureFormResult(
+        onSave(CaptureFormResult(
             text: text.trimmingCharacters(in: .whitespacesAndNewlines),
-            notes: notes.isEmpty ? nil : notes,
-            links: links,
-            project: selectedProject,
-            subreddits: selectedSubs,
-            mediaURLs: droppedFiles
-        )
-        onSave(result)
+            notes: notes.isEmpty ? nil : notes, links: links,
+            project: selectedProject, subreddits: selectedSubs, mediaURLs: droppedFiles
+        ))
     }
     private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
         for provider in providers {
@@ -284,12 +279,17 @@ struct CaptureWindowView: View {
     private func addLink() {
         let trimmed = newLinkText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        let url = trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)"
-        links.append(url)
+        links.append(trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)")
         newLinkText = ""
     }
     private func populateFromMode() {
-        if case .edit(let capture) = mode {
+        switch mode {
+        case .create:
+            let defaultId = UserDefaults.standard.string(forKey: "defaultProjectId") ?? ""
+            if let uuid = UUID(uuidString: defaultId) {
+                selectedProject = projects.first { $0.id == uuid }
+            }
+        case .edit(let capture):
             text = capture.text
             notes = capture.notes ?? ""
             selectedProject = capture.project

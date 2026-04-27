@@ -13,29 +13,52 @@ struct PopoverContentView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var timingEngine = TimingEngine()
+    @State private var filterSubredditId: UUID?
 
     private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
     private var queuedCaptures: [Capture] { captures.filter { $0.status == .queued } }
+
+    private var displayedCaptures: [Capture] {
+        guard let filterId = filterSubredditId else { return queuedCaptures }
+        return queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             header
 
-            if queuedCaptures.isEmpty && timingEngine.upcomingWindows.isEmpty {
+            if filterSubredditId != nil {
+                filterBar
+            }
+
+            if displayedCaptures.isEmpty && timingEngine.upcomingWindows.isEmpty && filterSubredditId == nil {
                 emptyState
+            } else if displayedCaptures.isEmpty && filterSubredditId != nil {
+                filteredEmptyState
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
                         EventBannerView(
-                            upcomingWindows: timingEngine.upcomingWindows
+                            upcomingWindows: timingEngine.upcomingWindows,
+                            onTap: { window in
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    if filterSubredditId == window.event.subreddit?.id {
+                                        filterSubredditId = nil
+                                    } else {
+                                        filterSubredditId = window.event.subreddit?.id
+                                    }
+                                }
+                            }
                         )
 
-                        ForEach(queuedCaptures, id: \.id) { capture in
-                            CaptureCardView(capture: capture, onTap: {
-                                openCaptureForEditing(capture)
-                            })
+                        ForEach(displayedCaptures, id: \.id) { capture in
+                            CaptureCardView(
+                                capture: capture,
+                                urgency: urgencyForCapture(capture),
+                                onTap: { openCaptureForEditing(capture) }
+                            )
 
-                            if capture.id != queuedCaptures.last?.id {
+                            if capture.id != displayedCaptures.last?.id {
                                 Divider()
                                     .padding(.horizontal, 16)
                             }
@@ -47,6 +70,7 @@ struct PopoverContentView: View {
             footer
         }
         .frame(width: 350)
+        .frame(maxHeight: maxPopoverHeight)
         .onAppear {
             timingEngine.refresh(events: activeEvents, captures: captures)
             menuBarController.onNewCapture = { [self] in openNewCapture() }
@@ -57,6 +81,26 @@ struct PopoverContentView: View {
             onCaptureChanged()
         }
     }
+
+    private var maxPopoverHeight: CGFloat {
+        let screenHeight = NSScreen.main?.visibleFrame.height ?? 800
+        return screenHeight * 0.85
+    }
+
+    // MARK: - Urgency per capture
+
+    private func urgencyForCapture(_ capture: Capture) -> UrgencyLevel {
+        let captureSubIds = Set(capture.subreddits.map(\.id))
+        var highest: UrgencyLevel = .none
+        for window in timingEngine.upcomingWindows {
+            if let subId = window.event.subreddit?.id, captureSubIds.contains(subId) {
+                highest = max(highest, window.urgency)
+            }
+        }
+        return highest
+    }
+
+    // MARK: - Header / Footer / Empty states
 
     private var header: some View {
         HStack {
@@ -88,6 +132,29 @@ struct PopoverContentView: View {
         }
     }
 
+    private var filterBar: some View {
+        HStack {
+            if let sub = subreddits.first(where: { $0.id == filterSubredditId }) {
+                Text("Filtered: \(sub.name)")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppColors.redditOrange)
+            }
+            Spacer()
+            Button("Show all") {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    filterSubredditId = nil
+                }
+            }
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.secondary)
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(AppColors.redditOrange.opacity(0.06))
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
     private var footer: some View {
         let eventCount = timingEngine.upcomingWindows.count
         let captureCount = queuedCaptures.count
@@ -115,6 +182,19 @@ struct PopoverContentView: View {
         }
         .frame(maxWidth: .infinity)
     }
+
+    private var filteredEmptyState: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Text("No captures for this subreddit")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Actions
 
     private func openNewCapture() {
         let formView = CaptureWindowView(
