@@ -274,6 +274,22 @@ private func makeContainer() throws -> ModelContainer {
     #expect(fetched[0].captures.count == 2)
 }
 
+@Test @MainActor func subredditCapturesBacklink() throws {
+    let container = try makeContainer()
+    let context = ModelContext(container)
+
+    let sub = Subreddit(name: "r/Test")
+    context.insert(sub)
+    let c1 = Capture(text: "Cap 1", subreddits: [sub])
+    let c2 = Capture(text: "Cap 2", subreddits: [sub])
+    context.insert(c1)
+    context.insert(c2)
+    try context.save()
+
+    let fetched = try context.fetch(FetchDescriptor<Subreddit>())
+    #expect(fetched[0].captures.count == 2)
+}
+
 @Test @MainActor func subredditEventsRelationshipBidirectional() throws {
     let container = try makeContainer()
     let context = ModelContext(container)

@@ -12,6 +12,9 @@ final class Subreddit {
     @Relationship(deleteRule: .cascade, inverse: \SubredditEvent.subreddit)
     var events: [SubredditEvent]
 
+    @Relationship(inverse: \Capture.subreddits)
+    var captures: [Capture]
+
     init(
         name: String,
         sortOrder: Int = 0,
@@ -24,5 +27,6 @@ final class Subreddit {
         self.peakDaysOverride = peakDaysOverride
         self.peakHoursUtcOverride = peakHoursUtcOverride
         self.events = []
+        self.captures = []
     }
 }

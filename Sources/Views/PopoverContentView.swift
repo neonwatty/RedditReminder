@@ -50,18 +50,7 @@ struct PopoverContentView: View {
                             }
                         )
 
-                        ForEach(displayedCaptures, id: \.id) { capture in
-                            CaptureCardView(
-                                capture: capture,
-                                urgency: urgencyForCapture(capture),
-                                onTap: { openCaptureForEditing(capture) }
-                            )
-
-                            if capture.id != displayedCaptures.last?.id {
-                                Divider()
-                                    .padding(.horizontal, 16)
-                            }
-                        }
+                        captureList(displayedCaptures)
                     }
                 }
             }
@@ -102,15 +91,30 @@ struct PopoverContentView: View {
 
     // MARK: - Urgency per capture
 
-    private func urgencyForCapture(_ capture: Capture) -> UrgencyLevel {
-        let captureSubIds = Set(capture.subreddits.map(\.id))
-        return timingEngine.upcomingWindows
-            .filter { window in
-                guard let subId = window.event.subreddit?.id else { return false }
-                return captureSubIds.contains(subId)
+    private var urgencyBySubredditId: [UUID: UrgencyLevel] {
+        var result: [UUID: UrgencyLevel] = [:]
+        for window in timingEngine.upcomingWindows {
+            guard let subId = window.event.subreddit?.id else { continue }
+            let current = result[subId] ?? .none
+            if window.urgency > current { result[subId] = window.urgency }
+        }
+        return result
+    }
+
+    private func captureList(_ captures: [Capture]) -> some View {
+        let map = urgencyBySubredditId
+        return ForEach(captures, id: \.id) { capture in
+            CaptureCardView(
+                capture: capture,
+                urgency: capture.subreddits.compactMap { map[$0.id] }.max() ?? .none,
+                onTap: { openCaptureForEditing(capture) }
+            )
+
+            if capture.id != captures.last?.id {
+                Divider()
+                    .padding(.horizontal, 16)
             }
-            .map(\.urgency)
-            .max() ?? .none
+        }
     }
 
     // MARK: - Header / Footer / Empty states
