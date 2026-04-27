@@ -1,9 +1,23 @@
 import Foundation
 import UserNotifications
 
+protocol NotificationCenterProtocol: Sendable {
+  func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
+  func add(_ request: UNNotificationRequest, withCompletionHandler handler: (@Sendable (Error?) -> Void)?)
+  func removePendingNotificationRequests(withIdentifiers identifiers: [String])
+  func removeAllPendingNotificationRequests()
+}
+
+extension UNUserNotificationCenter: @retroactive @unchecked Sendable {}
+extension UNUserNotificationCenter: NotificationCenterProtocol {}
+
 @MainActor
 final class NotificationService {
-  nonisolated(unsafe) private let center = UNUserNotificationCenter.current()
+  private let center: any NotificationCenterProtocol
+
+  init(center: any NotificationCenterProtocol = UNUserNotificationCenter.current()) {
+    self.center = center
+  }
 
   func requestPermission() async -> Bool {
     do {

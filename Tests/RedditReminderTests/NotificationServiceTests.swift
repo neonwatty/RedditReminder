@@ -1,0 +1,137 @@
+import Testing
+import Foundation
+import UserNotifications
+@testable import RedditReminder
+
+/// In-memory mock that records all notification operations for verification.
+private final class MockNotificationCenter: NotificationCenterProtocol, @unchecked Sendable {
+    var authorizationResult = true
+    private(set) var addedRequests: [UNNotificationRequest] = []
+    private(set) var removedIdentifiers: [[String]] = []
+    private(set) var removedAll = false
+
+    func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool {
+        authorizationResult
+    }
+
+    func add(_ request: UNNotificationRequest, withCompletionHandler handler: (@Sendable (Error?) -> Void)?) {
+        addedRequests.append(request)
+        handler?(nil)
+    }
+
+    func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
+        removedIdentifiers.append(identifiers)
+    }
+
+    func removeAllPendingNotificationRequests() {
+        removedAll = true
+    }
+}
+
+// MARK: - Permission
+
+@Test @MainActor func permissionGrantedReturnsTrue() async {
+    let mock = MockNotificationCenter()
+    mock.authorizationResult = true
+    let service = NotificationService(center: mock)
+    let result = await service.requestPermission()
+    #expect(result == true)
+}
+
+@Test @MainActor func permissionDeniedReturnsFalse() async {
+    let mock = MockNotificationCenter()
+    mock.authorizationResult = false
+    let service = NotificationService(center: mock)
+    let result = await service.requestPermission()
+    #expect(result == false)
+}
+
+// MARK: - Scheduling identifiers
+
+@Test @MainActor func windowNotificationUsesCorrectIdentifier() {
+    let mock = MockNotificationCenter()
+    let service = NotificationService(center: mock)
+    let eventId = "550E8400-E29B-41D4-A716-446655440000"
+
+    service.scheduleWindowNotification(
+        eventId: eventId,
+        title: "Post time",
+        body: "2 captures ready",
+        fireDate: Date().addingTimeInterval(3600)
+    )
+
+    #expect(mock.addedRequests.count == 1)
+    #expect(mock.addedRequests[0].identifier == "window-\(eventId)")
+    #expect(mock.addedRequests[0].content.categoryIdentifier == "POSTING_WINDOW")
+    #expect(mock.addedRequests[0].content.title == "Post time")
+    #expect(mock.addedRequests[0].content.body == "2 captures ready")
+}
+
+@Test @MainActor func nudgeNotificationUsesCorrectIdentifier() {
+    let mock = MockNotificationCenter()
+    let service = NotificationService(center: mock)
+    let eventId = "AABBCCDD-1234-5678-9ABC-DEF012345678"
+
+    service.scheduleEmptyQueueNudge(
+        eventId: eventId,
+        subredditName: "r/SideProject",
+        eventName: "Show-off Saturday",
+        fireDate: Date().addingTimeInterval(7200)
+    )
+
+    #expect(mock.addedRequests.count == 1)
+    #expect(mock.addedRequests[0].identifier == "nudge-\(eventId)")
+    #expect(mock.addedRequests[0].content.categoryIdentifier == "EMPTY_QUEUE_NUDGE")
+    #expect(mock.addedRequests[0].content.title == "Show-off Saturday is approaching")
+    #expect(mock.addedRequests[0].content.body == "Nothing queued for r/SideProject yet — capture something?")
+}
+
+// MARK: - Cancellation
+
+@Test @MainActor func cancelNotificationsRemovesBothIdentifiers() {
+    let mock = MockNotificationCenter()
+    let service = NotificationService(center: mock)
+    let eventId = "TEST-UUID"
+
+    service.cancelNotifications(eventId: eventId)
+
+    #expect(mock.removedIdentifiers.count == 1)
+    #expect(mock.removedIdentifiers[0].contains("window-TEST-UUID"))
+    #expect(mock.removedIdentifiers[0].contains("nudge-TEST-UUID"))
+}
+
+@Test @MainActor func cancelAllRemovesEverything() {
+    let mock = MockNotificationCenter()
+    let service = NotificationService(center: mock)
+
+    service.cancelAll()
+
+    #expect(mock.removedAll == true)
+}
+
+// MARK: - Trigger correctness
+
+@Test @MainActor func windowNotificationUsesCalendarTrigger() {
+    let mock = MockNotificationCenter()
+    let service = NotificationService(center: mock)
+
+    let fireDate = Date().addingTimeInterval(3600)
+    service.scheduleWindowNotification(
+        eventId: "trigger-test",
+        title: "Test",
+        body: "Test",
+        fireDate: fireDate
+    )
+
+    let trigger = mock.addedRequests[0].trigger as? UNCalendarNotificationTrigger
+    #expect(trigger != nil)
+    #expect(trigger?.repeats == false)
+
+    let cal = Calendar.current
+    let expected = cal.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
+    #expect(trigger?.dateComponents.year == expected.year)
+    #expect(trigger?.dateComponents.month == expected.month)
+    #expect(trigger?.dateComponents.day == expected.day)
+    #expect(trigger?.dateComponents.hour == expected.hour)
+    #expect(trigger?.dateComponents.minute == expected.minute)
+}
