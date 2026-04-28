@@ -1,7 +1,17 @@
 import Testing
 import Foundation
+import SwiftData
 import UserNotifications
 @testable import RedditReminder
+
+private struct TemporaryDefaults {
+    let defaults: UserDefaults
+    let suiteName: String
+
+    func cleanup() {
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+}
 
 private final class RecordingNotificationCenter: NotificationCenterProtocol, @unchecked Sendable {
     var authorizationStatus: UNAuthorizationStatus = .authorized
@@ -32,19 +42,19 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 }
 
 @Test @MainActor func appDelegateSchedulesWindowAndEmptyQueueNudge() async {
-    UserDefaults.standard.set(true, forKey: SettingsKey.notificationsEnabled)
-    UserDefaults.standard.set(true, forKey: SettingsKey.nudgeWhenEmpty)
-    defer {
-        UserDefaults.standard.removeObject(forKey: SettingsKey.notificationsEnabled)
-        UserDefaults.standard.removeObject(forKey: SettingsKey.nudgeWhenEmpty)
-    }
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.notificationsEnabled)
+    defaults.set(true, forKey: SettingsKey.nudgeWhenEmpty)
 
     let center = RecordingNotificationCenter()
     let delegate = AppDelegate(
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        defaults: defaults
     )
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(3600))
@@ -63,15 +73,18 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 }
 
 @Test @MainActor func appDelegateSkipsPastNotificationFireDatesAndCancelsExistingRequests() async {
-    UserDefaults.standard.set(true, forKey: SettingsKey.notificationsEnabled)
-    defer { UserDefaults.standard.removeObject(forKey: SettingsKey.notificationsEnabled) }
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
     let delegate = AppDelegate(
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        defaults: defaults
     )
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(1800))
@@ -92,15 +105,18 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 }
 
 @Test @MainActor func appDelegateCancelsStaleActiveEvents() async {
-    UserDefaults.standard.set(true, forKey: SettingsKey.notificationsEnabled)
-    defer { UserDefaults.standard.removeObject(forKey: SettingsKey.notificationsEnabled) }
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
     let delegate = AppDelegate(
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        defaults: defaults
     )
     let sub = Subreddit(name: "r/Test")
     let stale = SubredditEvent(name: "Too Far", subreddit: sub, oneOffDate: Date().addingTimeInterval(48 * 3600))
@@ -113,19 +129,70 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 }
 
 @Test @MainActor func appDelegateCancelsAllWhenNotificationsDisabled() async {
-    UserDefaults.standard.set(false, forKey: SettingsKey.notificationsEnabled)
-    defer { UserDefaults.standard.removeObject(forKey: SettingsKey.notificationsEnabled) }
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(false, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
     let delegate = AppDelegate(
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        defaults: defaults
     )
 
     await delegate.scheduleNotifications(activeEvents: [], windows: [])
 
     #expect(center.removedAll)
     #expect(center.addedRequests.isEmpty)
+}
+
+@Test @MainActor func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() throws {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(15, forKey: SettingsKey.defaultLeadTimeMinutes)
+    defaults.set(false, forKey: SettingsKey.notificationsEnabled)
+
+    let container = try ModelContainer(
+        for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let subreddit = Subreddit(name: "r/SideProject")
+    context.insert(subreddit)
+    try context.save()
+
+    let delegate = AppDelegate(
+        menuBarController: MenuBarController(),
+        timingEngine: TimingEngine(),
+        notificationService: NotificationService(center: RecordingNotificationCenter()),
+        heuristicsStore: HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false),
+        defaults: defaults
+    )
+    delegate.modelContainer = container
+
+    delegate.runRefreshCycle()
+
+    let events = try context.fetch(FetchDescriptor<SubredditEvent>())
+    #expect(!events.isEmpty)
+    #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
+}
+
+private func makeTemporaryDefaults() -> TemporaryDefaults {
+    let suiteName = "AppDelegateSchedulingTests-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    return TemporaryDefaults(defaults: defaults, suiteName: suiteName)
+}
+
+private func makeHeuristicsTestBundle() -> Bundle {
+    let sourceFile = URL(fileURLWithPath: #filePath)
+    let projectRoot = sourceFile
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+    let resourcesDir = projectRoot.appendingPathComponent("Resources")
+    return Bundle(path: resourcesDir.path) ?? .main
 }
