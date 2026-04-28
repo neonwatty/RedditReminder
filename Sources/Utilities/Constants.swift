@@ -80,7 +80,7 @@ enum SubredditName {
     guard candidate.count >= minLength else { return .failure(.tooShort) }
     guard candidate.count <= maxLength else { return .failure(.tooLong) }
 
-    let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
+    let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_")
     guard candidate.unicodeScalars.allSatisfy({ allowed.contains($0) }) else {
       return .failure(.invalidCharacters)
     }

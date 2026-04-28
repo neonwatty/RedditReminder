@@ -83,6 +83,10 @@ private func makeContainer() throws -> ModelContainer {
     #expect(SubredditName.normalize("bad name") == .failure(.invalidCharacters))
 }
 
+@Test func subredditNameRejectsNonAsciiLetters() {
+    #expect(SubredditName.normalize("café") == .failure(.invalidCharacters))
+}
+
 @Test func subredditNameRejectsTooShort() {
     #expect(SubredditName.normalize("ab") == .failure(.tooShort))
 }
