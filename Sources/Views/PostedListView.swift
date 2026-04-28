@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct PostedListView: View {
     let captures: [Capture]

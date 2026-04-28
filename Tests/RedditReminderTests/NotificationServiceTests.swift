@@ -93,6 +93,8 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     #expect(mock.addedRequests[0].content.categoryIdentifier == "EMPTY_QUEUE_NUDGE")
     #expect(mock.addedRequests[0].content.title == "Show-off Saturday is approaching")
     #expect(mock.addedRequests[0].content.body == "Nothing queued for r/SideProject yet — capture something?")
+    #expect(mock.addedRequests[0].content.userInfo["subredditName"] as? String == "r/SideProject")
+    #expect(mock.addedRequests[0].content.userInfo["eventId"] as? String == eventId)
 }
 
 // MARK: - Cancellation

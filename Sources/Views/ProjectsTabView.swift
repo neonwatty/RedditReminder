@@ -121,7 +121,11 @@ struct ProjectsTabView: View {
             Button("Rename") { startEditing(project) }
             Button(project.archived ? "Unarchive" : "Archive") {
                 project.archived.toggle()
-                try? modelContext.save()
+                do { try modelContext.save() }
+                catch {
+                    NSLog("RedditReminder: archive toggle failed: \(error)")
+                    project.archived.toggle()
+                }
             }
             Divider()
             Button("Delete", role: .destructive) { deleteProject(project) }
@@ -173,7 +177,12 @@ struct ProjectsTabView: View {
         guard !trimmed.isEmpty, canAdd else { return }
         let project = Project(name: trimmed)
         modelContext.insert(project)
-        try? modelContext.save()
+        do { try modelContext.save() }
+        catch {
+            NSLog("RedditReminder: add project failed: \(error)")
+            modelContext.delete(project)
+            return
+        }
         newProjectName = ""
     }
 
@@ -185,8 +194,13 @@ struct ProjectsTabView: View {
     private func finishEditing(_ project: Project) {
         let trimmed = editName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty {
+            let oldName = project.name
             project.name = trimmed
-            try? modelContext.save()
+            do { try modelContext.save() }
+            catch {
+                NSLog("RedditReminder: rename project failed: \(error)")
+                project.name = oldName
+            }
         }
         editingProject = nil
         editName = ""
@@ -194,6 +208,10 @@ struct ProjectsTabView: View {
 
     private func deleteProject(_ project: Project) {
         modelContext.delete(project)
-        try? modelContext.save()
+        do { try modelContext.save() }
+        catch {
+            NSLog("RedditReminder: delete project failed: \(error)")
+            modelContext.rollback()
+        }
     }
 }

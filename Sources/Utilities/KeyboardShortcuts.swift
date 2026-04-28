@@ -88,7 +88,7 @@ final class GlobalShortcut {
 
     let isCmd = flags.contains(.maskCommand)
     let isShift = flags.contains(.maskShift)
-    let isR = keyCode == 15
+    let isR = keyCode == 15  // kVK_ANSI_R
 
     if isCmd && isShift && isR {
       let handler = state.withLock { $0.handler }

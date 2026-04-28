@@ -26,8 +26,7 @@ struct MarkdownPreviewView: View {
     }
 
     private func renderMarkdown(_ input: String) -> AttributedString? {
-        // Convert Reddit ~~strikethrough~~ to standard markdown
-        // Just strip ~~ for now since AttributedString doesn't support strikethrough
+        // Strip Reddit ~~strikethrough~~ markers — AttributedString lacks strikethrough support
         let processed = input.replacingOccurrences(
             of: "~~(.+?)~~",
             with: "$1",

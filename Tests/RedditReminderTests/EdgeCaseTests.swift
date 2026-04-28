@@ -124,8 +124,8 @@ private func makeContainer() throws -> ModelContainer {
     QAFixtures.seed(context: context)
 
     #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 4)
-    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 2)
-    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 6)
+    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 3)
+    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 8)
     #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 3)
 }
 

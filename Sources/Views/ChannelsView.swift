@@ -88,7 +88,12 @@ struct ChannelsTabView: View {
         let nextOrder = (subreddits.map(\.sortOrder).max() ?? -1) + 1
         let sub = Subreddit(name: name, sortOrder: nextOrder)
         modelContext.insert(sub)
-        try? modelContext.save()
+        do { try modelContext.save() }
+        catch {
+            NSLog("RedditReminder: add subreddit failed: \(error)")
+            modelContext.delete(sub)
+            return
+        }
         newSubredditName = ""
     }
 
@@ -101,7 +106,8 @@ struct ChannelsTabView: View {
 
     private func savePendingChanges() {
         guard modelContext.hasChanges else { return }
-        try? modelContext.save()
+        do { try modelContext.save() }
+        catch { NSLog("RedditReminder: save pending changes failed: \(error)") }
     }
 
     private func deleteSubreddit(_ sub: Subreddit) {
@@ -109,6 +115,10 @@ struct ChannelsTabView: View {
             notificationService.cancelNotifications(eventId: event.id.uuidString)
         }
         modelContext.delete(sub)
-        try? modelContext.save()
+        do { try modelContext.save() }
+        catch {
+            NSLog("RedditReminder: delete subreddit failed: \(error)")
+            modelContext.rollback()
+        }
     }
 }
