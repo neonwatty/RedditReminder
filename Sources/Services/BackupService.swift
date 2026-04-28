@@ -135,7 +135,8 @@ struct BackupService {
     func importBackup(
         from data: Data,
         into context: ModelContext,
-        defaults: UserDefaults = .standard
+        defaults: UserDefaults = .standard,
+        mediaStore: MediaStore? = nil
     ) throws {
         let backup = try decoder.decode(AppBackup.self, from: data)
         guard backup.version == 1 else { throw BackupError.unsupportedVersion(backup.version) }
@@ -199,7 +200,7 @@ struct BackupService {
                 text: item.text,
                 notes: item.notes,
                 links: item.links,
-                mediaRefs: item.mediaRefs,
+                mediaRefs: restoredMediaRefs(from: item, mediaStore: mediaStore),
                 project: item.projectId.flatMap { projectsById[$0] },
                 subreddits: subreddits
             )
@@ -238,6 +239,11 @@ struct BackupService {
                 throw BackupError.missingRelationship(subredditId.uuidString)
             }
         }
+    }
+
+    private func restoredMediaRefs(from capture: BackupCapture, mediaStore: MediaStore?) -> [String] {
+        guard let mediaStore else { return capture.mediaRefs }
+        return capture.mediaRefs.filter { mediaStore.exists(captureId: capture.id, ref: $0) }
     }
 
     private func applySettings(_ settings: BackupSettings, to defaults: UserDefaults) {

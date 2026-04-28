@@ -81,6 +81,10 @@ final class MediaStore {
       .appendingPathComponent(ref)
   }
 
+  func exists(captureId: UUID, ref: String) -> Bool {
+    fm.fileExists(atPath: mediaURL(captureId: captureId, ref: ref).path)
+  }
+
   func delete(captureId: UUID, ref: String) {
     for url in [mediaURL(captureId: captureId, ref: ref), thumbnailURL(captureId: captureId, ref: ref)] {
       do {
