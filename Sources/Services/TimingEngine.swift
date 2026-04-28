@@ -35,6 +35,18 @@ final class TimingEngine {
             return oneOff > date ? oneOff : nil
         }
         if let rrule = event.rrule {
+            if let hour = event.recurrenceHour,
+               let minute = event.recurrenceMinute,
+               let timeZoneId = event.recurrenceTimeZoneIdentifier,
+               let timeZone = TimeZone(identifier: timeZoneId) {
+                return RRuleHelper.nextOccurrence(
+                    rrule: rrule,
+                    after: date,
+                    hour: hour,
+                    minute: minute,
+                    timeZone: timeZone
+                )
+            }
             return RRuleHelper.nextOccurrence(rrule: rrule, after: date)
         }
         return nil

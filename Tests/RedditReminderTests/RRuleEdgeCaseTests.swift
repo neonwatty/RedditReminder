@@ -175,6 +175,24 @@ import Foundation
     #expect(dayDiff == 7) // next week
 }
 
+@Test func fixedUtcWeeklyOccurrenceDoesNotUseAfterTime() {
+    let after = calendar(2026, 4, 22, 9, 37) // Wednesday 09:37 ET
+    let next = RRuleHelper.nextOccurrence(
+        rrule: "FREQ=WEEKLY;BYDAY=SA",
+        after: after,
+        hour: 14,
+        minute: 0,
+        timeZone: TimeZone(identifier: "UTC")!
+    )
+
+    #expect(next != nil)
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = TimeZone(identifier: "UTC")!
+    #expect(cal.component(.weekday, from: next!) == 7)
+    #expect(cal.component(.hour, from: next!) == 14)
+    #expect(cal.component(.minute, from: next!) == 0)
+}
+
 // MARK: - Date construction helpers
 
 /// Matches RRuleHelperTests convention — fixed date in America/New_York.

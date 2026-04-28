@@ -30,8 +30,8 @@ enum DefaultSubreddits {
 
         guard count == 0 else { return }
 
-        for name in names {
-            context.insert(Subreddit(name: name))
+        for (index, name) in names.enumerated() {
+            context.insert(Subreddit(name: name, sortOrder: index))
         }
 
         do {

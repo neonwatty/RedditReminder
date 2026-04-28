@@ -23,22 +23,34 @@ final class MediaStore {
     guard let data = pngData(from: image) else {
       throw MediaError.encodingFailed
     }
-    let fileURL = captureDir.appendingPathComponent(fileName)
+    let storedName = uniqueFileName(fileName, in: captureDir)
+    let fileURL = captureDir.appendingPathComponent(storedName)
     try data.write(to: fileURL)
 
     let thumbnail = generateThumbnail(from: image, maxSize: MediaConstants.thumbnailMaxSize)
     if let thumbData = pngData(from: thumbnail) {
-      let thumbURL = thumbDir.appendingPathComponent(fileName)
+      let thumbURL = thumbDir.appendingPathComponent(storedName)
       do {
         try thumbData.write(to: thumbURL)
       } catch {
         NSLog("RedditReminder: failed to write thumbnail: \(error)")
       }
     } else {
-      NSLog("RedditReminder: failed to encode thumbnail PNG for \(fileName)")
+      NSLog("RedditReminder: failed to encode thumbnail PNG for \(storedName)")
     }
 
-    return fileName
+    return storedName
+  }
+
+  func saveFile(at sourceURL: URL, captureId: UUID) throws -> String {
+    let ext = sourceURL.pathExtension.lowercased()
+    guard MediaConstants.supportedImageTypes.contains(ext) else {
+      throw MediaError.unsupportedType
+    }
+    guard let image = NSImage(contentsOf: sourceURL) else {
+      throw MediaError.decodingFailed
+    }
+    return try save(image: image, captureId: captureId, fileName: sourceURL.lastPathComponent)
   }
 
   func loadImage(captureId: UUID, ref: String) -> NSImage? {
@@ -54,6 +66,31 @@ final class MediaStore {
       .appendingPathComponent("thumbnails")
       .appendingPathComponent(ref)
     return NSImage(contentsOf: url)
+  }
+
+  func mediaURL(captureId: UUID, ref: String) -> URL {
+    rootDir
+      .appendingPathComponent(captureId.uuidString)
+      .appendingPathComponent(ref)
+  }
+
+  func thumbnailURL(captureId: UUID, ref: String) -> URL {
+    rootDir
+      .appendingPathComponent(captureId.uuidString)
+      .appendingPathComponent("thumbnails")
+      .appendingPathComponent(ref)
+  }
+
+  func delete(captureId: UUID, ref: String) {
+    for url in [mediaURL(captureId: captureId, ref: ref), thumbnailURL(captureId: captureId, ref: ref)] {
+      do {
+        try fm.removeItem(at: url)
+      } catch CocoaError.fileNoSuchFile {
+        continue
+      } catch {
+        NSLog("RedditReminder: failed to delete media ref \(ref) for \(captureId): \(error)")
+      }
+    }
   }
 
   func deleteAll(captureId: UUID) {
@@ -90,6 +127,21 @@ final class MediaStore {
     return thumbnail
   }
 
+  private func uniqueFileName(_ fileName: String, in directory: URL) -> String {
+    let rawBase = URL(fileURLWithPath: fileName).deletingPathExtension().lastPathComponent
+    let rawExt = URL(fileURLWithPath: fileName).pathExtension
+    let base = rawBase.isEmpty ? "media" : rawBase
+    let ext = rawExt.isEmpty ? "png" : rawExt
+
+    var candidate = "\(base).\(ext)"
+    var index = 1
+    while fm.fileExists(atPath: directory.appendingPathComponent(candidate).path) {
+      candidate = "\(base)-\(index).\(ext)"
+      index += 1
+    }
+    return candidate
+  }
+
   private func pngData(from image: NSImage) -> Data? {
     guard let tiff = image.tiffRepresentation,
       let bitmap = NSBitmapImageRep(data: tiff),
@@ -100,5 +152,7 @@ final class MediaStore {
 }
 
 enum MediaError: Error {
+  case decodingFailed
   case encodingFailed
+  case unsupportedType
 }

@@ -8,12 +8,51 @@ enum RRuleHelper {
     return occurrences.first
   }
 
+  static func nextOccurrence(
+    rrule: String,
+    after: Date,
+    hour: Int,
+    minute: Int,
+    timeZone: TimeZone
+  ) -> Date? {
+    nextOccurrences(
+      rrule: rrule,
+      after: after,
+      count: 1,
+      hour: hour,
+      minute: minute,
+      timeZone: timeZone
+    ).first
+  }
+
   /// Return the next `count` occurrences of an RRULE after `after`.
   static func nextOccurrences(rrule: String, after: Date, count: Int) -> [Date] {
     guard let parsed = parse(rrule) else { return [] }
 
     let cal = Calendar.current
     let time = cal.dateComponents([.hour, .minute], from: after)
+
+    switch parsed {
+    case .daily:
+      return nextDailyOccurrences(after: after, time: time, count: count, cal: cal)
+    case .weekly(let targetWeekday):
+      return nextWeeklyOccurrences(after: after, targetWeekday: targetWeekday, time: time, count: count, cal: cal)
+    }
+  }
+
+  static func nextOccurrences(
+    rrule: String,
+    after: Date,
+    count: Int,
+    hour: Int,
+    minute: Int,
+    timeZone: TimeZone
+  ) -> [Date] {
+    guard let parsed = parse(rrule) else { return [] }
+
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = timeZone
+    let time = DateComponents(hour: min(23, max(0, hour)), minute: min(59, max(0, minute)))
 
     switch parsed {
     case .daily:

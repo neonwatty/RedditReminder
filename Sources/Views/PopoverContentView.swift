@@ -4,7 +4,9 @@ import SwiftData
 struct PopoverContentView: View {
     let menuBarController: MenuBarController
     let notificationService: NotificationService
+    let heuristicsStore: HeuristicsStore
     let onCaptureChanged: @MainActor () -> Void
+    private let mediaStore = MediaStore()
 
     @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
     @Query private var allEvents: [SubredditEvent]
@@ -45,14 +47,56 @@ struct PopoverContentView: View {
         .background(AppColors.popoverBg)
         .frame(width: 350).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
         .onAppear {
-            timingEngine.refresh(events: activeEvents, captures: captures)
+            refreshTiming()
             menuBarController.onNewCapture = { [self] in openNewCapture() }
             menuBarController.onOpenPreferences = { [self] in openPreferences() }
         }
-        .onChange(of: captures.count) {
-            timingEngine.refresh(events: activeEvents, captures: captures)
-            onCaptureChanged()
+        .onChange(of: captureTimingSignature) {
+            refreshTiming()
         }
+        .onChange(of: eventTimingSignature) {
+            refreshTiming()
+        }
+        .onChange(of: subredditTimingSignature) {
+            refreshTiming()
+        }
+    }
+
+    private var captureTimingSignature: [String] {
+        captures.map { capture in
+            let subIds = capture.subreddits.map(\.id.uuidString).sorted().joined(separator: ",")
+            return "\(capture.id.uuidString):\(capture.status.rawValue):\(subIds)"
+        }
+    }
+
+    private var eventTimingSignature: [String] {
+        allEvents.map { event in
+            [
+                event.id.uuidString,
+                event.isActive.description,
+                event.rrule ?? "",
+                event.oneOffDate?.timeIntervalSince1970.description ?? "",
+                event.recurrenceHour?.description ?? "",
+                event.recurrenceMinute?.description ?? "",
+                event.recurrenceTimeZoneIdentifier ?? "",
+                event.reminderLeadMinutes.description,
+                event.subreddit?.id.uuidString ?? ""
+            ].joined(separator: "|")
+        }.sorted()
+    }
+
+    private var subredditTimingSignature: [String] {
+        subreddits.map { subreddit in
+            [
+                subreddit.id.uuidString,
+                subreddit.peakDaysOverride?.joined(separator: ",") ?? "",
+                subreddit.peakHoursUtcOverride?.map(String.init).joined(separator: ",") ?? ""
+            ].joined(separator: "|")
+        }
+    }
+
+    private func refreshTiming() {
+        timingEngine.refresh(events: activeEvents, captures: captures)
     }
 
     // MARK: - Urgency
@@ -228,7 +272,10 @@ struct PopoverContentView: View {
     }
 
     private func openPreferences() {
-        let prefsView = PreferencesView(notificationService: notificationService)
+        let prefsView = PreferencesView(
+            notificationService: notificationService,
+            heuristicsStore: heuristicsStore
+        )
             .modelContainer(modelContext.container)
         menuBarController.showPreferencesWindow(content: prefsView)
     }
@@ -236,20 +283,65 @@ struct PopoverContentView: View {
     @discardableResult
     private func saveCapture(_ result: CaptureFormResult) -> Bool {
         let c = Capture(text: result.text, notes: result.notes, links: result.links,
-                        mediaRefs: result.mediaURLs.map(\.lastPathComponent),
+                        mediaRefs: [],
                         project: result.project, subreddits: result.subreddits)
         modelContext.insert(c)
-        do { try modelContext.save(); return true }
-        catch { NSLog("RedditReminder: save failed: \(error)"); return false }
+        do {
+            c.mediaRefs = try saveMediaFiles(result.mediaURLs, captureId: c.id)
+            try modelContext.save()
+            onCaptureChanged()
+            return true
+        }
+        catch {
+            mediaStore.deleteAll(captureId: c.id)
+            modelContext.delete(c)
+            NSLog("RedditReminder: save failed: \(error)")
+            return false
+        }
     }
 
     @discardableResult
     private func updateCapture(_ capture: Capture, with r: CaptureFormResult) -> Bool {
         capture.text = r.text; capture.notes = r.notes; capture.links = r.links
-        capture.mediaRefs = r.mediaURLs.map(\.lastPathComponent)
+        let removedRefs = Set(r.removedMediaRefs)
+        if !removedRefs.isEmpty {
+            capture.mediaRefs.removeAll { removedRefs.contains($0) }
+        }
+
+        var newlySavedRefs: [String] = []
+        if !r.mediaURLs.isEmpty {
+            do {
+                for url in r.mediaURLs {
+                    let ref = try mediaStore.saveFile(at: url, captureId: capture.id)
+                    newlySavedRefs.append(ref)
+                    capture.mediaRefs.append(ref)
+                }
+            } catch {
+                NSLog("RedditReminder: media update failed: \(error)")
+                for ref in newlySavedRefs {
+                    mediaStore.delete(captureId: capture.id, ref: ref)
+                }
+                modelContext.rollback()
+                return false
+            }
+        }
         capture.project = r.project; capture.subreddits = r.subreddits
-        do { try modelContext.save(); return true }
-        catch { NSLog("RedditReminder: update failed: \(error)"); return false }
+        do {
+            try modelContext.save()
+            for ref in removedRefs {
+                mediaStore.delete(captureId: capture.id, ref: ref)
+            }
+            onCaptureChanged()
+            return true
+        }
+        catch {
+            NSLog("RedditReminder: update failed: \(error)")
+            for ref in newlySavedRefs {
+                mediaStore.delete(captureId: capture.id, ref: ref)
+            }
+            modelContext.rollback()
+            return false
+        }
     }
 
     private func markCaptureAsPosted(_ capture: Capture) {
@@ -261,10 +353,12 @@ struct PopoverContentView: View {
             showToastAfterReopen("Failed to mark as posted")
             return
         }
+        onCaptureChanged()
         showToastAfterReopen("Marked as posted")
     }
 
     private func deleteCapture(_ capture: Capture) {
+        let captureId = capture.id
         modelContext.delete(capture)
         do { try modelContext.save() }
         catch {
@@ -273,7 +367,24 @@ struct PopoverContentView: View {
             showToastAfterReopen("Delete failed")
             return
         }
+        mediaStore.deleteAll(captureId: captureId)
+        onCaptureChanged()
         showToastAfterReopen("Capture deleted")
+    }
+
+    private func saveMediaFiles(_ urls: [URL], captureId: UUID) throws -> [String] {
+        var refs: [String] = []
+        do {
+            for url in urls {
+                refs.append(try mediaStore.saveFile(at: url, captureId: captureId))
+            }
+            return refs
+        } catch {
+            for ref in refs {
+                mediaStore.delete(captureId: captureId, ref: ref)
+            }
+            throw error
+        }
     }
 
     private func showToastAfterReopen(_ message: String) {

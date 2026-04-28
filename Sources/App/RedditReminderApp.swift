@@ -34,6 +34,7 @@ struct RedditReminderApp: App {
                     let popoverView = PopoverContentView(
                         menuBarController: appDelegate.menuBarController,
                         notificationService: appDelegate.notificationService,
+                        heuristicsStore: appDelegate.heuristicsStore,
                         onCaptureChanged: { [weak appDelegate] in appDelegate?.runRefreshCycle() }
                     )
                     .modelContainer(container)

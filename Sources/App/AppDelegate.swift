@@ -4,21 +4,49 @@ import SwiftData
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
-    let menuBarController = MenuBarController()
-    let timingEngine = TimingEngine()
-    let notificationService = NotificationService()
-    let heuristicsStore = HeuristicsStore()
+    let menuBarController: MenuBarController
+    let timingEngine: TimingEngine
+    let notificationService: NotificationService
+    let heuristicsStore: HeuristicsStore
 
     var modelContainer: ModelContainer?
 
     private let globalShortcut = GlobalShortcut()
     private var refreshTask: Task<Void, Never>?
+    private var shortcutObserver: NSObjectProtocol?
+    private var activeShortcutConfig: KeyboardShortcutConfig?
+
+    override convenience init() {
+        self.init(
+            menuBarController: MenuBarController(),
+            timingEngine: TimingEngine(),
+            notificationService: NotificationService(),
+            heuristicsStore: HeuristicsStore()
+        )
+    }
+
+    init(
+        menuBarController: MenuBarController,
+        timingEngine: TimingEngine,
+        notificationService: NotificationService,
+        heuristicsStore: HeuristicsStore
+    ) {
+        self.menuBarController = menuBarController
+        self.timingEngine = timingEngine
+        self.notificationService = notificationService
+        self.heuristicsStore = heuristicsStore
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Register global shortcut
-        globalShortcut.register { [weak self] in
-            MainActor.assumeIsolated {
-                self?.menuBarController.togglePopover()
+        registerGlobalShortcut()
+        shortcutObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.registerGlobalShortcut()
             }
         }
 
@@ -34,12 +62,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         // Start 5-minute refresh loop
         startRefreshLoop()
 
-        NSLog("RedditReminder: launched, ⌘⇧R registered, refresh loop started")
+        NSLog("RedditReminder: launched, refresh loop started")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         globalShortcut.unregister()
         refreshTask?.cancel()
+        if let shortcutObserver {
+            NotificationCenter.default.removeObserver(shortcutObserver)
+        }
+    }
+
+    private func registerGlobalShortcut() {
+        let config = KeyboardShortcutConfig.load()
+        guard config != activeShortcutConfig else { return }
+        let registered = globalShortcut.register(config: config) { [weak self] in
+            MainActor.assumeIsolated {
+                self?.menuBarController.togglePopover()
+            }
+        }
+        if registered {
+            activeShortcutConfig = config
+            NSLog("RedditReminder: \(config.display) registered")
+        } else {
+            activeShortcutConfig = nil
+        }
     }
 
     private func startRefreshLoop() {
@@ -60,6 +107,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
 
         let context = container.mainContext
+
+        let subreddits: [Subreddit]
+
+        do {
+            subreddits = try context.fetch(FetchDescriptor<Subreddit>())
+            try heuristicsStore.syncGeneratedEvents(
+                for: subreddits,
+                context: context,
+                defaultLeadTimeMinutes: defaultLeadTimeMinutes
+            )
+        } catch {
+            NSLog("RedditReminder: heuristic event sync failed: \(error)")
+        }
 
         let events: [SubredditEvent]
         let captures: [Capture]
@@ -86,7 +146,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    private func scheduleNotifications(
+    private var defaultLeadTimeMinutes: Int {
+        UserDefaults.standard.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
+    }
+
+    func scheduleNotifications(
         activeEvents: [SubredditEvent],
         windows: [TimingEngine.UpcomingWindow]
     ) async {
@@ -115,7 +179,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             // Skip scheduling if notification fire time is already past
             // (e.g., event in 30 min but lead time is 60 min).
             // A past-dated UNCalendarNotificationTrigger fires immediately.
-            guard window.notificationFireDate > now else { continue }
+            guard window.notificationFireDate > now else {
+                notificationService.cancelNotifications(eventId: eventId)
+                continue
+            }
 
             notificationService.scheduleWindowNotification(
                 eventId: eventId,

@@ -3,7 +3,7 @@ import SwiftUI
 struct NotificationsTabView: View {
     @AppStorage(SettingsKey.notificationsEnabled) private var notificationsEnabled: Bool = true
     @AppStorage(SettingsKey.nudgeWhenEmpty) private var nudgeWhenEmpty: Bool = true
-    @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes: Int = 60
+    @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
 
     var body: some View {
         Form {
@@ -13,9 +13,9 @@ struct NotificationsTabView: View {
 
                 if notificationsEnabled {
                     Picker("Remind me before events", selection: $defaultLeadTimeMinutes) {
-                        Text("15 minutes").tag(15)
-                        Text("30 minutes").tag(30)
-                        Text("1 hour").tag(60)
+                        ForEach(SettingsOptions.leadTimeMinutes, id: \.self) { minutes in
+                            Text(Self.leadTimeLabel(minutes)).tag(minutes)
+                        }
                     }
                     .font(.system(size: 12))
 
@@ -26,5 +26,9 @@ struct NotificationsTabView: View {
         }
         .formStyle(.grouped)
         .padding(8)
+    }
+
+    private static func leadTimeLabel(_ minutes: Int) -> String {
+        minutes < 60 ? "\(minutes) minutes" : "\(minutes / 60) hour\(minutes == 60 ? "" : "s")"
     }
 }

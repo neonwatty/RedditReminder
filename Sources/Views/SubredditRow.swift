@@ -3,6 +3,7 @@ import SwiftData
 
 struct SubredditRow: View {
     @Bindable var sub: Subreddit
+    let peakInfo: PeakInfo?
     let isExpanded: Bool
     let onToggle: () -> Void
     let onDelete: () -> Void
@@ -53,11 +54,13 @@ struct SubredditRow: View {
 
                     HStack {
                         Spacer()
-                        Button("Reset to defaults", action: resetDefaults)
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                            .underline()
-                            .buttonStyle(.plain)
+                        if hasOverride {
+                            Button("Reset to defaults", action: resetDefaults)
+                                .font(.system(size: 9))
+                                .foregroundStyle(.secondary)
+                                .underline()
+                                .buttonStyle(.plain)
+                        }
                     }
                 }
                 .padding(.horizontal, 10)
@@ -78,13 +81,13 @@ struct SubredditRow: View {
     private var peakDayChips: some View {
         HStack(spacing: 4) {
             ForEach(Array(zip(Self.allDays, Self.dayKeys)), id: \.0) { display, key in
-                let isOn = sub.peakDaysOverride?.contains(key) ?? false
+                let isOn = effectivePeakDays.contains(key)
                 Button(action: { toggleDay(key) }) {
                     Text(display)
                         .font(.system(size: 10, weight: .medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(isOn ? AppColors.redditOrange.opacity(0.12) : Color.clear)
+                        .background(isOn ? AppColors.redditOrange.opacity(hasOverride ? 0.12 : 0.06) : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 5))
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
@@ -114,13 +117,13 @@ struct SubredditRow: View {
         let hours = Self.displayHours
         return LazyVGrid(columns: columns, spacing: 3) {
             ForEach(hours, id: \.self) { hour in
-                let isOn = sub.peakHoursUtcOverride?.contains(hour) ?? false
+                let isOn = effectivePeakHours.contains(hour)
                 Button(action: { toggleHour(hour) }) {
                     Text("\(hour)")
                         .font(.system(size: 9, weight: .medium))
                         .frame(minWidth: 24)
                         .padding(.vertical, 3)
-                        .background(isOn ? Color.green.opacity(0.12) : Color.clear)
+                        .background(isOn ? Color.green.opacity(hasOverride ? 0.12 : 0.06) : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
@@ -145,13 +148,26 @@ struct SubredditRow: View {
     }
 
     private var peakDaysSummary: String {
-        guard let days = sub.peakDaysOverride, !days.isEmpty else { return "defaults" }
-        return days.map { $0.prefix(3).capitalized }.joined(separator: " ")
+        guard !effectivePeakDays.isEmpty else { return "no defaults" }
+        let suffix = hasOverride ? "" : " defaults"
+        return effectivePeakDays.map { $0.prefix(3).capitalized }.joined(separator: " ") + suffix
     }
 
     private func resetDefaults() {
         sub.peakDaysOverride = nil
         sub.peakHoursUtcOverride = nil
+    }
+
+    private var hasOverride: Bool {
+        sub.peakDaysOverride != nil || sub.peakHoursUtcOverride != nil
+    }
+
+    private var effectivePeakDays: [String] {
+        sub.peakDaysOverride ?? peakInfo?.peakDays ?? []
+    }
+
+    private var effectivePeakHours: [Int] {
+        sub.peakHoursUtcOverride ?? peakInfo?.peakHoursUtc ?? []
     }
 }
 
