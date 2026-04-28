@@ -186,11 +186,9 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         let appMenu = NSMenu()
         let appMenuItem = NSMenuItem()
         appMenuItem.submenu = appMenu
-        appMenu.addItem(
-            withTitle: "Preferences…",
-            action: #selector(handleOpenPreferences),
-            keyEquivalent: ","
-        )
+        let prefsItem = NSMenuItem(title: "Preferences…", action: #selector(handleOpenPreferences), keyEquivalent: ",")
+        prefsItem.target = self
+        appMenu.addItem(prefsItem)
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(
             withTitle: "Quit RedditReminder",
@@ -202,21 +200,21 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         let fileMenu = NSMenu(title: "File")
         let fileMenuItem = NSMenuItem()
         fileMenuItem.submenu = fileMenu
-        fileMenu.addItem(
-            withTitle: "New Capture",
-            action: #selector(handleNewCapture),
-            keyEquivalent: "n"
-        )
+        let newCaptureItem = NSMenuItem(title: "New Capture", action: #selector(handleNewCapture), keyEquivalent: "n")
+        newCaptureItem.target = self
+        fileMenu.addItem(newCaptureItem)
         mainMenu.addItem(fileMenuItem)
 
         NSApp.mainMenu = mainMenu
     }
 
     @objc private func handleNewCapture() {
-        onNewCapture?()
+        guard let action = onNewCapture else { return }
+        action()
     }
 
     @objc private func handleOpenPreferences() {
-        onOpenPreferences?()
+        guard let action = onOpenPreferences else { return }
+        action()
     }
 }
