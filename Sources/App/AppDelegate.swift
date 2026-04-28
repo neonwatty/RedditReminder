@@ -1,8 +1,9 @@
 import AppKit
 import SwiftData
+import UserNotifications
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     let menuBarController = MenuBarController()
     let timingEngine = TimingEngine()
     let notificationService = NotificationService()
@@ -20,6 +21,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.menuBarController.togglePopover()
             }
         }
+
+        // Set up notification delegate and categories
+        UNUserNotificationCenter.current().delegate = self
+        notificationService.registerCategories()
 
         // Request notification permission
         Task {
@@ -114,6 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             notificationService.scheduleWindowNotification(
                 eventId: eventId,
+                subredditName: window.event.subreddit?.name ?? "subreddit",
                 title: window.event.name,
                 body: "\(window.matchingCaptureCount) captures ready for \(window.event.subreddit?.name ?? "subreddit")",
                 fireDate: window.notificationFireDate
@@ -136,5 +142,59 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSLog("RedditReminder: refresh complete — \(windows.count) windows, \(staleIds.count) cancelled")
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        let subredditName = userInfo["subredditName"] as? String
+        let actionId = response.actionIdentifier
+
+        Task { @MainActor in
+            switch actionId {
+            case "MARK_POSTED_ACTION":
+                if let subredditName {
+                    self.markCapturesAsPosted(forSubreddit: subredditName)
+                }
+                self.menuBarController.openPopover()
+            case UNNotificationDefaultActionIdentifier, "OPEN_ACTION":
+                self.menuBarController.openPopover()
+            default:
+                break
+            }
+            completionHandler()
+        }
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping @Sendable (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
+    }
+
+    private func markCapturesAsPosted(forSubreddit name: String) {
+        guard let container = modelContainer else { return }
+        let context = container.mainContext
+        do {
+            let captures = try context.fetch(FetchDescriptor<Capture>())
+            let matching = captures.filter { capture in
+                capture.status == .queued &&
+                capture.subreddits.contains { $0.name == name }
+            }
+            for capture in matching {
+                capture.markAsPosted()
+            }
+            try context.save()
+            NSLog("RedditReminder: marked \(matching.count) captures as posted for \(name)")
+        } catch {
+            NSLog("RedditReminder: failed to mark captures as posted: \(error)")
+        }
     }
 }

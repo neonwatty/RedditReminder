@@ -61,6 +61,7 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
 
     service.scheduleWindowNotification(
         eventId: eventId,
+        subredditName: "r/Swift",
         title: "Post time",
         body: "2 captures ready",
         fireDate: Date().addingTimeInterval(3600)
@@ -71,6 +72,8 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     #expect(mock.addedRequests[0].content.categoryIdentifier == "POSTING_WINDOW")
     #expect(mock.addedRequests[0].content.title == "Post time")
     #expect(mock.addedRequests[0].content.body == "2 captures ready")
+    #expect(mock.addedRequests[0].content.userInfo["subredditName"] as? String == "r/Swift")
+    #expect(mock.addedRequests[0].content.userInfo["eventId"] as? String == eventId)
 }
 
 @Test @MainActor func nudgeNotificationUsesCorrectIdentifier() {
@@ -135,6 +138,7 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     let fireDate = Date().addingTimeInterval(3600)
     service.scheduleWindowNotification(
         eventId: "trigger-test",
+        subredditName: "r/Test",
         title: "Test",
         body: "Test",
         fireDate: fireDate
