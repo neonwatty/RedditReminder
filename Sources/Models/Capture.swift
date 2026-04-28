@@ -44,4 +44,9 @@ final class Capture {
         self.status = .posted
         self.postedAt = Date()
     }
+
+    func markAsQueued() {
+        self.status = .queued
+        self.postedAt = nil
+    }
 }

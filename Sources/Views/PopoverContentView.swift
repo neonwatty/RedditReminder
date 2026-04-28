@@ -15,6 +15,7 @@ struct PopoverContentView: View {
 
     @State private var timingEngine = TimingEngine()
     @State private var filterSubredditId: UUID?
+    @State private var searchText: String = ""
     @State private var toastMessage: String?
     @State private var toastTask: Task<Void, Never>?
     @State private var showPosted: Bool = false
@@ -24,13 +25,23 @@ struct PopoverContentView: View {
     private var postedCaptures: [Capture] { captures.filter { $0.status == .posted } }
 
     private var displayedCaptures: [Capture] {
-        guard let filterId = filterSubredditId else { return queuedCaptures }
-        return queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
+        let subredditFiltered: [Capture]
+        if let filterId = filterSubredditId {
+            subredditFiltered = queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
+        } else {
+            subredditFiltered = queuedCaptures
+        }
+        return subredditFiltered.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
+    }
+
+    private var displayedPostedCaptures: [Capture] {
+        postedCaptures.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
+            if !captures.isEmpty { searchBar }
             if showPosted { postedContent } else { queuedContent }
             footer
         }
@@ -136,16 +147,22 @@ struct PopoverContentView: View {
 
     @ViewBuilder
     private var postedContent: some View {
-        if postedCaptures.isEmpty {
+        if displayedPostedCaptures.isEmpty {
             VStack(spacing: 12) {
                 Spacer()
-                Text("No posted captures yet").font(.system(size: 13)).foregroundStyle(.secondary)
+                Text(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "No posted captures yet" : "No posted captures match")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
                 Spacer()
             }.frame(maxWidth: .infinity)
         } else {
             ScrollView {
                 VStack(spacing: 0) {
-                    PostedListView(captures: postedCaptures, onDelete: { deleteCapture($0) })
+                    PostedListView(
+                        captures: displayedPostedCaptures,
+                        onRestore: { restoreCaptureToQueue($0) },
+                        onDelete: { deleteCapture($0) }
+                    )
                 }
             }
         }
@@ -197,6 +214,32 @@ struct PopoverContentView: View {
                 .background(active ? AppColors.redditOrange.opacity(0.1) : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
         }.buttonStyle(.plain)
+    }
+
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+            TextField("Search captures", text: $searchText)
+                .font(.system(size: 11))
+                .textFieldStyle(.plain)
+            if !searchText.isEmpty {
+                Button(action: { searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.quaternary.opacity(0.25))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) { Divider() }
     }
 
     private var filterBar: some View {
@@ -355,6 +398,19 @@ struct PopoverContentView: View {
         }
         onCaptureChanged()
         showToastAfterReopen("Marked as posted")
+    }
+
+    private func restoreCaptureToQueue(_ capture: Capture) {
+        capture.markAsQueued()
+        do { try modelContext.save() }
+        catch {
+            NSLog("RedditReminder: restore queued failed: \(error)")
+            modelContext.rollback()
+            showToastAfterReopen("Restore failed")
+            return
+        }
+        onCaptureChanged()
+        showToastAfterReopen("Moved back to queue")
     }
 
     private func deleteCapture(_ capture: Capture) {

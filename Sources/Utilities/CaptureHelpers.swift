@@ -16,6 +16,20 @@ enum CaptureHelpers {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedSubredditCount > 0
     }
 
+    static func matchesSearch(_ capture: Capture, query: String) -> Bool {
+        let normalized = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !normalized.isEmpty else { return true }
+
+        let fields = [
+            capture.text,
+            capture.notes ?? "",
+            capture.project?.name ?? "",
+            capture.project?.projectDescription ?? ""
+        ] + capture.links + capture.mediaRefs + capture.subreddits.map(\.name)
+
+        return fields.contains { $0.lowercased().contains(normalized) }
+    }
+
     /// Renders Reddit-flavored markdown to AttributedString.
     /// Strips ~~strikethrough~~ markers since AttributedString lacks support.
     /// Returns nil if parsing fails.
