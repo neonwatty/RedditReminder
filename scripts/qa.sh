@@ -16,6 +16,8 @@ APP_PATH="$HOME/Applications/$APP_NAME.app"
 LAUNCH_WAIT=3           # seconds to wait after launch
 ACTION_WAIT=1.5         # seconds to wait after UI action
 WINDOW_WAIT=2.0         # seconds to wait for window to appear
+POLL_ATTEMPTS=20
+POLL_INTERVAL=0.25
 
 passed=0
 failed=0
@@ -135,6 +137,35 @@ named_window_width() {
     echo "$info" | awk '{print $1}'
 }
 
+wait_for_popover() {
+    local expected="$1"
+    local value
+    for _ in $(seq 1 "$POLL_ATTEMPTS"); do
+        value=$(popover_visible)
+        if [ "$value" = "$expected" ]; then
+            echo "$value"
+            return
+        fi
+        sleep "$POLL_INTERVAL"
+    done
+    popover_visible
+}
+
+wait_for_named_window() {
+    local title="$1"
+    local expected="$2"
+    local value
+    for _ in $(seq 1 "$POLL_ATTEMPTS"); do
+        value=$(named_window_exists "$title")
+        if [ "$value" = "$expected" ]; then
+            echo "$value"
+            return
+        fi
+        sleep "$POLL_INTERVAL"
+    done
+    named_window_exists "$title"
+}
+
 count_named_windows() {
     local title="$1"
     swift -e "
@@ -151,6 +182,21 @@ print(count)
 " 2>/dev/null || echo "0"
 }
 
+wait_for_named_window_count() {
+    local title="$1"
+    local expected="$2"
+    local value
+    for _ in $(seq 1 "$POLL_ATTEMPTS"); do
+        value=$(count_named_windows "$title")
+        if [ "$value" = "$expected" ]; then
+            echo "$value"
+            return
+        fi
+        sleep "$POLL_INTERVAL"
+    done
+    count_named_windows "$title"
+}
+
 # ─── UI interaction helpers ────────────────────────────────────────
 
 # Toggle popover via AXPress on the status bar item
@@ -165,6 +211,24 @@ end tell
         echo "  $(red WARNING): press_status_item failed (is the app running?)" >&2
     fi
     sleep "$ACTION_WAIT"
+}
+
+set_popover_state() {
+    local expected="$1"
+    local value
+
+    value=$(popover_visible)
+    if [ "$value" != "$expected" ]; then
+        press_status_item
+        value=$(wait_for_popover "$expected")
+    fi
+
+    if [ "$value" != "$expected" ]; then
+        press_status_item
+        value=$(wait_for_popover "$expected")
+    fi
+
+    echo "$value"
 }
 
 # Click a menu bar menu item: menu_name, item_name
@@ -259,7 +323,7 @@ echo ""
 assert_running "App is running"
 
 # Verify popover is NOT open on launch
-vis=$(popover_visible)
+vis=$(wait_for_popover "false")
 assert_false "Popover closed on launch" "$vis"
 
 # ─── 2. Popover toggle ────────────────────────────────────────────
@@ -268,12 +332,10 @@ echo ""
 bold "2. Popover toggle"
 echo ""
 
-press_status_item
-vis=$(popover_visible)
+vis=$(set_popover_state "true")
 assert_true "AXPress status item → popover opens" "$vis"
 
-press_status_item
-vis=$(popover_visible)
+vis=$(set_popover_state "false")
 assert_false "AXPress again → popover closes" "$vis"
 
 # ─── 3. New Capture window (File > New Capture) ───────────────────
@@ -283,11 +345,11 @@ bold "3. New Capture window"
 echo ""
 
 # Open popover first (triggers PopoverContentView.onAppear which wires up callbacks)
-press_status_item
+set_popover_state "true" >/dev/null
 sleep 1  # extra time for SwiftUI onAppear to wire callbacks
 
 click_menu_item "File" "New Capture"
-exists=$(named_window_exists "New Capture")
+exists=$(wait_for_named_window "New Capture" "true")
 assert_true "File > New Capture opens window" "$exists"
 
 if [ "$exists" = "true" ]; then
@@ -295,7 +357,7 @@ if [ "$exists" = "true" ]; then
     assert_eq "Capture window width" "420" "$w"
 
     close_window "New Capture"
-    exists_after=$(named_window_exists "New Capture")
+    exists_after=$(wait_for_named_window "New Capture" "false")
     assert_false "Close button dismisses Capture window" "$exists_after"
 fi
 
@@ -307,7 +369,7 @@ echo ""
 
 # macOS renames "Preferences…" to "Settings…" automatically
 click_menu_item "RedditReminder" "Settings…"
-exists=$(named_window_exists "RedditReminder Preferences")
+exists=$(wait_for_named_window "RedditReminder Preferences" "true")
 assert_true "Settings menu opens Preferences window" "$exists"
 
 if [ "$exists" = "true" ]; then
@@ -315,7 +377,7 @@ if [ "$exists" = "true" ]; then
     assert_eq "Preferences window width" "500" "$w"
 
     close_window "RedditReminder Preferences"
-    exists_after=$(named_window_exists "RedditReminder Preferences")
+    exists_after=$(wait_for_named_window "RedditReminder Preferences" "false")
     assert_false "Close button dismisses Preferences window" "$exists_after"
 fi
 
@@ -326,13 +388,12 @@ bold "5. Popover auto-dismiss"
 echo ""
 
 # Open popover
-press_status_item
-vis=$(popover_visible)
+vis=$(set_popover_state "true")
 assert_true "Popover is open before New Capture" "$vis"
 
 # Open capture window — popover should dismiss
 click_menu_item "File" "New Capture"
-vis=$(popover_visible)
+vis=$(wait_for_popover "false")
 assert_false "Popover dismissed when Capture opens" "$vis"
 
 close_window "New Capture"
@@ -345,13 +406,13 @@ echo ""
 
 # Open, close, open again
 click_menu_item "File" "New Capture"
-exists1=$(named_window_exists "New Capture")
+exists1=$(wait_for_named_window "New Capture" "true")
 assert_true "First New Capture window opens" "$exists1"
 
 close_window "New Capture"
 
 click_menu_item "File" "New Capture"
-exists2=$(named_window_exists "New Capture")
+exists2=$(wait_for_named_window "New Capture" "true")
 assert_true "Second New Capture opens after close" "$exists2"
 
 close_window "New Capture"
@@ -363,12 +424,12 @@ bold "7. Preferences window reuse"
 echo ""
 
 click_menu_item "RedditReminder" "Settings…"
-exists=$(named_window_exists "RedditReminder Preferences")
+exists=$(wait_for_named_window "RedditReminder Preferences" "true")
 assert_true "First Preferences window opens" "$exists"
 
 # Open again — should reuse, not duplicate
 click_menu_item "RedditReminder" "Settings…"
-count=$(count_named_windows "RedditReminder Preferences")
+count=$(wait_for_named_window_count "RedditReminder Preferences" "1")
 assert_eq "Only one Preferences window (reuse)" "1" "$count"
 
 close_window "RedditReminder Preferences"
@@ -380,17 +441,17 @@ bold "8. QA fixture data (--seed-qa)"
 echo ""
 
 # Open popover and check for content
-press_status_item
+set_popover_state "true" >/dev/null
 sleep "$ACTION_WAIT"
 
 # The popover content isn't accessible via System Events, but we can
 # verify the capture window shows data by opening a capture for edit.
 # For now, verify the popover opens (implies data loaded and view rendered).
-vis=$(popover_visible)
+vis=$(set_popover_state "true")
 assert_true "Popover renders with seeded data" "$vis"
 
 # Close popover
-press_status_item
+set_popover_state "false" >/dev/null
 
 # ─── 9. Restart persistence ───────────────────────────────────────
 
@@ -406,18 +467,17 @@ sleep $((LAUNCH_WAIT + 2))  # extra time for cold start
 assert_running "App restarts after kill"
 
 # Verify popover still works after restart
-press_status_item
-vis=$(popover_visible)
+vis=$(set_popover_state "true")
 assert_true "Popover opens after restart" "$vis"
 
 # Verify menu shortcuts still work after restart
 click_menu_item "File" "New Capture"
-exists=$(named_window_exists "New Capture")
+exists=$(wait_for_named_window "New Capture" "true")
 assert_true "New Capture works after restart" "$exists"
 close_window "New Capture"
 
 # Close popover
-press_status_item
+set_popover_state "false" >/dev/null
 
 # ─── summary ───────────────────────────────────────────────────────
 
