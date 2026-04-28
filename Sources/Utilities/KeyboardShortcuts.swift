@@ -4,13 +4,15 @@ import Carbon.HIToolbox
 import os
 
 struct KeyboardShortcutConfig: Equatable, Sendable {
+  static let customIdentifier = "custom"
+
   let identifier: String
   let keyCode: Int64
   let modifiers: CGEventFlags
   let display: String
 
   var isValid: Bool {
-    keyCode >= 0 && Self.validModifierMasks.contains { modifiers.contains($0) }
+    keyCode >= 0 && Self.requiredModifierMasks.contains { modifiers.contains($0) }
   }
 
   static let defaultShortcut = KeyboardShortcutConfig(
@@ -45,14 +47,66 @@ struct KeyboardShortcutConfig: Equatable, Sendable {
   static func load(from defaults: UserDefaults = .standard) -> KeyboardShortcutConfig {
     let identifier = defaults.string(forKey: SettingsKey.globalShortcutIdentifier)
       ?? defaultShortcut.identifier
+    if identifier == customIdentifier,
+       defaults.object(forKey: SettingsKey.globalShortcutKeyCode) != nil,
+       defaults.object(forKey: SettingsKey.globalShortcutModifiers) != nil {
+      let config = KeyboardShortcutConfig(
+        identifier: customIdentifier,
+        keyCode: Int64(defaults.integer(forKey: SettingsKey.globalShortcutKeyCode)),
+        modifiers: CGEventFlags(rawValue: UInt64(defaults.integer(forKey: SettingsKey.globalShortcutModifiers))),
+        display: defaults.string(forKey: SettingsKey.globalShortcutDisplay) ?? "Custom"
+      )
+      return config.isValid ? config : defaultShortcut
+    }
     return presets.first { $0.identifier == identifier && $0.isValid } ?? defaultShortcut
   }
 
   static func save(_ config: KeyboardShortcutConfig, to defaults: UserDefaults = .standard) {
+    if config.identifier == customIdentifier {
+      defaults.set(Int(config.keyCode), forKey: SettingsKey.globalShortcutKeyCode)
+      defaults.set(Int(config.modifiers.rawValue), forKey: SettingsKey.globalShortcutModifiers)
+      defaults.set(config.display, forKey: SettingsKey.globalShortcutDisplay)
+    }
     defaults.set(config.identifier, forKey: SettingsKey.globalShortcutIdentifier)
   }
 
-  private static let validModifierMasks: [CGEventFlags] = [
+  static func custom(keyCode: Int64, modifiers: CGEventFlags, keyDisplay: String) -> KeyboardShortcutConfig {
+    KeyboardShortcutConfig(
+      identifier: customIdentifier,
+      keyCode: keyCode,
+      modifiers: normalized(modifiers),
+      display: display(modifiers: modifiers, key: keyDisplay)
+    )
+  }
+
+  static func display(modifiers: CGEventFlags, key: String) -> String {
+    "\(modifierDisplay(for: normalized(modifiers)))\(key)"
+  }
+
+  private static func normalized(_ modifiers: CGEventFlags) -> CGEventFlags {
+    var normalized: CGEventFlags = []
+    for mask in allModifierMasks where modifiers.contains(mask) {
+      normalized.insert(mask)
+    }
+    return normalized
+  }
+
+  private static func modifierDisplay(for modifiers: CGEventFlags) -> String {
+    var parts: [String] = []
+    if modifiers.contains(.maskControl) { parts.append("⌃") }
+    if modifiers.contains(.maskAlternate) { parts.append("⌥") }
+    if modifiers.contains(.maskShift) { parts.append("⇧") }
+    if modifiers.contains(.maskCommand) { parts.append("⌘") }
+    return parts.joined()
+  }
+
+  private static let requiredModifierMasks: [CGEventFlags] = [
+    .maskCommand,
+    .maskControl,
+    .maskAlternate
+  ]
+
+  private static let allModifierMasks: [CGEventFlags] = [
     .maskCommand,
     .maskControl,
     .maskAlternate,

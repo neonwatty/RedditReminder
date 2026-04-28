@@ -32,8 +32,11 @@ enum SettingsKey {
   static let defaultProjectId = "defaultProjectId"
   static let defaultLeadTimeMinutes = "defaultLeadTimeMinutes"
   static let notificationsEnabled = "notificationsEnabled"
-  static let nudgeWhenEmpty = "nudgeWhenEmpty"
-  static let globalShortcutIdentifier = "globalShortcutIdentifier"
+    static let nudgeWhenEmpty = "nudgeWhenEmpty"
+    static let globalShortcutIdentifier = "globalShortcutIdentifier"
+    static let globalShortcutKeyCode = "globalShortcutKeyCode"
+    static let globalShortcutModifiers = "globalShortcutModifiers"
+    static let globalShortcutDisplay = "globalShortcutDisplay"
 }
 
 enum SettingsOptions {
