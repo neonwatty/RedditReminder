@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import SwiftData
 import Testing
@@ -246,4 +247,110 @@ private func makeBackupContainer() throws -> ModelContainer {
     #expect(defaults.object(forKey: SettingsKey.globalShortcutKeyCode) == nil)
     #expect(defaults.object(forKey: SettingsKey.globalShortcutModifiers) == nil)
     #expect(defaults.object(forKey: SettingsKey.globalShortcutDisplay) == nil)
+}
+
+@Test @MainActor func backupImportDropsMissingMediaRefsWhenMediaStoreProvided() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    let subredditId = UUID()
+    let captureId = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [
+            BackupSubreddit(
+                id: subredditId,
+                name: "r/SwiftUI",
+                sortOrder: 0,
+                peakDaysOverride: nil,
+                peakHoursUtcOverride: nil
+            )
+        ],
+        events: [],
+        captures: [
+            BackupCapture(
+                id: captureId,
+                text: "With missing media",
+                notes: nil,
+                links: [],
+                mediaRefs: ["missing.png"],
+                status: .queued,
+                createdAt: Date(),
+                postedAt: nil,
+                projectId: nil,
+                subredditIds: [subredditId]
+            )
+        ]
+    )
+    let mediaStore = MediaStore(rootDir: temporaryBackupMediaRoot())
+
+    try BackupService().importBackup(
+        from: JSONEncoder().encode(backup),
+        into: context,
+        mediaStore: mediaStore
+    )
+
+    let captures = try context.fetch(FetchDescriptor<Capture>())
+    #expect(captures.count == 1)
+    #expect(captures[0].mediaRefs.isEmpty)
+}
+
+@Test @MainActor func backupImportPreservesExistingMediaRefsWhenMediaStoreProvided() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    let subredditId = UUID()
+    let captureId = UUID()
+    let mediaStore = MediaStore(rootDir: temporaryBackupMediaRoot())
+    let ref = try mediaStore.save(image: backupTestImage(), captureId: captureId, fileName: "present.png")
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [
+            BackupSubreddit(
+                id: subredditId,
+                name: "r/SwiftUI",
+                sortOrder: 0,
+                peakDaysOverride: nil,
+                peakHoursUtcOverride: nil
+            )
+        ],
+        events: [],
+        captures: [
+            BackupCapture(
+                id: captureId,
+                text: "With present media",
+                notes: nil,
+                links: [],
+                mediaRefs: [ref, "missing.png"],
+                status: .queued,
+                createdAt: Date(),
+                postedAt: nil,
+                projectId: nil,
+                subredditIds: [subredditId]
+            )
+        ]
+    )
+
+    try BackupService().importBackup(
+        from: JSONEncoder().encode(backup),
+        into: context,
+        mediaStore: mediaStore
+    )
+
+    let captures = try context.fetch(FetchDescriptor<Capture>())
+    #expect(captures.count == 1)
+    #expect(captures[0].mediaRefs == [ref])
+}
+
+private func temporaryBackupMediaRoot() -> URL {
+    FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+}
+
+private func backupTestImage() -> NSImage {
+    let image = NSImage(size: NSSize(width: 32, height: 32))
+    image.lockFocus()
+    NSColor.systemBlue.setFill()
+    NSRect(x: 0, y: 0, width: 32, height: 32).fill()
+    image.unlockFocus()
+    return image
 }

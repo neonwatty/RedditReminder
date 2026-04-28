@@ -12,6 +12,7 @@ struct BackupSectionView: View {
     @State private var errorMessage: String?
 
     private let backupService = BackupService()
+    private let mediaStore = MediaStore()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -77,7 +78,7 @@ struct BackupSectionView: View {
                 if didAccess { url.stopAccessingSecurityScopedResource() }
             }
             let data = try Data(contentsOf: url)
-            try backupService.importBackup(from: data, into: modelContext)
+            try backupService.importBackup(from: data, into: modelContext, mediaStore: mediaStore)
             statusMessage = "Backup imported"
             errorMessage = nil
         } catch {
