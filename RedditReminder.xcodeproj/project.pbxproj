@@ -15,6 +15,7 @@
 		AA11BB22CC33DD44EE550001 /* CaptureSubredditPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550002 /* CaptureSubredditPicker.swift */; };
 		AA11BB22CC33DD44EE550003 /* CaptureLinksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550004 /* CaptureLinksSection.swift */; };
 		AA11BB22CC33DD44EE550005 /* CaptureMediaSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE550006 /* CaptureMediaSection.swift */; };
+		EE55FF66AA77BB88CC990001 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE55FF66AA77BB88CC990002 /* MarkdownPreviewView.swift */; };
 		19F277D9FFDA1E43A857A149 /* SubredditEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */; };
 		1A56E70BA5F05C6021393E22 /* RedditReminderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */; };
 		1D7C85EE78D8FD2D46ACF6C3 /* CaptureLinksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3878A1D04F7AC0E3D464CB7B /* CaptureLinksTests.swift */; };
@@ -118,6 +119,7 @@
 		DD44EE55FF66AA77BB880002 /* OnboardingEmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingEmptyView.swift; sourceTree = "<group>"; };
 		E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarControllerTests.swift; sourceTree = "<group>"; };
 		F2B476048A63AF84F93F85A4 /* EdgeCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeCaseTests.swift; sourceTree = "<group>"; };
+		EE55FF66AA77BB88CC990002 /* MarkdownPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPreviewView.swift; sourceTree = "<group>"; };
 		FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkChipView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -231,6 +233,7 @@
 				7F1A2B3C4D5E6F7890ABCDE2 /* FlowLayout.swift */,
 				65E8FB1218EE842B7D518F5F /* GeneralTabView.swift */,
 				FB0A7A7AAA2C09449780FF4F /* LinkChipView.swift */,
+				EE55FF66AA77BB88CC990002 /* MarkdownPreviewView.swift */,
 				CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */,
 				DD44EE55FF66AA77BB880002 /* OnboardingEmptyView.swift */,
 				07A63D3714291E8917CA1694 /* PopoverContentView.swift */,
@@ -371,6 +374,7 @@
 				EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */,
 				E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */,
 				55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */,
+				EE55FF66AA77BB88CC990001 /* MarkdownPreviewView.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
 				474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
