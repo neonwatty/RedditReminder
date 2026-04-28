@@ -20,7 +20,7 @@ struct PopoverContentView: View {
     @State var toastTask: Task<Void, Never>?
     @State private var showPosted: Bool = false
 
-    private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
+    private var activeEvents: [SubredditEvent] { PopoverTimingPresentation.activeEvents(from: allEvents) }
     private var queuedCaptures: [Capture] { PopoverCaptureFiltering.queuedCaptures(from: captures) }
     private var postedCaptures: [Capture] { PopoverCaptureFiltering.postedCaptures(from: captures) }
     private var displayedCaptures: [Capture] {
@@ -70,36 +70,15 @@ struct PopoverContentView: View {
     }
 
     private var captureTimingSignature: [String] {
-        captures.map { capture in
-            let subIds = capture.subreddits.map(\.id.uuidString).sorted().joined(separator: ",")
-            return "\(capture.id.uuidString):\(capture.status.rawValue):\(subIds)"
-        }
+        PopoverTimingPresentation.captureTimingSignature(from: captures)
     }
 
     private var eventTimingSignature: [String] {
-        allEvents.map { event in
-            [
-                event.id.uuidString,
-                event.isActive.description,
-                event.rrule ?? "",
-                event.oneOffDate?.timeIntervalSince1970.description ?? "",
-                event.recurrenceHour?.description ?? "",
-                event.recurrenceMinute?.description ?? "",
-                event.recurrenceTimeZoneIdentifier ?? "",
-                event.reminderLeadMinutes.description,
-                event.subreddit?.id.uuidString ?? ""
-            ].joined(separator: "|")
-        }.sorted()
+        PopoverTimingPresentation.eventTimingSignature(from: allEvents)
     }
 
     private var subredditTimingSignature: [String] {
-        subreddits.map { subreddit in
-            [
-                subreddit.id.uuidString,
-                subreddit.peakDaysOverride?.joined(separator: ",") ?? "",
-                subreddit.peakHoursUtcOverride?.map(String.init).joined(separator: ",") ?? ""
-            ].joined(separator: "|")
-        }
+        PopoverTimingPresentation.subredditTimingSignature(from: subreddits)
     }
 
     private func refreshTiming() {
@@ -109,12 +88,7 @@ struct PopoverContentView: View {
     // MARK: - Urgency
 
     private var urgencyBySubredditId: [UUID: UrgencyLevel] {
-        var result: [UUID: UrgencyLevel] = [:]
-        for w in timingEngine.upcomingWindows {
-            guard let subId = w.event.subreddit?.id else { continue }
-            if w.urgency > (result[subId] ?? .none) { result[subId] = w.urgency }
-        }
-        return result
+        PopoverTimingPresentation.urgencyBySubredditId(from: timingEngine.upcomingWindows)
     }
 
     // MARK: - Content
@@ -254,10 +228,12 @@ struct PopoverContentView: View {
     }
 
     private var footer: some View {
-        let text: String = showPosted
-            ? "\(postedCaptures.count) posted"
-            : "\(queuedCaptures.count) capture\(queuedCaptures.count == 1 ? "" : "s") · " +
-              "\(timingEngine.upcomingWindows.count) event\(timingEngine.upcomingWindows.count == 1 ? "" : "s") upcoming"
+        let text = PopoverTimingPresentation.footerText(
+            showPosted: showPosted,
+            queuedCaptureCount: queuedCaptures.count,
+            postedCaptureCount: postedCaptures.count,
+            upcomingEventCount: timingEngine.upcomingWindows.count
+        )
         return VStack(spacing: 0) {
             Divider()
             Text(text).font(.system(size: 10)).foregroundStyle(.secondary).padding(.vertical, 8)
