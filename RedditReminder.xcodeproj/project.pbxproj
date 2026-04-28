@@ -65,6 +65,7 @@
 		9308DC394CD017D3E527EF59 /* MenuBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */; };
 		94CF7D2C65A9A2F6CCABCA92 /* CapturePersistenceActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06AAE5BD6FAD212E9C9E5AAB /* CapturePersistenceActionsTests.swift */; };
 		9B6DE864F7F9D78BE7B6CA54 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F6975993534B39BF8DEB32E /* BackupService.swift */; };
+		A049BB3E8B0B7E4BF8A24C90 /* AppModelContainerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618187DB22F5025BA72A0166 /* AppModelContainerFactoryTests.swift */; };
 		A45C2634E04FC8E88CD17018 /* PopoverContentActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */; };
 		AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */; };
 		B104E0E65566B8E4EFDFE190 /* EdgeCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B476048A63AF84F93F85A4 /* EdgeCaseTests.swift */; };
@@ -87,6 +88,7 @@
 		EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */; };
 		F1ABAC22E330444576523F58 /* PopoverContentEmptyStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA663A41B0593635EA0F77F0 /* PopoverContentEmptyStates.swift */; };
 		F3CF29763AE56B1639138AA1 /* Capture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE4E14F7A70E1A66FA994A3 /* Capture.swift */; };
+		F4DE010F9076D36DD9D98288 /* AppModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */; };
 		F6781299CF04A1812240EAF0 /* DefaultSubreddits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECD69E89EE2DA46D1776595 /* DefaultSubreddits.swift */; };
 		FE03D040E4D6926755545F71 /* RRuleHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EA039404A90BBBD3CECD15 /* RRuleHelper.swift */; };
 		FF322C47FE562D97B67F090E /* peak-times.json in Resources */ = {isa = PBXBuildFile; fileRef = 3BDDF7799BF55CF7FFC730BA /* peak-times.json */; };
@@ -147,6 +149,7 @@
 		5DB4E56FCDA7A1CB1F24566D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistence.swift; sourceTree = "<group>"; };
 		614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditEvent.swift; sourceTree = "<group>"; };
+		618187DB22F5025BA72A0166 /* AppModelContainerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainerFactoryTests.swift; sourceTree = "<group>"; };
 		654481D1BBF7AF8DA529EA7E /* ProjectPersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceActionsTests.swift; sourceTree = "<group>"; };
 		65E8FB1218EE842B7D518F5F /* GeneralTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralTabView.swift; sourceTree = "<group>"; };
 		6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsStore.swift; sourceTree = "<group>"; };
@@ -183,6 +186,7 @@
 		BD83B39B1CC5EC5FA398914C /* BackupSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSectionView.swift; sourceTree = "<group>"; };
 		C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentActions.swift; sourceTree = "<group>"; };
 		CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTabView.swift; sourceTree = "<group>"; };
+		D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainerFactory.swift; sourceTree = "<group>"; };
 		D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistenceTests.swift; sourceTree = "<group>"; };
 		E2C4CE3383CDFF1A7E03C00D /* PopoverChromeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverChromeViews.swift; sourceTree = "<group>"; };
 		E440DAF06A5F755B0CFD41F7 /* CapturePersistenceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePersistenceActions.swift; sourceTree = "<group>"; };
@@ -213,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				4CF8CF5E2ADCE8C17BC17231 /* AppDelegateSchedulingTests.swift */,
+				618187DB22F5025BA72A0166 /* AppModelContainerFactoryTests.swift */,
 				07A6F301705FB85E1459A403 /* AppRuntimeTests.swift */,
 				EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */,
 				D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */,
@@ -365,6 +370,7 @@
 			isa = PBXGroup;
 			children = (
 				0972EE8B384E16C0A49F8555 /* AppDelegate.swift */,
+				D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */,
 				787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */,
 			);
 			path = App;
@@ -465,6 +471,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5CA152F3AF2710572F6500B9 /* AppDelegateSchedulingTests.swift in Sources */,
+				A049BB3E8B0B7E4BF8A24C90 /* AppModelContainerFactoryTests.swift in Sources */,
 				E9EDB8A89099DE463C304AA7 /* AppRuntimeTests.swift in Sources */,
 				6CA6C655DE7A6B84021C77CE /* BackupServiceTests.swift in Sources */,
 				2C6F6A5981CBCEC7CE258964 /* BackupSettingsPersistenceTests.swift in Sources */,
@@ -500,6 +507,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */,
+				F4DE010F9076D36DD9D98288 /* AppModelContainerFactory.swift in Sources */,
 				2D0134DEC22382048A22922F /* AppRuntime.swift in Sources */,
 				0F535262B2F03B867CDD5510 /* BackupMappers.swift in Sources */,
 				26A62F837CC395740AA9FB84 /* BackupSectionView.swift in Sources */,

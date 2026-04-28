@@ -8,11 +8,7 @@ struct RedditReminderApp: App {
     let container: ModelContainer
 
     init() {
-        do {
-            container = try ModelContainer(for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self)
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
+        container = AppModelContainerFactory.makeContainer()
     }
 
     var body: some Scene {
