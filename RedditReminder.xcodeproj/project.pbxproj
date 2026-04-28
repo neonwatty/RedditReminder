@@ -74,6 +74,7 @@
 		CCE3B3D5EE4B39D55222CA19 /* ResourcePackagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A9BB4582DA895A6C18C321 /* ResourcePackagingTests.swift */; };
 		CE614FCDDCCDE1DA0C484E58 /* CaptureMediaSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B642ED62D86AC09680939A1 /* CaptureMediaSelectionTests.swift */; };
 		D61EED608BA7889DFA0AA4C2 /* TimingEngineIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83759C43598ADF749158FAAD /* TimingEngineIntegrationTests.swift */; };
+		DA2B270CDFA18C60E33E913B /* KeyboardShortcutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */; };
 		E3F5BC123C653EDC86231434 /* CaptureHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8667BBC305F7B1E7A92856AC /* CaptureHelpers.swift */; };
 		E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */; };
 		E91A5DDE67643B2D081C9340 /* PopoverCaptureFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEA78C5D7E701E78352BF98 /* PopoverCaptureFilteringTests.swift */; };
@@ -149,6 +150,7 @@
 		726D903A97B808C6ED572BCA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		75B43770F07184CA5B9115AD /* SubredditPersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditPersistenceActionsTests.swift; sourceTree = "<group>"; };
 		787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedditReminderApp.swift; sourceTree = "<group>"; };
+		793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutConfig.swift; sourceTree = "<group>"; };
 		83759C43598ADF749158FAAD /* TimingEngineIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngineIntegrationTests.swift; sourceTree = "<group>"; };
 		8667BBC305F7B1E7A92856AC /* CaptureHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureHelpers.swift; sourceTree = "<group>"; };
 		88999911A1A3157EE5DBB4A7 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				5DB4E56FCDA7A1CB1F24566D /* Constants.swift */,
 				4ECD69E89EE2DA46D1776595 /* DefaultSubreddits.swift */,
 				8AA0E39705C2A66347A1E21C /* EventSourceSummary.swift */,
+				793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */,
 				56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */,
 				8C930E623DE20A82D94D4B3A /* PopoverCaptureFiltering.swift */,
 				EA35E25161F731ACAB85FE8C /* PopoverTimingPresentation.swift */,
@@ -507,6 +510,7 @@
 				0212354E124DB25DE1283B6C /* FlowLayout.swift in Sources */,
 				0CA7BC0B1883C66A529F0E2A /* GeneralTabView.swift in Sources */,
 				EFE86AB0870D685D53D203E0 /* HeuristicsStore.swift in Sources */,
+				DA2B270CDFA18C60E33E913B /* KeyboardShortcutConfig.swift in Sources */,
 				E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */,
 				55E73142A5F438F0600FF8F2 /* LinkChipView.swift in Sources */,
 				CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */,
