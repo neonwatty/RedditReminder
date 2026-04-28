@@ -22,6 +22,7 @@ struct CaptureWindowView: View {
     @State private var newLinkText: String = ""
     @State private var droppedFiles: [URL] = []
     @State private var isDragOver: Bool = false
+    @State private var showPreview: Bool = false
 
     private static let redditOrange = AppColors.redditOrange
 
@@ -32,17 +33,49 @@ struct CaptureWindowView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     fieldSection("CAPTURE TEXT") {
-                        TextEditor(text: $text)
-                            .font(.system(size: 12))
-                            .frame(minHeight: 72)
-                            .scrollContentBackground(.hidden)
-                            .padding(8)
-                            .background(.quaternary.opacity(0.3))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                            )
+                        VStack(spacing: 6) {
+                            HStack {
+                                Spacer()
+                                HStack(spacing: 2) {
+                                    Button(action: { showPreview = false }) {
+                                        Text("Edit")
+                                            .font(.system(size: 9, weight: showPreview ? .medium : .semibold))
+                                            .foregroundStyle(showPreview ? .secondary : Self.redditOrange)
+                                            .padding(.horizontal, 6).padding(.vertical, 2)
+                                            .background(showPreview ? Color.clear : Self.redditOrange.opacity(0.1))
+                                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    Button(action: { showPreview = true }) {
+                                        Text("Preview")
+                                            .font(.system(size: 9, weight: showPreview ? .semibold : .medium))
+                                            .foregroundStyle(showPreview ? Self.redditOrange : .secondary)
+                                            .padding(.horizontal, 6).padding(.vertical, 2)
+                                            .background(showPreview ? Self.redditOrange.opacity(0.1) : Color.clear)
+                                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+
+                            if showPreview {
+                                MarkdownPreviewView(text: text)
+                                    .frame(minHeight: 72)
+                            } else {
+                                TextEditor(text: $text)
+                                    .font(.system(size: 12))
+                                    .frame(minHeight: 72)
+                                    .scrollContentBackground(.hidden)
+                                    .padding(8)
+                                    .background(.quaternary.opacity(0.3))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
+                                    )
+                            }
+                        }
                     }
 
                     fieldSection("SUBREDDIT") {
