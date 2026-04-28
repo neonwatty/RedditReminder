@@ -25,8 +25,8 @@ targets:
     platform: macOS
     sources:
       - path: Sources
-    resources:
-      - path: Resources
+      - path: Resources/peak-times.json
+        buildPhase: resources
     info:
       path: Sources/Info.plist
       properties:
