@@ -220,22 +220,12 @@ struct SubredditDropDelegate: DropDelegate {
 
     func dropEntered(info: DropInfo) {
         guard let source = dragging, source.id != target.id else { return }
-        guard let fromIndex = subreddits.firstIndex(where: { $0.id == source.id }),
-              let toIndex = subreddits.firstIndex(where: { $0.id == target.id }) else { return }
-
-        var reordered = subreddits
-        let item = reordered.remove(at: fromIndex)
-        reordered.insert(item, at: toIndex)
-
-        for (i, sub) in reordered.enumerated() {
-            sub.sortOrder = i
-        }
-        do {
-            try modelContext.save()
-        } catch {
-            modelContext.rollback()
-            NSLog("RedditReminder: failed to save subreddit reorder: \(error)")
-        }
+        SubredditPersistenceActions.reorder(
+            source: source,
+            target: target,
+            subreddits: subreddits,
+            modelContext: modelContext
+        )
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
