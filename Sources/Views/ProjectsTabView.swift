@@ -115,12 +115,11 @@ struct ProjectsTabView: View {
         .contextMenu {
             Button("Rename") { startEditing(project) }
             Button(project.archived ? "Unarchive" : "Archive") {
-                project.archived.toggle()
-                do { try modelContext.save() }
-                catch {
-                    NSLog("RedditReminder: archive toggle failed: \(error)")
-                    project.archived.toggle()
-                }
+                ProjectPersistenceActions.setArchived(
+                    project,
+                    archived: !project.archived,
+                    modelContext: modelContext
+                )
             }
             Divider()
             Button("Delete", role: .destructive) { deleteProject(project) }
@@ -162,29 +161,21 @@ struct ProjectsTabView: View {
     }
 
     private var canAdd: Bool {
-        isNameAvailable(newProjectName)
+        ProjectPersistenceActions.isNameAvailable(newProjectName, projects: projects)
     }
 
     private func isNameAvailable(_ name: String, excluding: Project? = nil) -> Bool {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
-        return !projects.contains(where: {
-            $0.id != excluding?.id && $0.name.lowercased() == trimmed.lowercased()
-        })
+        ProjectPersistenceActions.isNameAvailable(name, projects: projects, excluding: excluding)
     }
 
     private func addProject() {
-        let trimmed = newProjectName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, canAdd else { return }
-        let project = Project(name: trimmed)
-        modelContext.insert(project)
-        do { try modelContext.save() }
-        catch {
-            NSLog("RedditReminder: add project failed: \(error)")
-            modelContext.delete(project)
-            return
+        if ProjectPersistenceActions.addProject(
+            named: newProjectName,
+            projects: projects,
+            modelContext: modelContext
+        ) != nil {
+            newProjectName = ""
         }
-        newProjectName = ""
     }
 
     private func startEditing(_ project: Project) {
@@ -193,26 +184,17 @@ struct ProjectsTabView: View {
     }
 
     private func finishEditing(_ project: Project) {
-        let trimmed = editName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty, isNameAvailable(trimmed, excluding: project) {
-            let oldName = project.name
-            project.name = trimmed
-            do { try modelContext.save() }
-            catch {
-                NSLog("RedditReminder: rename project failed: \(error)")
-                project.name = oldName
-            }
-        }
+        ProjectPersistenceActions.renameProject(
+            project,
+            to: editName,
+            projects: projects,
+            modelContext: modelContext
+        )
         editingProject = nil
         editName = ""
     }
 
     private func deleteProject(_ project: Project) {
-        modelContext.delete(project)
-        do { try modelContext.save() }
-        catch {
-            NSLog("RedditReminder: delete project failed: \(error)")
-            modelContext.rollback()
-        }
+        ProjectPersistenceActions.deleteProject(project, modelContext: modelContext)
     }
 }
