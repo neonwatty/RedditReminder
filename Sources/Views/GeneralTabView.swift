@@ -41,6 +41,10 @@ struct GeneralTabView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            Section("Backup") {
+                BackupSectionView()
+            }
         }
         .formStyle(.grouped)
         .padding(8)
