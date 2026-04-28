@@ -49,6 +49,7 @@
 		6AB79B2FD74969002DBBC316 /* ChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DDADF6ECF30ECDD255DED4 /* ChannelsView.swift */; };
 		6CA6C655DE7A6B84021C77CE /* BackupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */; };
 		70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */; };
+		73D1EA6EF5BCBC4321589A5D /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9511753E51E30A7111B248 /* NotificationScheduler.swift */; };
 		73DA1B8D3DA7E2410FAD189D /* ProjectsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F66F6C53D3F37EBF882C677 /* ProjectsTabView.swift */; };
 		7AB3BE6F02539F0147F73E23 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5124BE8F9D4637788D2557 /* NotificationServiceTests.swift */; };
 		81C26D97123D840A9130AF7E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB4E56FCDA7A1CB1F24566D /* Constants.swift */; };
@@ -117,6 +118,7 @@
 		409B11556A9191FFF70BA98B /* EventSourceSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSourceSummaryTests.swift; sourceTree = "<group>"; };
 		46EA039404A90BBBD3CECD15 /* RRuleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleHelper.swift; sourceTree = "<group>"; };
 		4B3E99F0F230325C051A02E1 /* RRuleEdgeCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleEdgeCaseTests.swift; sourceTree = "<group>"; };
+		4B9511753E51E30A7111B248 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
 		4CB005E503FDAD90271DB0AE /* EventBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventBannerView.swift; sourceTree = "<group>"; };
 		4CF8CF5E2ADCE8C17BC17231 /* AppDelegateSchedulingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateSchedulingTests.swift; sourceTree = "<group>"; };
 		4EA51CEB234C228C79959816 /* OnboardingEmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingEmptyView.swift; sourceTree = "<group>"; };
@@ -280,6 +282,7 @@
 				6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */,
 				AE1122ADEB6045619C303C31 /* MediaStore.swift */,
 				B58A523CACB82BF88E46FD3E /* MenuBarController.swift */,
+				4B9511753E51E30A7111B248 /* NotificationScheduler.swift */,
 				050BB3D18ECE13E70E7CED42 /* NotificationService.swift */,
 				4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */,
 			);
@@ -487,6 +490,7 @@
 				CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
 				474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */,
+				73D1EA6EF5BCBC4321589A5D /* NotificationScheduler.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
 				5B9E3F47EA4B9D3D5028C11A /* NotificationsTabView.swift in Sources */,
 				C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */,

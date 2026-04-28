@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     let timingEngine: TimingEngine
     let notificationService: NotificationService
     let heuristicsStore: HeuristicsStore
+    let notificationScheduler: NotificationScheduler
 
     var modelContainer: ModelContainer?
 
@@ -35,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         self.timingEngine = timingEngine
         self.notificationService = notificationService
         self.heuristicsStore = heuristicsStore
+        self.notificationScheduler = NotificationScheduler(notificationService: notificationService)
         super.init()
     }
 
@@ -156,61 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         activeEvents: [SubredditEvent],
         windows: [TimingEngine.UpcomingWindow]
     ) async {
-        let notificationsEnabled = UserDefaults.standard.object(forKey: SettingsKey.notificationsEnabled) as? Bool ?? true
-        guard notificationsEnabled else {
-            notificationService.cancelAll()
-            NSLog("RedditReminder: notifications disabled — cancelled all, skipping schedule")
-            return
-        }
-
-        let status = await notificationService.checkPermissionStatus()
-        guard status == .authorized else {
-            notificationService.cancelAll()
-            NSLog("RedditReminder: notification permission not authorized (\(status.rawValue)) — cancelled all, skipping schedule")
-            return
-        }
-
-        var activeEventIds: Set<String> = []
-        let nudgeEnabled = UserDefaults.standard.object(forKey: SettingsKey.nudgeWhenEmpty) as? Bool ?? true
-
-        let now = Date()
-        for window in windows {
-            let eventId = window.event.id.uuidString
-            activeEventIds.insert(eventId)
-
-            // Skip scheduling if notification fire time is already past
-            // (e.g., event in 30 min but lead time is 60 min).
-            // A past-dated UNCalendarNotificationTrigger fires immediately.
-            guard window.notificationFireDate > now else {
-                notificationService.cancelNotifications(eventId: eventId)
-                continue
-            }
-
-            notificationService.scheduleWindowNotification(
-                eventId: eventId,
-                subredditName: window.event.subreddit?.name ?? "subreddit",
-                title: window.event.name,
-                body: "\(window.matchingCaptureCount) captures ready for \(window.event.subreddit?.name ?? "subreddit")",
-                fireDate: window.notificationFireDate
-            )
-
-            if window.matchingCaptureCount == 0 && nudgeEnabled {
-                notificationService.scheduleEmptyQueueNudge(
-                    eventId: eventId,
-                    subredditName: window.event.subreddit?.name ?? "subreddit",
-                    eventName: window.event.name,
-                    fireDate: window.notificationFireDate
-                )
-            }
-        }
-
-        let allEventIds = Set(activeEvents.map { $0.id.uuidString })
-        let staleIds = allEventIds.subtracting(activeEventIds)
-        for staleId in staleIds {
-            notificationService.cancelNotifications(eventId: staleId)
-        }
-
-        NSLog("RedditReminder: refresh complete — \(windows.count) windows, \(staleIds.count) cancelled")
+        _ = await notificationScheduler.schedule(activeEvents: activeEvents, windows: windows)
     }
 
     // MARK: - UNUserNotificationCenterDelegate
