@@ -53,6 +53,7 @@
 		5F6AEF6B669D52EA62900F1A /* PopoverTimingPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319AF7913AB415361A12500A /* PopoverTimingPresentationTests.swift */; };
 		632082721D97EB58E0370F81 /* CaptureLinksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F38E7578683EAB7EC5530F4 /* CaptureLinksSection.swift */; };
 		6559B6F6894A0EEE0C24A90A /* CaptureFormResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */; };
+		690C38B0C986D2C9B9F268D5 /* PopoverChromeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C4CE3383CDFF1A7E03C00D /* PopoverChromeViews.swift */; };
 		6AB79B2FD74969002DBBC316 /* ChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DDADF6ECF30ECDD255DED4 /* ChannelsView.swift */; };
 		6CA6C655DE7A6B84021C77CE /* BackupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */; };
 		70D84AA4E08C4A543B99F834 /* MediaStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20605F46A9FD49C870EBC32D /* MediaStoreTests.swift */; };
@@ -183,6 +184,7 @@
 		C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentActions.swift; sourceTree = "<group>"; };
 		CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTabView.swift; sourceTree = "<group>"; };
 		D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistenceTests.swift; sourceTree = "<group>"; };
+		E2C4CE3383CDFF1A7E03C00D /* PopoverChromeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverChromeViews.swift; sourceTree = "<group>"; };
 		E440DAF06A5F755B0CFD41F7 /* CapturePersistenceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePersistenceActions.swift; sourceTree = "<group>"; };
 		E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarControllerTests.swift; sourceTree = "<group>"; };
 		EA35E25161F731ACAB85FE8C /* PopoverTimingPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverTimingPresentation.swift; sourceTree = "<group>"; };
@@ -346,6 +348,7 @@
 				ABAFC3BF96ACD4F01D08367F /* MarkdownPreviewView.swift */,
 				CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */,
 				4EA51CEB234C228C79959816 /* OnboardingEmptyView.swift */,
+				E2C4CE3383CDFF1A7E03C00D /* PopoverChromeViews.swift */,
 				C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */,
 				BA663A41B0593635EA0F77F0 /* PopoverContentEmptyStates.swift */,
 				07A63D3714291E8917CA1694 /* PopoverContentView.swift */,
@@ -532,6 +535,7 @@
 				5B9E3F47EA4B9D3D5028C11A /* NotificationsTabView.swift in Sources */,
 				C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */,
 				03D259AE4EF62D35955D2D09 /* PopoverCaptureFiltering.swift in Sources */,
+				690C38B0C986D2C9B9F268D5 /* PopoverChromeViews.swift in Sources */,
 				A45C2634E04FC8E88CD17018 /* PopoverContentActions.swift in Sources */,
 				F1ABAC22E330444576523F58 /* PopoverContentEmptyStates.swift in Sources */,
 				EA437C7902BEFE4C1F701586 /* PopoverContentView.swift in Sources */,
