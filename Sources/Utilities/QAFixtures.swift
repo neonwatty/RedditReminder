@@ -32,9 +32,14 @@ enum QAFixtures {
     context.insert(project)
     context.insert(project2)
 
-    // Captures with varying link counts
+    // Archived project — exercises ProjectsTabView archive/unarchive flow
+    let archivedProj = Project(name: "DeprecatedTool", projectDescription: "No longer maintained")
+    archivedProj.archived = true
+    context.insert(archivedProj)
+
+    // Captures — markdown text for preview toggle, notes, varied posted timestamps
     let c1 = Capture(
-      text: "Just shipped v2 with new scheduling engine",
+      text: "Just shipped **v2** with new *scheduling engine* — totally rebuilt",
       links: ["https://github.com/neonwatty/bullhorn/releases/v2.0"],
       project: project,
       subreddits: [sideProject, swiftUI]
@@ -43,6 +48,7 @@ enum QAFixtures {
 
     let c2 = Capture(
       text: "Built a macOS sidebar for Reddit posting reminders",
+      notes: "Include screenshots of the sidebar in dark mode",
       links: [
         "https://github.com/neonwatty/reddit-reminder",
         "https://reddit-reminder.app"
@@ -53,7 +59,7 @@ enum QAFixtures {
     context.insert(c2)
 
     let c3 = Capture(
-      text: "SwiftData + NSPanel: lessons from building a floating sidebar",
+      text: "SwiftData + NSPanel: ~~tricky~~ lessons from building a floating sidebar",
       project: project,
       subreddits: [swiftUI]
     )
@@ -65,6 +71,7 @@ enum QAFixtures {
       subreddits: [macOS]
     )
     c4.markAsPosted()
+    c4.postedAt = Date().addingTimeInterval(-3 * 3600)  // 3 hours ago — tests relative time
     context.insert(c4)
 
     let c5 = Capture(
@@ -74,14 +81,33 @@ enum QAFixtures {
       subreddits: [swiftUI, macOS]
     )
     c5.markAsPosted()
+    c5.postedAt = Date().addingTimeInterval(-2 * 86400)  // 2 days ago — tests relative time
     context.insert(c5)
 
     let c6 = Capture(
-      text: "Weekend hack: building a Reddit bot in Swift",
+      text: "Weekend hack: building a [Reddit bot](https://example.com) in Swift",
+      notes: "Mention the rate-limiting challenges",
       project: project2,
       subreddits: [iosProg, sideProject]
     )
     context.insert(c6)
+
+    // Posted capture under archived project — exercises PostedListView + archived project
+    let c7 = Capture(
+      text: "Old tool: **deprecated** CLI for subreddit scraping",
+      project: archivedProj,
+      subreddits: [iosProg]
+    )
+    c7.markAsPosted()
+    c7.postedAt = Date().addingTimeInterval(-7 * 86400)  // 1 week ago
+    context.insert(c7)
+
+    // No-project capture — exercises null project display path
+    let c8 = Capture(
+      text: "Quick thought: *menu bar apps* are underrated on macOS",
+      subreddits: [macOS, sideProject]
+    )
+    context.insert(c8)
 
     // Events — mix of urgency levels for dot testing
     let imminent = SubredditEvent(

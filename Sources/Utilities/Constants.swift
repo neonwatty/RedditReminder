@@ -30,6 +30,8 @@ enum AppColors {
 
 enum SettingsKey {
   static let defaultProjectId = "defaultProjectId"
+  static let notificationsEnabled = "notificationsEnabled"
+  static let nudgeWhenEmpty = "nudgeWhenEmpty"
 }
 
 enum MediaConstants {

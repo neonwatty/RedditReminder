@@ -258,14 +258,24 @@ struct PopoverContentView: View {
     private func markCaptureAsPosted(_ capture: Capture) {
         capture.markAsPosted()
         do { try modelContext.save() }
-        catch { NSLog("RedditReminder: mark posted failed: \(error)"); return }
+        catch {
+            NSLog("RedditReminder: mark posted failed: \(error)")
+            modelContext.rollback()
+            showToastAfterReopen("Failed to mark as posted")
+            return
+        }
         showToastAfterReopen("Marked as posted")
     }
 
     private func deleteCapture(_ capture: Capture) {
         modelContext.delete(capture)
         do { try modelContext.save() }
-        catch { NSLog("RedditReminder: delete failed: \(error)"); return }
+        catch {
+            NSLog("RedditReminder: delete failed: \(error)")
+            modelContext.rollback()
+            showToastAfterReopen("Delete failed")
+            return
+        }
         showToastAfterReopen("Capture deleted")
     }
 

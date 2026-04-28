@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
         let queuedCount = captures.filter { $0.status == .queued }.count
         menuBarController.badgeCount = queuedCount
-        menuBarController.isUrgent = timingEngine.upcomingWindows.contains { $0.urgency >= .high }
+        menuBarController.isUrgent = windows.contains { $0.urgency >= .high }
         menuBarController.updateIcon()
 
         Task {
@@ -90,7 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         activeEvents: [SubredditEvent],
         windows: [TimingEngine.UpcomingWindow]
     ) async {
-        let notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
+        let notificationsEnabled = UserDefaults.standard.object(forKey: SettingsKey.notificationsEnabled) as? Bool ?? true
         guard notificationsEnabled else {
             notificationService.cancelAll()
             NSLog("RedditReminder: notifications disabled — cancelled all, skipping schedule")
@@ -105,7 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
 
         var activeEventIds: Set<String> = []
-        let nudgeEnabled = UserDefaults.standard.object(forKey: "nudgeWhenEmpty") as? Bool ?? true
+        let nudgeEnabled = UserDefaults.standard.object(forKey: SettingsKey.nudgeWhenEmpty) as? Bool ?? true
 
         let now = Date()
         for window in windows {
@@ -180,7 +180,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
 
     private func markCapturesAsPosted(forSubreddit name: String) {
-        guard let container = modelContainer else { return }
+        guard let container = modelContainer else {
+            NSLog("RedditReminder: markCapturesAsPosted skipped — no ModelContainer")
+            return
+        }
         let context = container.mainContext
         do {
             let captures = try context.fetch(FetchDescriptor<Capture>())

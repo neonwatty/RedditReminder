@@ -109,6 +109,7 @@ final class NotificationService {
     content.body = "Nothing queued for \(subredditName) yet — capture something?"
     content.sound = .default
     content.categoryIdentifier = "EMPTY_QUEUE_NUDGE"
+    content.userInfo = ["eventId": eventId, "subredditName": subredditName]
 
     let comps = Calendar.current.dateComponents(
       [.year, .month, .day, .hour, .minute],

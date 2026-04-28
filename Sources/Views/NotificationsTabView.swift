@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct NotificationsTabView: View {
-    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
-    @AppStorage("nudgeWhenEmpty") private var nudgeWhenEmpty: Bool = true
+    @AppStorage(SettingsKey.notificationsEnabled) private var notificationsEnabled: Bool = true
+    @AppStorage(SettingsKey.nudgeWhenEmpty) private var nudgeWhenEmpty: Bool = true
     @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes: Int = 60
 
     var body: some View {

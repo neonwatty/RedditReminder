@@ -47,7 +47,11 @@ struct CaptureMediaSection: View {
 
     private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
         for provider in providers {
-            _ = provider.loadObject(ofClass: URL.self) { url, _ in
+            _ = provider.loadObject(ofClass: URL.self) { url, error in
+                if let error {
+                    NSLog("RedditReminder: file drop failed: \(error)")
+                    return
+                }
                 if let url { Task { @MainActor in droppedFiles.append(url) } }
             }
         }
