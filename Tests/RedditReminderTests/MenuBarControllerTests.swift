@@ -37,4 +37,31 @@ struct MenuBarControllerTests {
         controller.isPopoverVisible = true
         #expect(controller.isPopoverVisible == true)
     }
+
+    @Test func handleNewCaptureInvokesCallback() {
+        let controller = MenuBarController()
+        var called = false
+        controller.onNewCapture = { called = true }
+        controller.perform(NSSelectorFromString("handleNewCapture"))
+        #expect(called == true)
+    }
+
+    @Test func handleOpenPreferencesInvokesCallback() {
+        let controller = MenuBarController()
+        var called = false
+        controller.onOpenPreferences = { called = true }
+        controller.perform(NSSelectorFromString("handleOpenPreferences"))
+        #expect(called == true)
+    }
+
+    @Test func handleNewCaptureNoOpWhenCallbackNil() {
+        let controller = MenuBarController()
+        // onNewCapture is nil by default — should not crash
+        controller.perform(NSSelectorFromString("handleNewCapture"))
+    }
+
+    @Test func handleOpenPreferencesNoOpWhenCallbackNil() {
+        let controller = MenuBarController()
+        controller.perform(NSSelectorFromString("handleOpenPreferences"))
+    }
 }
