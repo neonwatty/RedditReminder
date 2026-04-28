@@ -27,9 +27,14 @@ struct SubredditRow: View {
                             .foregroundStyle(.red)
                             .buttonStyle(.plain)
                     } else {
-                        Text(peakDaysSummary)
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(peakDaysSummary)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                            Text(eventSourceSummary.compactLabel)
+                                .font(.system(size: 9))
+                                .foregroundStyle(eventSourceSummary.generatedCount > 0 ? AppColors.redditOrange : .secondary)
+                        }
                     }
                 }
             }
@@ -51,6 +56,12 @@ struct SubredditRow: View {
                         .foregroundStyle(.secondary)
                         .tracking(0.3)
                     peakHourChips
+
+                    Text("EVENT SOURCES")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.3)
+                    eventSourceChips
 
                     HStack {
                         Spacer()
@@ -136,6 +147,27 @@ struct SubredditRow: View {
         }
     }
 
+    private var eventSourceChips: some View {
+        HStack(spacing: 6) {
+            sourceChip(label: "Manual", count: eventSourceSummary.manualCount, color: .secondary)
+            sourceChip(label: "Auto", count: eventSourceSummary.generatedCount, color: AppColors.redditOrange)
+        }
+    }
+
+    private func sourceChip(label: String, count: Int, color: Color) -> some View {
+        Text("\(count) \(label.lowercased())")
+            .font(.system(size: 10, weight: .medium))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(count > 0 ? color.opacity(0.10) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(count > 0 ? color : Color(NSColor.separatorColor), lineWidth: 0.5)
+            )
+            .foregroundStyle(count > 0 ? color : .secondary)
+    }
+
     private func toggleHour(_ hour: Int) {
         var hours = sub.peakHoursUtcOverride ?? []
         if hours.contains(hour) {
@@ -168,6 +200,10 @@ struct SubredditRow: View {
 
     private var effectivePeakHours: [Int] {
         sub.peakHoursUtcOverride ?? peakInfo?.peakHoursUtc ?? []
+    }
+
+    private var eventSourceSummary: EventSourceSummary {
+        EventSourceSummary.active(events: sub.events)
     }
 }
 
