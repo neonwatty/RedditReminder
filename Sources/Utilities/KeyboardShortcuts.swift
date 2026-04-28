@@ -83,6 +83,10 @@ struct KeyboardShortcutConfig: Equatable, Sendable {
     "\(modifierDisplay(for: normalized(modifiers)))\(key)"
   }
 
+  func matches(keyCode candidateKeyCode: Int64, flags: CGEventFlags) -> Bool {
+    candidateKeyCode == keyCode && Self.normalized(flags) == modifiers
+  }
+
   private static func normalized(_ modifiers: CGEventFlags) -> CGEventFlags {
     var normalized: CGEventFlags = []
     for mask in allModifierMasks where modifiers.contains(mask) {
@@ -216,7 +220,7 @@ final class GlobalShortcut {
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 
     let config = state.withLock { $0.config }
-    if keyCode == config.keyCode && flags.contains(config.modifiers) {
+    if config.matches(keyCode: keyCode, flags: flags) {
       let handler = state.withLock { $0.handler }
       if let handler {
         Task { @MainActor in handler() }
