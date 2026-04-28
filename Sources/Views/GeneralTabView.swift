@@ -4,25 +4,14 @@ import SwiftData
 struct GeneralTabView: View {
     @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
-    @AppStorage(SettingsKey.globalShortcutIdentifier) private var globalShortcutIdentifier: String =
-        KeyboardShortcutConfig.defaultShortcut.identifier
+    @State private var shortcutConfig = KeyboardShortcutConfig.load()
 
     @Query(sort: \Project.name) private var projects: [Project]
 
     var body: some View {
         Form {
             Section("Keyboard Shortcut") {
-                Picker("Toggle popover", selection: $globalShortcutIdentifier) {
-                    ForEach(KeyboardShortcutConfig.presets, id: \.identifier) { shortcut in
-                        Text(shortcut.display).tag(shortcut.identifier)
-                    }
-                }
-                .font(.system(size: 12))
-
-                Button("Reset to Default") {
-                    globalShortcutIdentifier = KeyboardShortcutConfig.defaultShortcut.identifier
-                }
-                .font(.system(size: 11))
+                ShortcutRecorderView(config: $shortcutConfig)
             }
 
             Section("Defaults") {
@@ -55,6 +44,12 @@ struct GeneralTabView: View {
         }
         .formStyle(.grouped)
         .padding(8)
+        .onAppear {
+            shortcutConfig = KeyboardShortcutConfig.load()
+        }
+        .onChange(of: shortcutConfig) { _, newValue in
+            KeyboardShortcutConfig.save(newValue)
+        }
     }
 
     private static func leadTimeLabel(_ minutes: Int) -> String {

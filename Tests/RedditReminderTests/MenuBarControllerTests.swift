@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import AppKit
 @testable import RedditReminder
 
 @Suite(.serialized)
@@ -31,6 +32,43 @@ struct MenuBarControllerTests {
 
         #expect(KeyboardShortcutConfig.load(from: defaults) == .defaultShortcut)
         defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func shortcutPersistsCustomConfig() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let shortcut = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        KeyboardShortcutConfig.save(shortcut, to: defaults)
+
+        #expect(KeyboardShortcutConfig.load(from: defaults) == shortcut)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func shortcutInvalidCustomConfigFallsBackToDefault() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.set(KeyboardShortcutConfig.customIdentifier, forKey: SettingsKey.globalShortcutIdentifier)
+        defaults.set(35, forKey: SettingsKey.globalShortcutKeyCode)
+        defaults.set(Int(CGEventFlags.maskShift.rawValue), forKey: SettingsKey.globalShortcutModifiers)
+        defaults.set("⇧P", forKey: SettingsKey.globalShortcutDisplay)
+
+        #expect(KeyboardShortcutConfig.load(from: defaults) == .defaultShortcut)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func shortcutCustomDisplayOrdersModifiersConsistently() {
+        let shortcut = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskShift, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        #expect(shortcut.display == "⌥⇧⌘P")
     }
 
     @Test func shortcutPresetsAreValid() {

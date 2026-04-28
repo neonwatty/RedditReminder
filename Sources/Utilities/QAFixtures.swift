@@ -127,7 +127,8 @@ enum QAFixtures {
     let farOut = SubredditEvent(
       name: "macOS Weekly",
       subreddit: macOS,
-      oneOffDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())  // +7d → none (no dot)
+      // +7d -> none (no dot)
+      oneOffDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())
     )
     context.insert(farOut)
 
