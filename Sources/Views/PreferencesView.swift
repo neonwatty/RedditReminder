@@ -47,7 +47,7 @@ struct PreferencesView: View {
             case .general:
                 GeneralTabView()
             case .notifications:
-                NotificationsTabView()
+                NotificationsTabView(notificationService: notificationService)
             }
         }
         .frame(width: 500, height: 440)

@@ -140,3 +140,22 @@ final class NotificationService {
     center.removeAllPendingNotificationRequests()
   }
 }
+
+enum NotificationAuthorizationDisplay {
+  static func label(for status: UNAuthorizationStatus) -> String {
+    switch status {
+    case .authorized:
+      return "Allowed"
+    case .denied:
+      return "Denied"
+    case .notDetermined:
+      return "Not requested"
+    case .provisional:
+      return "Provisional"
+    case .ephemeral:
+      return "Ephemeral"
+    @unknown default:
+      return "Unknown"
+    }
+  }
+}
