@@ -86,12 +86,9 @@ struct SubredditRow: View {
         )
     }
 
-    private static let allDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    private static let dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-
     private var peakDayChips: some View {
         HStack(spacing: 4) {
-            ForEach(Array(zip(Self.allDays, Self.dayKeys)), id: \.0) { display, key in
+            ForEach(Array(zip(SubredditPeakSelection.allDays, SubredditPeakSelection.dayKeys)), id: \.0) { display, key in
                 let isOn = effectivePeakDays.contains(key)
                 Button(action: { toggleDay(key) }) {
                     Text(display)
@@ -112,20 +109,12 @@ struct SubredditRow: View {
     }
 
     private func toggleDay(_ day: String) {
-        var days = sub.peakDaysOverride ?? []
-        if days.contains(day) {
-            days.removeAll { $0 == day }
-        } else {
-            days.append(day)
-        }
-        sub.peakDaysOverride = days.isEmpty ? nil : days
+        sub.peakDaysOverride = SubredditPeakSelection.toggledDay(day, in: sub.peakDaysOverride)
     }
-
-    private static let displayHours = [0, 2, 4, 6, 8, 10, 12, 14, 15, 16, 17, 18, 20, 22]
 
     private var peakHourChips: some View {
         let columns = [GridItem(.adaptive(minimum: 30), spacing: 3)]
-        let hours = Self.displayHours
+        let hours = SubredditPeakSelection.displayHours
         return LazyVGrid(columns: columns, spacing: 3) {
             ForEach(hours, id: \.self) { hour in
                 let isOn = effectivePeakHours.contains(hour)
@@ -169,20 +158,11 @@ struct SubredditRow: View {
     }
 
     private func toggleHour(_ hour: Int) {
-        var hours = sub.peakHoursUtcOverride ?? []
-        if hours.contains(hour) {
-            hours.removeAll { $0 == hour }
-        } else {
-            hours.append(hour)
-            hours.sort()
-        }
-        sub.peakHoursUtcOverride = hours.isEmpty ? nil : hours
+        sub.peakHoursUtcOverride = SubredditPeakSelection.toggledHour(hour, in: sub.peakHoursUtcOverride)
     }
 
     private var peakDaysSummary: String {
-        guard !effectivePeakDays.isEmpty else { return "no defaults" }
-        let suffix = hasOverride ? "" : " defaults"
-        return effectivePeakDays.map { $0.prefix(3).capitalized }.joined(separator: " ") + suffix
+        SubredditPeakSelection.peakDaysSummary(effectivePeakDays: effectivePeakDays, hasOverride: hasOverride)
     }
 
     private func resetDefaults() {
@@ -191,15 +171,15 @@ struct SubredditRow: View {
     }
 
     private var hasOverride: Bool {
-        sub.peakDaysOverride != nil || sub.peakHoursUtcOverride != nil
+        SubredditPeakSelection.hasOverride(days: sub.peakDaysOverride, hours: sub.peakHoursUtcOverride)
     }
 
     private var effectivePeakDays: [String] {
-        sub.peakDaysOverride ?? peakInfo?.peakDays ?? []
+        SubredditPeakSelection.effectivePeakDays(override: sub.peakDaysOverride, peakInfo: peakInfo)
     }
 
     private var effectivePeakHours: [Int] {
-        sub.peakHoursUtcOverride ?? peakInfo?.peakHoursUtc ?? []
+        SubredditPeakSelection.effectivePeakHours(override: sub.peakHoursUtcOverride, peakInfo: peakInfo)
     }
 
     private var eventSourceSummary: EventSourceSummary {
