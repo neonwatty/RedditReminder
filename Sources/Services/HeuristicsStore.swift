@@ -10,8 +10,10 @@ struct PeakInfo {
 final class HeuristicsStore {
   private var bundled: [String: PeakInfo] = [:]
   private var overrides: [String: PeakInfo] = [:]
+  private let logsMissingResource: Bool
 
-  init(bundle: Bundle = .main) {
+  init(bundle: Bundle = .main, logsMissingResource: Bool = true) {
+    self.logsMissingResource = logsMissingResource
     loadBundled(from: bundle)
   }
 
@@ -122,7 +124,9 @@ final class HeuristicsStore {
 
   private func loadBundled(from bundle: Bundle) {
     guard let url = bundle.url(forResource: "peak-times", withExtension: "json") else {
-      NSLog("RedditReminder: peak-times.json not found in bundle")
+      if logsMissingResource {
+        NSLog("RedditReminder: peak-times.json not found in bundle")
+      }
       return
     }
 

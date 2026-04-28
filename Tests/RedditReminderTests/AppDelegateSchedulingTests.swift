@@ -44,7 +44,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
     )
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(3600))
@@ -71,7 +71,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
     )
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(1800))
@@ -100,7 +100,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
     )
     let sub = Subreddit(name: "r/Test")
     let stale = SubredditEvent(name: "Too Far", subreddit: sub, oneOffDate: Date().addingTimeInterval(48 * 3600))
@@ -121,7 +121,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
         menuBarController: MenuBarController(),
         timingEngine: TimingEngine(),
         notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main)
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
     )
 
     await delegate.scheduleNotifications(activeEvents: [], windows: [])
