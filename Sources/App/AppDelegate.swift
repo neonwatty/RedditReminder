@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     let notificationService: NotificationService
     let heuristicsStore: HeuristicsStore
     let notificationScheduler: NotificationScheduler
+    let defaults: UserDefaults
 
     var modelContainer: ModelContainer?
 
@@ -30,13 +31,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         menuBarController: MenuBarController,
         timingEngine: TimingEngine,
         notificationService: NotificationService,
-        heuristicsStore: HeuristicsStore
+        heuristicsStore: HeuristicsStore,
+        defaults: UserDefaults = .standard
     ) {
         self.menuBarController = menuBarController
         self.timingEngine = timingEngine
         self.notificationService = notificationService
         self.heuristicsStore = heuristicsStore
-        self.notificationScheduler = NotificationScheduler(notificationService: notificationService)
+        self.defaults = defaults
+        self.notificationScheduler = NotificationScheduler(notificationService: notificationService, defaults: defaults)
         super.init()
     }
 
@@ -54,16 +57,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             }
         }
 
-        // Set up notification delegate and categories
         UNUserNotificationCenter.current().delegate = self
         notificationService.registerCategories()
 
-        // Request notification permission
-        Task {
-            _ = await notificationService.requestPermission()
-        }
+        Task { _ = await notificationService.requestPermission() }
 
-        // Start 5-minute refresh loop
         startRefreshLoop()
 
         NSLog("RedditReminder: launched, refresh loop started")
@@ -150,9 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    private var defaultLeadTimeMinutes: Int {
-        UserDefaults.standard.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
-    }
+    private var defaultLeadTimeMinutes: Int { defaults.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60 }
 
     func scheduleNotifications(
         activeEvents: [SubredditEvent],
