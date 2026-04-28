@@ -76,6 +76,36 @@ struct MenuBarControllerTests {
         #expect(allValid)
     }
 
+    @Test func shortcutMatchesExactKeyAndModifiers() {
+        let shortcut = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        #expect(shortcut.matches(keyCode: 35, flags: [.maskCommand, .maskAlternate]))
+    }
+
+    @Test func shortcutRejectsExtraShortcutModifiers() {
+        let shortcut = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        #expect(!shortcut.matches(keyCode: 35, flags: [.maskCommand, .maskAlternate, .maskShift]))
+    }
+
+    @Test func shortcutRejectsWrongKeyCode() {
+        let shortcut = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        #expect(!shortcut.matches(keyCode: 36, flags: [.maskCommand, .maskAlternate]))
+    }
+
     @Test func initialBadgeCountIsZero() {
         let controller = MenuBarController()
         #expect(controller.badgeCount == 0)
