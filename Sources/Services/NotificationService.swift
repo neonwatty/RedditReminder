@@ -37,8 +37,37 @@ final class NotificationService {
     }
   }
 
+  func registerCategories() {
+    let openAction = UNNotificationAction(
+      identifier: "OPEN_ACTION",
+      title: "Open",
+      options: [.foreground]
+    )
+    let markPostedAction = UNNotificationAction(
+      identifier: "MARK_POSTED_ACTION",
+      title: "Mark as Posted",
+      options: []
+    )
+
+    let windowCategory = UNNotificationCategory(
+      identifier: "POSTING_WINDOW",
+      actions: [openAction, markPostedAction],
+      intentIdentifiers: []
+    )
+    let nudgeCategory = UNNotificationCategory(
+      identifier: "EMPTY_QUEUE_NUDGE",
+      actions: [openAction],
+      intentIdentifiers: []
+    )
+
+    if let realCenter = center as? UNUserNotificationCenter {
+      realCenter.setNotificationCategories([windowCategory, nudgeCategory])
+    }
+  }
+
   func scheduleWindowNotification(
     eventId: String,
+    subredditName: String,
     title: String,
     body: String,
     fireDate: Date
@@ -48,6 +77,7 @@ final class NotificationService {
     content.body = body
     content.sound = .default
     content.categoryIdentifier = "POSTING_WINDOW"
+    content.userInfo = ["eventId": eventId, "subredditName": subredditName]
 
     let comps = Calendar.current.dateComponents(
       [.year, .month, .day, .hour, .minute],
