@@ -21,21 +21,17 @@ struct PopoverContentView: View {
     @State private var showPosted: Bool = false
 
     private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
-    private var queuedCaptures: [Capture] { captures.filter { $0.status == .queued } }
-    private var postedCaptures: [Capture] { captures.filter { $0.status == .posted } }
-
+    private var queuedCaptures: [Capture] { PopoverCaptureFiltering.queuedCaptures(from: captures) }
+    private var postedCaptures: [Capture] { PopoverCaptureFiltering.postedCaptures(from: captures) }
     private var displayedCaptures: [Capture] {
-        let subredditFiltered: [Capture]
-        if let filterId = filterSubredditId {
-            subredditFiltered = queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
-        } else {
-            subredditFiltered = queuedCaptures
-        }
-        return subredditFiltered.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
+        PopoverCaptureFiltering.displayedQueuedCaptures(
+            from: captures,
+            filterSubredditId: filterSubredditId,
+            searchText: searchText
+        )
     }
-
     private var displayedPostedCaptures: [Capture] {
-        postedCaptures.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
+        PopoverCaptureFiltering.displayedPostedCaptures(from: captures, searchText: searchText)
     }
 
     var body: some View {
