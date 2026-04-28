@@ -140,3 +140,110 @@ private func makeBackupContainer() throws -> ModelContainer {
     }
     #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 1)
 }
+
+@Test @MainActor func backupImportRejectsCaptureMissingProjectBeforeClearingData() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    context.insert(Project(name: "Existing"))
+    try context.save()
+
+    let missingProject = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [],
+        events: [],
+        captures: [
+            BackupCapture(
+                id: UUID(),
+                text: "Broken capture",
+                notes: nil,
+                links: [],
+                mediaRefs: [],
+                status: .queued,
+                createdAt: Date(),
+                postedAt: nil,
+                projectId: missingProject,
+                subredditIds: []
+            )
+        ]
+    )
+    let data = try JSONEncoder().encode(backup)
+
+    #expect(throws: BackupError.missingRelationship(missingProject.uuidString)) {
+        try BackupService().importBackup(from: data, into: context)
+    }
+    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 1)
+}
+
+@Test @MainActor func backupImportRejectsCaptureMissingSubredditBeforeClearingData() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    context.insert(Subreddit(name: "r/Existing"))
+    try context.save()
+
+    let missingSubreddit = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [],
+        events: [],
+        captures: [
+            BackupCapture(
+                id: UUID(),
+                text: "Broken capture",
+                notes: nil,
+                links: [],
+                mediaRefs: [],
+                status: .queued,
+                createdAt: Date(),
+                postedAt: nil,
+                projectId: nil,
+                subredditIds: [missingSubreddit]
+            )
+        ]
+    )
+    let data = try JSONEncoder().encode(backup)
+
+    #expect(throws: BackupError.missingRelationship(missingSubreddit.uuidString)) {
+        try BackupService().importBackup(from: data, into: context)
+    }
+    #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 1)
+}
+
+@Test @MainActor func backupImportClearsOmittedSettings() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    let suiteName = "BackupTests-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+
+    defaults.set("stale-project", forKey: SettingsKey.defaultProjectId)
+    defaults.set(120, forKey: SettingsKey.defaultLeadTimeMinutes)
+    defaults.set(false, forKey: SettingsKey.notificationsEnabled)
+    defaults.set(true, forKey: SettingsKey.nudgeWhenEmpty)
+    defaults.set("cmd-option-r", forKey: SettingsKey.globalShortcutIdentifier)
+    defaults.set(15, forKey: SettingsKey.globalShortcutKeyCode)
+    defaults.set(123, forKey: SettingsKey.globalShortcutModifiers)
+    defaults.set("Old", forKey: SettingsKey.globalShortcutDisplay)
+
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [],
+        events: [],
+        captures: []
+    )
+    let data = try JSONEncoder().encode(backup)
+
+    try BackupService().importBackup(from: data, into: context, defaults: defaults)
+
+    #expect(defaults.object(forKey: SettingsKey.defaultProjectId) == nil)
+    #expect(defaults.object(forKey: SettingsKey.defaultLeadTimeMinutes) == nil)
+    #expect(defaults.object(forKey: SettingsKey.notificationsEnabled) == nil)
+    #expect(defaults.object(forKey: SettingsKey.nudgeWhenEmpty) == nil)
+    #expect(defaults.object(forKey: SettingsKey.globalShortcutIdentifier) == nil)
+    #expect(defaults.object(forKey: SettingsKey.globalShortcutKeyCode) == nil)
+    #expect(defaults.object(forKey: SettingsKey.globalShortcutModifiers) == nil)
+    #expect(defaults.object(forKey: SettingsKey.globalShortcutDisplay) == nil)
+}
