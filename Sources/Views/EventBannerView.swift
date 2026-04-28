@@ -4,21 +4,19 @@ struct EventBannerView: View {
     let upcomingWindows: [TimingEngine.UpcomingWindow]
     var onTap: ((TimingEngine.UpcomingWindow) -> Void)? = nil
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         if let next = upcomingWindows.first {
             Button(action: { onTap?(next) }) {
                 HStack(spacing: 0) {
                     RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Self.redditOrange)
+                        .fill(AppColors.redditOrange)
                         .frame(width: 3)
                         .padding(.vertical, 2)
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("UPCOMING")
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Self.redditOrange)
+                            .foregroundStyle(AppColors.redditOrange)
                             .tracking(0.5)
 
                         if let sub = next.event.subreddit {
@@ -51,7 +49,7 @@ struct EventBannerView: View {
                                     .foregroundStyle(.secondary)
                                 Text("and \(upcomingWindows.count - 1) more")
                                     .font(.system(size: 10))
-                                    .foregroundStyle(Self.redditOrange)
+                                    .foregroundStyle(AppColors.redditOrange)
                             }
                         }
                     }
@@ -60,7 +58,7 @@ struct EventBannerView: View {
                     Spacer(minLength: 0)
                 }
                 .padding(10)
-                .background(Self.redditOrange.opacity(0.08))
+                .background(AppColors.redditOrange.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .contentShape(Rectangle())
             }

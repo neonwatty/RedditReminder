@@ -12,8 +12,6 @@ struct PreferencesView: View {
         case notifications = "Notifications"
     }
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
@@ -21,12 +19,12 @@ struct PreferencesView: View {
                     Button(action: { selectedTab = tab }) {
                         Text(tab.rawValue)
                             .font(.system(size: 11, weight: selectedTab == tab ? .semibold : .medium))
-                            .foregroundStyle(selectedTab == tab ? Self.redditOrange : .secondary)
+                            .foregroundStyle(selectedTab == tab ? AppColors.redditOrange : .secondary)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 6)
                             .background(
                                 selectedTab == tab
-                                    ? Self.redditOrange.opacity(0.1)
+                                    ? AppColors.redditOrange.opacity(0.1)
                                     : Color.clear
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 6))

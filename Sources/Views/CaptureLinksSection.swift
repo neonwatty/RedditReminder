@@ -4,11 +4,9 @@ struct CaptureLinksSection: View {
     @Binding var links: [String]
     @Binding var newLinkText: String
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         FlowLayout(spacing: 6) {
-            ForEach(Array(links.enumerated()), id: \.offset) { index, link in
+            ForEach(Array(links.enumerated()), id: \.element) { index, link in
                 LinkChipView(url: link, onRemove: {
                     links.remove(at: index)
                 })
@@ -25,7 +23,7 @@ struct CaptureLinksSection: View {
                     Button(action: addLink) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 12))
-                            .foregroundStyle(Self.redditOrange)
+                            .foregroundStyle(AppColors.redditOrange)
                     }
                     .buttonStyle(.plain)
                 }
@@ -40,9 +38,8 @@ struct CaptureLinksSection: View {
     }
 
     private func addLink() {
-        let trimmed = newLinkText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        links.append(trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)")
+        guard let normalized = CaptureHelpers.normalizeLink(newLinkText) else { return }
+        links.append(normalized)
         newLinkText = ""
     }
 }

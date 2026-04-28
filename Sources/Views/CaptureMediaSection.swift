@@ -8,7 +8,7 @@ struct CaptureMediaSection: View {
         VStack(spacing: 8) {
             if !droppedFiles.isEmpty {
                 FlowLayout(spacing: 6) {
-                    ForEach(Array(droppedFiles.enumerated()), id: \.offset) { index, url in
+                    ForEach(Array(droppedFiles.enumerated()), id: \.element) { index, url in
                         HStack(spacing: 4) {
                             Image(systemName: "doc")
                                 .font(.system(size: 9))
