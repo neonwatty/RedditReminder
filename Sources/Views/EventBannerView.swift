@@ -20,15 +20,9 @@ struct EventBannerView: View {
                             .tracking(0.5)
 
                         if let sub = next.event.subreddit {
-                            Text("\(sub.name) — \(next.event.name)")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
+                            eventTitle("\(sub.name) — \(next.event.name)", event: next.event)
                         } else {
-                            Text(next.event.name)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
+                            eventTitle(next.event.name, event: next.event)
                         }
 
                         HStack(spacing: 4) {
@@ -77,5 +71,26 @@ struct EventBannerView: View {
 
     private func relativeTime(_ date: Date) -> String {
         Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private func eventTitle(_ title: String, event: SubredditEvent) -> some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+
+            Text(event.isGeneratedFromHeuristics ? "Auto" : "Manual")
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundStyle(event.isGeneratedFromHeuristics ? AppColors.redditOrange : .secondary)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .background(event.isGeneratedFromHeuristics ? AppColors.redditOrange.opacity(0.10) : Color.clear)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(event.isGeneratedFromHeuristics ? AppColors.redditOrange : Color(NSColor.separatorColor), lineWidth: 0.5)
+                )
+        }
     }
 }
