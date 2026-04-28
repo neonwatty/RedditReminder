@@ -204,30 +204,27 @@ struct PopoverContentView: View {
 
     // MARK: - Actions
 
-    private func openNewCapture() {
-        let formView = CaptureWindowView(
-            mode: .create,
-            onSave: { result in
-                let ok = saveCapture(result)
-                menuBarController.closeCaptureWindow()
-                showToastAfterReopen(ok ? "Draft saved" : "Save failed")
-            },
-            onCancel: { menuBarController.closeCaptureWindow() }
-        ).modelContainer(modelContext.container)
-        menuBarController.showCaptureWindow(title: "New Capture", content: formView)
-    }
+    private func openNewCapture() { openCaptureWindow(mode: .create) }
+    private func openCaptureForEditing(_ capture: Capture) { openCaptureWindow(mode: .edit(capture)) }
 
-    private func openCaptureForEditing(_ capture: Capture) {
+    private func openCaptureWindow(mode: CaptureWindowView.Mode) {
+        let (title, successMsg): (String, String) = switch mode {
+        case .create: ("New Capture", "Draft saved")
+        case .edit: ("Edit Capture", "Draft updated")
+        }
         let formView = CaptureWindowView(
-            mode: .edit(capture),
+            mode: mode,
             onSave: { result in
-                let ok = updateCapture(capture, with: result)
+                let ok: Bool = switch mode {
+                case .create: saveCapture(result)
+                case .edit(let capture): updateCapture(capture, with: result)
+                }
                 menuBarController.closeCaptureWindow()
-                showToastAfterReopen(ok ? "Draft updated" : "Save failed")
+                showToastAfterReopen(ok ? successMsg : "Save failed")
             },
             onCancel: { menuBarController.closeCaptureWindow() }
         ).modelContainer(modelContext.container)
-        menuBarController.showCaptureWindow(title: "Edit Capture", content: formView)
+        menuBarController.showCaptureWindow(title: title, content: formView)
     }
 
     private func openPreferences() {

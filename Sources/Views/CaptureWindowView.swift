@@ -24,8 +24,6 @@ struct CaptureWindowView: View {
     @State private var isDragOver: Bool = false
     @State private var showPreview: Bool = false
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         VStack(spacing: 0) {
             titleBar
@@ -40,9 +38,9 @@ struct CaptureWindowView: View {
                                     Button(action: { showPreview = false }) {
                                         Text("Edit")
                                             .font(.system(size: 9, weight: showPreview ? .medium : .semibold))
-                                            .foregroundStyle(showPreview ? .secondary : Self.redditOrange)
+                                            .foregroundStyle(showPreview ? .secondary : AppColors.redditOrange)
                                             .padding(.horizontal, 6).padding(.vertical, 2)
-                                            .background(showPreview ? Color.clear : Self.redditOrange.opacity(0.1))
+                                            .background(showPreview ? Color.clear : AppColors.redditOrange.opacity(0.1))
                                             .clipShape(RoundedRectangle(cornerRadius: 3))
                                     }
                                     .buttonStyle(.plain)
@@ -50,9 +48,9 @@ struct CaptureWindowView: View {
                                     Button(action: { showPreview = true }) {
                                         Text("Preview")
                                             .font(.system(size: 9, weight: showPreview ? .semibold : .medium))
-                                            .foregroundStyle(showPreview ? Self.redditOrange : .secondary)
+                                            .foregroundStyle(showPreview ? AppColors.redditOrange : .secondary)
                                             .padding(.horizontal, 6).padding(.vertical, 2)
-                                            .background(showPreview ? Self.redditOrange.opacity(0.1) : Color.clear)
+                                            .background(showPreview ? AppColors.redditOrange.opacity(0.1) : Color.clear)
                                             .clipShape(RoundedRectangle(cornerRadius: 3))
                                     }
                                     .buttonStyle(.plain)
@@ -145,7 +143,7 @@ struct CaptureWindowView: View {
 
             Button("Save", action: save)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(canSave ? Self.redditOrange : Self.redditOrange.opacity(0.4))
+                .foregroundStyle(canSave ? AppColors.redditOrange : AppColors.redditOrange.opacity(0.4))
                 .buttonStyle(.plain)
                 .disabled(!canSave)
                 .padding(.leading, 6)
@@ -183,7 +181,7 @@ struct CaptureWindowView: View {
     }
 
     private var canSave: Bool {
-        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !selectedSubreddits.isEmpty
+        CaptureHelpers.canSave(text: text, selectedSubredditCount: selectedSubreddits.count)
     }
     private func save() {
         guard canSave else { return }

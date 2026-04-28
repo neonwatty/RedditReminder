@@ -50,10 +50,10 @@ struct CaptureCardView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
-            Button("Edit") { onTap?() }
-            Button("Mark as Posted") { onMarkPosted?() }
-            Divider()
-            Button("Delete", role: .destructive) { onDelete?() }
+            if let onTap { Button("Edit") { onTap() } }
+            if let onMarkPosted { Button("Mark as Posted") { onMarkPosted() } }
+            if onTap != nil || onMarkPosted != nil { Divider() }
+            if let onDelete { Button("Delete", role: .destructive) { onDelete() } }
         }
     }
 

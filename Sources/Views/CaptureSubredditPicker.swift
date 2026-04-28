@@ -4,8 +4,6 @@ struct CaptureSubredditPicker: View {
     let subreddits: [Subreddit]
     @Binding var selectedSubreddits: Set<UUID>
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         Menu {
             ForEach(subreddits, id: \.id) { sub in
@@ -35,7 +33,7 @@ struct CaptureSubredditPicker: View {
                         .map(\.name)
                         .joined(separator: ", ")
                     Text(names)
-                        .foregroundStyle(Self.redditOrange)
+                        .foregroundStyle(AppColors.redditOrange)
                 }
                 Spacer()
                 Image(systemName: "chevron.down")

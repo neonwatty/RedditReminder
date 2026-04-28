@@ -44,7 +44,9 @@ struct PostedListView: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 16)
         .contextMenu {
-            Button("Delete", role: .destructive) { onDelete?(capture) }
+            if let onDelete {
+                Button("Delete", role: .destructive) { onDelete(capture) }
+            }
         }
     }
 }

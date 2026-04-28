@@ -7,8 +7,6 @@ struct SubredditRow: View {
     let onToggle: () -> Void
     let onDelete: () -> Void
 
-    private static let redditOrange = AppColors.redditOrange
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: onToggle) {
@@ -16,7 +14,7 @@ struct SubredditRow: View {
                     HStack(spacing: 8) {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: 10))
-                            .foregroundStyle(isExpanded ? Self.redditOrange : .secondary)
+                            .foregroundStyle(isExpanded ? AppColors.redditOrange : .secondary)
                         Text(sub.name)
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.primary)
@@ -86,13 +84,13 @@ struct SubredditRow: View {
                         .font(.system(size: 10, weight: .medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(isOn ? Self.redditOrange.opacity(0.12) : Color.clear)
+                        .background(isOn ? AppColors.redditOrange.opacity(0.12) : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 5))
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(isOn ? Self.redditOrange : Color(NSColor.separatorColor), lineWidth: 0.5)
+                                .stroke(isOn ? AppColors.redditOrange : Color(NSColor.separatorColor), lineWidth: 0.5)
                         )
-                        .foregroundStyle(isOn ? Self.redditOrange : .secondary)
+                        .foregroundStyle(isOn ? AppColors.redditOrange : .secondary)
                 }
                 .buttonStyle(.plain)
             }

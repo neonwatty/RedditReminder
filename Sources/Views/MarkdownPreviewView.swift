@@ -26,19 +26,6 @@ struct MarkdownPreviewView: View {
     }
 
     private func renderMarkdown(_ input: String) -> AttributedString? {
-        // Strip Reddit ~~strikethrough~~ markers — AttributedString lacks strikethrough support
-        let processed = input.replacingOccurrences(
-            of: "~~(.+?)~~",
-            with: "$1",
-            options: .regularExpression
-        )
-
-        do {
-            var options = AttributedString.MarkdownParsingOptions()
-            options.interpretedSyntax = .inlineOnlyPreservingWhitespace
-            return try AttributedString(markdown: processed, options: options)
-        } catch {
-            return nil
-        }
+        CaptureHelpers.renderMarkdown(input)
     }
 }
