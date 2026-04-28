@@ -39,14 +39,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        registerGlobalShortcut()
-        shortcutObserver = NotificationCenter.default.addObserver(
-            forName: UserDefaults.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.registerGlobalShortcut()
+        if AppRuntime.shouldRegisterGlobalShortcut() {
+            registerGlobalShortcut()
+            shortcutObserver = NotificationCenter.default.addObserver(
+                forName: UserDefaults.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    self?.registerGlobalShortcut()
+                }
             }
         }
 

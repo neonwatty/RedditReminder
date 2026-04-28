@@ -108,7 +108,7 @@ import Foundation
     try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
     let emptyBundle = Bundle(path: tempDir.path)!
 
-    let store = HeuristicsStore(bundle: emptyBundle)
+    let store = HeuristicsStore(bundle: emptyBundle, logsMissingResource: false)
     let peak = store.peakInfo(for: "r/SideProject")
     #expect(peak == nil) // no bundled data loaded
 }
