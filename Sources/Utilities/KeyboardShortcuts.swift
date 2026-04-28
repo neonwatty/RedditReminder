@@ -3,6 +3,63 @@ import AppKit
 import Carbon.HIToolbox
 import os
 
+struct KeyboardShortcutConfig: Equatable, Sendable {
+  let identifier: String
+  let keyCode: Int64
+  let modifiers: CGEventFlags
+  let display: String
+
+  var isValid: Bool {
+    keyCode >= 0 && Self.validModifierMasks.contains { modifiers.contains($0) }
+  }
+
+  static let defaultShortcut = KeyboardShortcutConfig(
+    identifier: "cmd-shift-r",
+    keyCode: Int64(kVK_ANSI_R),
+    modifiers: [.maskCommand, .maskShift],
+    display: "⌘⇧R"
+  )
+
+  static let presets: [KeyboardShortcutConfig] = [
+    defaultShortcut,
+    KeyboardShortcutConfig(
+      identifier: "cmd-option-r",
+      keyCode: Int64(kVK_ANSI_R),
+      modifiers: [.maskCommand, .maskAlternate],
+      display: "⌘⌥R"
+    ),
+    KeyboardShortcutConfig(
+      identifier: "ctrl-option-r",
+      keyCode: Int64(kVK_ANSI_R),
+      modifiers: [.maskControl, .maskAlternate],
+      display: "⌃⌥R"
+    ),
+    KeyboardShortcutConfig(
+      identifier: "cmd-shift-space",
+      keyCode: Int64(kVK_Space),
+      modifiers: [.maskCommand, .maskShift],
+      display: "⌘⇧Space"
+    )
+  ]
+
+  static func load(from defaults: UserDefaults = .standard) -> KeyboardShortcutConfig {
+    let identifier = defaults.string(forKey: SettingsKey.globalShortcutIdentifier)
+      ?? defaultShortcut.identifier
+    return presets.first { $0.identifier == identifier && $0.isValid } ?? defaultShortcut
+  }
+
+  static func save(_ config: KeyboardShortcutConfig, to defaults: UserDefaults = .standard) {
+    defaults.set(config.identifier, forKey: SettingsKey.globalShortcutIdentifier)
+  }
+
+  private static let validModifierMasks: [CGEventFlags] = [
+    .maskCommand,
+    .maskControl,
+    .maskAlternate,
+    .maskShift
+  ]
+}
+
 @MainActor
 final class GlobalShortcut {
   private var eventTap: CFMachPort?
@@ -12,12 +69,25 @@ final class GlobalShortcut {
     var runLoopSource: CFRunLoopSource?
     var tapRunLoop: CFRunLoop?
     var handler: (@Sendable () -> Void)?
+    var config: KeyboardShortcutConfig = .defaultShortcut
   }
 
   private let state = OSAllocatedUnfairLock(initialState: TapState())
 
-  func register(handler: @escaping @Sendable () -> Void) {
-    state.withLock { $0.handler = handler }
+  @discardableResult
+  func register(
+    config: KeyboardShortcutConfig = .defaultShortcut,
+    handler: @escaping @Sendable () -> Void
+  ) -> Bool {
+    guard config.isValid else {
+      NSLog("RedditReminder: invalid shortcut config \(config.identifier)")
+      return false
+    }
+    unregister()
+    state.withLock {
+      $0.handler = handler
+      $0.config = config
+    }
 
     let mask: CGEventMask = (1 << CGEventType.keyDown.rawValue)
     let callback: CGEventTapCallBack = { proxy, type, event, refcon in
@@ -39,7 +109,11 @@ final class GlobalShortcut {
       )
     else {
       NSLog("RedditReminder: failed to create event tap — grant Accessibility permission")
-      return
+      state.withLock {
+        $0.handler = nil
+        $0.config = .defaultShortcut
+      }
+      return false
     }
 
     eventTap = tap
@@ -58,6 +132,7 @@ final class GlobalShortcut {
     thread.qualityOfService = .userInteractive
     thread.start()
     tapThread = thread
+    return true
   }
 
   func unregister() {
@@ -86,11 +161,8 @@ final class GlobalShortcut {
     let flags = event.flags
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 
-    let isCmd = flags.contains(.maskCommand)
-    let isShift = flags.contains(.maskShift)
-    let isR = keyCode == 15  // kVK_ANSI_R
-
-    if isCmd && isShift && isR {
+    let config = state.withLock { $0.config }
+    if keyCode == config.keyCode && flags.contains(config.modifiers) {
       let handler = state.withLock { $0.handler }
       if let handler {
         Task { @MainActor in handler() }

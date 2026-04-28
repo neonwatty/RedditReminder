@@ -32,6 +32,15 @@ import Foundation
     #expect(capture.postedAt != nil)
 }
 
+@Test func captureMarkAsQueuedClearsPostedAt() {
+    let capture = Capture(text: "Update", subreddits: [])
+    capture.markAsPosted()
+    capture.markAsQueued()
+
+    #expect(capture.status == .queued)
+    #expect(capture.postedAt == nil)
+}
+
 @Test func subredditEventRecurring() {
     let sub = Subreddit(name: "r/SideProject")
     let event = SubredditEvent(

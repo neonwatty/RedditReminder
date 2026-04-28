@@ -2,33 +2,34 @@ import SwiftUI
 import SwiftData
 
 struct GeneralTabView: View {
-    @AppStorage("defaultLeadTimeMinutes") private var defaultLeadTimeMinutes: Int = 60
+    @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
+    @AppStorage(SettingsKey.globalShortcutIdentifier) private var globalShortcutIdentifier: String =
+        KeyboardShortcutConfig.defaultShortcut.identifier
 
     @Query(sort: \Project.name) private var projects: [Project]
 
     var body: some View {
         Form {
             Section("Keyboard Shortcut") {
-                HStack {
-                    Text("Toggle popover")
-                        .font(.system(size: 12))
-                    Spacer()
-                    Text("⌘⇧R")
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.quaternary.opacity(0.3))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                Picker("Toggle popover", selection: $globalShortcutIdentifier) {
+                    ForEach(KeyboardShortcutConfig.presets, id: \.identifier) { shortcut in
+                        Text(shortcut.display).tag(shortcut.identifier)
+                    }
                 }
+                .font(.system(size: 12))
+
+                Button("Reset to Default") {
+                    globalShortcutIdentifier = KeyboardShortcutConfig.defaultShortcut.identifier
+                }
+                .font(.system(size: 11))
             }
 
             Section("Defaults") {
                 Picker("Default lead time", selection: $defaultLeadTimeMinutes) {
-                    Text("30 minutes").tag(30)
-                    Text("1 hour").tag(60)
-                    Text("2 hours").tag(120)
+                    ForEach(SettingsOptions.leadTimeMinutes, id: \.self) { minutes in
+                        Text(Self.leadTimeLabel(minutes)).tag(minutes)
+                    }
                 }
                 .font(.system(size: 12))
 
@@ -54,5 +55,9 @@ struct GeneralTabView: View {
         }
         .formStyle(.grouped)
         .padding(8)
+    }
+
+    private static func leadTimeLabel(_ minutes: Int) -> String {
+        minutes < 60 ? "\(minutes) minutes" : "\(minutes / 60) hour\(minutes == 60 ? "" : "s")"
     }
 }

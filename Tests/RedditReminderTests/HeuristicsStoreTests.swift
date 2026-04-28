@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SwiftData
 @testable import RedditReminder
 
 // Helper: create a Bundle-like loader from the known Resources path at test time.
@@ -64,6 +65,55 @@ private func makeTestBundle() -> Bundle {
 
   #expect(store.isPeakWindow(for: "r/SideProject", at: tuesday))
   #expect(!store.isPeakWindow(for: "r/SideProject", at: offPeakTime))
+}
+
+@Test @MainActor func syncGeneratedEventsCreatesPeakWindows() throws {
+  let container = try makeContainer()
+  let context = ModelContext(container)
+  let sub = Subreddit(name: "r/SideProject")
+  context.insert(sub)
+  try context.save()
+
+  let store = HeuristicsStore(bundle: makeTestBundle())
+  try store.syncGeneratedEvents(for: sub, context: context, defaultLeadTimeMinutes: 30)
+
+  let events = try context.fetch(FetchDescriptor<SubredditEvent>())
+  #expect(events.count == 6)
+  #expect(events.allSatisfy { $0.isGeneratedFromHeuristics })
+  #expect(events.allSatisfy { $0.recurrenceTimeZoneIdentifier == "UTC" })
+  #expect(events.allSatisfy { $0.reminderLeadMinutes == 30 })
+  #expect(Set(events.compactMap(\.recurrenceHour)) == [14, 15, 16])
+}
+
+@Test @MainActor func syncGeneratedEventsFollowsOverridesAndRemovesStaleEvents() throws {
+  let container = try makeContainer()
+  let context = ModelContext(container)
+  let sub = Subreddit(name: "r/SideProject")
+  context.insert(sub)
+  try context.save()
+
+  let store = HeuristicsStore(bundle: makeTestBundle())
+  try store.syncGeneratedEvents(for: sub, context: context, defaultLeadTimeMinutes: 60)
+  #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 6)
+
+  sub.peakDaysOverride = ["mon"]
+  sub.peakHoursUtcOverride = [9]
+  try context.save()
+  try store.syncGeneratedEvents(for: sub, context: context, defaultLeadTimeMinutes: 120)
+
+  let events = try context.fetch(FetchDescriptor<SubredditEvent>())
+  #expect(events.count == 1)
+  #expect(events[0].rrule == "FREQ=WEEKLY;BYDAY=MO")
+  #expect(events[0].recurrenceHour == 9)
+  #expect(events[0].reminderLeadMinutes == 120)
+}
+
+private func makeContainer() throws -> ModelContainer {
+  let config = ModelConfiguration(isStoredInMemoryOnly: true)
+  return try ModelContainer(
+    for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
+    configurations: config
+  )
 }
 
 private func dayOfWeek(_ weekday: Weekday, at utcHour: Int) -> Date {

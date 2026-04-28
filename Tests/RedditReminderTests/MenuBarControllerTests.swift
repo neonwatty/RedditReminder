@@ -5,6 +5,39 @@ import Foundation
 @Suite(.serialized)
 @MainActor
 struct MenuBarControllerTests {
+    @Test func shortcutDefaultLoadsWhenUnset() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        #expect(KeyboardShortcutConfig.load(from: defaults) == .defaultShortcut)
+    }
+
+    @Test func shortcutPersistsPresetIdentifier() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let shortcut = KeyboardShortcutConfig.presets[1]
+
+        KeyboardShortcutConfig.save(shortcut, to: defaults)
+
+        #expect(KeyboardShortcutConfig.load(from: defaults) == shortcut)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func shortcutInvalidStoredIdentifierFallsBackToDefault() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.set("missing", forKey: SettingsKey.globalShortcutIdentifier)
+
+        #expect(KeyboardShortcutConfig.load(from: defaults) == .defaultShortcut)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func shortcutPresetsAreValid() {
+        let allValid = KeyboardShortcutConfig.presets.allSatisfy { $0.isValid }
+        #expect(allValid)
+    }
+
     @Test func initialBadgeCountIsZero() {
         let controller = MenuBarController()
         #expect(controller.badgeCount == 0)
@@ -64,4 +97,5 @@ struct MenuBarControllerTests {
         let controller = MenuBarController()
         controller.perform(NSSelectorFromString("handleOpenPreferences"))
     }
+
 }

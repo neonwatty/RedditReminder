@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PreferencesView: View {
     let notificationService: NotificationService
+    let heuristicsStore: HeuristicsStore
 
     @State private var selectedTab: Tab = .channels
 
@@ -40,13 +41,13 @@ struct PreferencesView: View {
 
             switch selectedTab {
             case .channels:
-                ChannelsTabView(notificationService: notificationService)
+                ChannelsTabView(notificationService: notificationService, heuristicsStore: heuristicsStore)
             case .projects:
                 ProjectsTabView()
             case .general:
                 GeneralTabView()
             case .notifications:
-                NotificationsTabView()
+                NotificationsTabView(notificationService: notificationService)
             }
         }
         .frame(width: 500, height: 440)

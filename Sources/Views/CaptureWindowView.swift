@@ -21,6 +21,8 @@ struct CaptureWindowView: View {
     @State private var links: [String] = []
     @State private var newLinkText: String = ""
     @State private var droppedFiles: [URL] = []
+    @State private var existingMediaRefs: [String] = []
+    @State private var removedMediaRefs: [String] = []
     @State private var showPreview: Bool = false
 
     var body: some View {
@@ -103,7 +105,12 @@ struct CaptureWindowView: View {
                     }
 
                     fieldSection("MEDIA") {
-                        CaptureMediaSection(droppedFiles: $droppedFiles)
+                        CaptureMediaSection(
+                            droppedFiles: $droppedFiles,
+                            captureId: editCaptureId,
+                            existingRefs: $existingMediaRefs,
+                            removedRefs: $removedMediaRefs
+                        )
                     }
                 }
                 .padding(16)
@@ -173,9 +180,18 @@ struct CaptureWindowView: View {
         onSave(CaptureFormResult(
             text: text.trimmingCharacters(in: .whitespacesAndNewlines),
             notes: notes.isEmpty ? nil : notes, links: links,
-            project: selectedProject, subreddits: selectedSubs, mediaURLs: droppedFiles
+            project: selectedProject,
+            subreddits: selectedSubs,
+            mediaURLs: droppedFiles,
+            removedMediaRefs: removedMediaRefs
         ))
     }
+
+    private var editCaptureId: UUID? {
+        if case .edit(let capture) = mode { return capture.id }
+        return nil
+    }
+
     private func populateFromMode() {
         switch mode {
         case .create:
@@ -189,6 +205,7 @@ struct CaptureWindowView: View {
             selectedProject = capture.project
             selectedSubreddits = Set(capture.subreddits.map(\.id))
             links = capture.links
+            existingMediaRefs = capture.mediaRefs
         }
     }
 }

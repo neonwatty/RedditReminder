@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PostedListView: View {
     let captures: [Capture]
+    var onRestore: ((Capture) -> Void)? = nil
     var onDelete: ((Capture) -> Void)? = nil
 
     var body: some View {
@@ -44,7 +45,11 @@ struct PostedListView: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 16)
         .contextMenu {
+            if let onRestore {
+                Button("Move back to Queue") { onRestore(capture) }
+            }
             if let onDelete {
+                if onRestore != nil { Divider() }
                 Button("Delete", role: .destructive) { onDelete(capture) }
             }
         }

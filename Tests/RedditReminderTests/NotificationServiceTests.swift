@@ -131,6 +131,13 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     #expect(status == expected)
 }
 
+@Test func notificationAuthorizationDisplayLabelsKnownStatuses() {
+    #expect(NotificationAuthorizationDisplay.label(for: .authorized) == "Allowed")
+    #expect(NotificationAuthorizationDisplay.label(for: .denied) == "Denied")
+    #expect(NotificationAuthorizationDisplay.label(for: .notDetermined) == "Not requested")
+    #expect(NotificationAuthorizationDisplay.label(for: .provisional) == "Provisional")
+}
+
 // MARK: - Trigger correctness
 
 @Test @MainActor func windowNotificationUsesCalendarTrigger() {

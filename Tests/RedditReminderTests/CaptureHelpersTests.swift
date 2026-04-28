@@ -55,6 +55,37 @@ import SwiftData
     #expect(CaptureHelpers.canSave(text: "", selectedSubredditCount: 0) == false)
 }
 
+// MARK: - search
+
+@Test func captureSearchMatchesText() {
+    let capture = Capture(text: "Launch notes")
+    #expect(CaptureHelpers.matchesSearch(capture, query: "launch"))
+}
+
+@Test func captureSearchMatchesRelatedFields() {
+    let sub = Subreddit(name: "r/SwiftUI")
+    let project = Project(name: "ReminderApp", projectDescription: "Menu bar workflow")
+    let capture = Capture(
+        text: "Post copy",
+        notes: "Include screenshot",
+        links: ["https://example.com/demo"],
+        mediaRefs: ["hero.png"],
+        project: project,
+        subreddits: [sub]
+    )
+
+    #expect(CaptureHelpers.matchesSearch(capture, query: "swiftui"))
+    #expect(CaptureHelpers.matchesSearch(capture, query: "screenshot"))
+    #expect(CaptureHelpers.matchesSearch(capture, query: "demo"))
+    #expect(CaptureHelpers.matchesSearch(capture, query: "hero"))
+    #expect(CaptureHelpers.matchesSearch(capture, query: "menu bar"))
+}
+
+@Test func captureSearchRejectsNoMatch() {
+    let capture = Capture(text: "Launch notes")
+    #expect(!CaptureHelpers.matchesSearch(capture, query: "calendar"))
+}
+
 // MARK: - renderMarkdown
 
 @Test func renderMarkdownBoldText() {

@@ -4,17 +4,20 @@ import SwiftData
 struct PopoverContentView: View {
     let menuBarController: MenuBarController
     let notificationService: NotificationService
+    let heuristicsStore: HeuristicsStore
     let onCaptureChanged: @MainActor () -> Void
+    let mediaStore = MediaStore()
 
     @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
     @Query private var allEvents: [SubredditEvent]
     @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContext) var modelContext
 
     @State private var timingEngine = TimingEngine()
     @State private var filterSubredditId: UUID?
-    @State private var toastMessage: String?
-    @State private var toastTask: Task<Void, Never>?
+    @State private var searchText: String = ""
+    @State var toastMessage: String?
+    @State var toastTask: Task<Void, Never>?
     @State private var showPosted: Bool = false
 
     private var activeEvents: [SubredditEvent] { allEvents.filter(\.isActive) }
@@ -22,13 +25,23 @@ struct PopoverContentView: View {
     private var postedCaptures: [Capture] { captures.filter { $0.status == .posted } }
 
     private var displayedCaptures: [Capture] {
-        guard let filterId = filterSubredditId else { return queuedCaptures }
-        return queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
+        let subredditFiltered: [Capture]
+        if let filterId = filterSubredditId {
+            subredditFiltered = queuedCaptures.filter { $0.subreddits.contains(where: { $0.id == filterId }) }
+        } else {
+            subredditFiltered = queuedCaptures
+        }
+        return subredditFiltered.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
+    }
+
+    private var displayedPostedCaptures: [Capture] {
+        postedCaptures.filter { CaptureHelpers.matchesSearch($0, query: searchText) }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
+            if !captures.isEmpty { searchBar }
             if showPosted { postedContent } else { queuedContent }
             footer
         }
@@ -45,14 +58,56 @@ struct PopoverContentView: View {
         .background(AppColors.popoverBg)
         .frame(width: 350).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
         .onAppear {
-            timingEngine.refresh(events: activeEvents, captures: captures)
+            refreshTiming()
             menuBarController.onNewCapture = { [self] in openNewCapture() }
             menuBarController.onOpenPreferences = { [self] in openPreferences() }
         }
-        .onChange(of: captures.count) {
-            timingEngine.refresh(events: activeEvents, captures: captures)
-            onCaptureChanged()
+        .onChange(of: captureTimingSignature) {
+            refreshTiming()
         }
+        .onChange(of: eventTimingSignature) {
+            refreshTiming()
+        }
+        .onChange(of: subredditTimingSignature) {
+            refreshTiming()
+        }
+    }
+
+    private var captureTimingSignature: [String] {
+        captures.map { capture in
+            let subIds = capture.subreddits.map(\.id.uuidString).sorted().joined(separator: ",")
+            return "\(capture.id.uuidString):\(capture.status.rawValue):\(subIds)"
+        }
+    }
+
+    private var eventTimingSignature: [String] {
+        allEvents.map { event in
+            [
+                event.id.uuidString,
+                event.isActive.description,
+                event.rrule ?? "",
+                event.oneOffDate?.timeIntervalSince1970.description ?? "",
+                event.recurrenceHour?.description ?? "",
+                event.recurrenceMinute?.description ?? "",
+                event.recurrenceTimeZoneIdentifier ?? "",
+                event.reminderLeadMinutes.description,
+                event.subreddit?.id.uuidString ?? ""
+            ].joined(separator: "|")
+        }.sorted()
+    }
+
+    private var subredditTimingSignature: [String] {
+        subreddits.map { subreddit in
+            [
+                subreddit.id.uuidString,
+                subreddit.peakDaysOverride?.joined(separator: ",") ?? "",
+                subreddit.peakHoursUtcOverride?.map(String.init).joined(separator: ",") ?? ""
+            ].joined(separator: "|")
+        }
+    }
+
+    private func refreshTiming() {
+        timingEngine.refresh(events: activeEvents, captures: captures)
     }
 
     // MARK: - Urgency
@@ -92,16 +147,22 @@ struct PopoverContentView: View {
 
     @ViewBuilder
     private var postedContent: some View {
-        if postedCaptures.isEmpty {
+        if displayedPostedCaptures.isEmpty {
             VStack(spacing: 12) {
                 Spacer()
-                Text("No posted captures yet").font(.system(size: 13)).foregroundStyle(.secondary)
+                Text(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "No posted captures yet" : "No posted captures match")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
                 Spacer()
             }.frame(maxWidth: .infinity)
         } else {
             ScrollView {
                 VStack(spacing: 0) {
-                    PostedListView(captures: postedCaptures, onDelete: { deleteCapture($0) })
+                    PostedListView(
+                        captures: displayedPostedCaptures,
+                        onRestore: { restoreCaptureToQueue($0) },
+                        onDelete: { deleteCapture($0) }
+                    )
                 }
             }
         }
@@ -155,6 +216,32 @@ struct PopoverContentView: View {
         }.buttonStyle(.plain)
     }
 
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+            TextField("Search captures", text: $searchText)
+                .font(.system(size: 11))
+                .textFieldStyle(.plain)
+            if !searchText.isEmpty {
+                Button(action: { searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.quaternary.opacity(0.25))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
     private var filterBar: some View {
         HStack {
             if let sub = subreddits.first(where: { $0.id == filterSubredditId }) {
@@ -202,90 +289,5 @@ struct PopoverContentView: View {
         }.frame(maxWidth: .infinity)
     }
 
-    // MARK: - Actions
-
-    private func openNewCapture() { openCaptureWindow(mode: .create) }
-    private func openCaptureForEditing(_ capture: Capture) { openCaptureWindow(mode: .edit(capture)) }
-
-    private func openCaptureWindow(mode: CaptureWindowView.Mode) {
-        let (title, successMsg): (String, String) = switch mode {
-        case .create: ("New Capture", "Draft saved")
-        case .edit: ("Edit Capture", "Draft updated")
-        }
-        let formView = CaptureWindowView(
-            mode: mode,
-            onSave: { result in
-                let ok: Bool = switch mode {
-                case .create: saveCapture(result)
-                case .edit(let capture): updateCapture(capture, with: result)
-                }
-                menuBarController.closeCaptureWindow()
-                showToastAfterReopen(ok ? successMsg : "Save failed")
-            },
-            onCancel: { menuBarController.closeCaptureWindow() }
-        ).modelContainer(modelContext.container)
-        menuBarController.showCaptureWindow(title: title, content: formView)
-    }
-
-    private func openPreferences() {
-        let prefsView = PreferencesView(notificationService: notificationService)
-            .modelContainer(modelContext.container)
-        menuBarController.showPreferencesWindow(content: prefsView)
-    }
-
-    @discardableResult
-    private func saveCapture(_ result: CaptureFormResult) -> Bool {
-        let c = Capture(text: result.text, notes: result.notes, links: result.links,
-                        mediaRefs: result.mediaURLs.map(\.lastPathComponent),
-                        project: result.project, subreddits: result.subreddits)
-        modelContext.insert(c)
-        do { try modelContext.save(); return true }
-        catch { NSLog("RedditReminder: save failed: \(error)"); return false }
-    }
-
-    @discardableResult
-    private func updateCapture(_ capture: Capture, with r: CaptureFormResult) -> Bool {
-        capture.text = r.text; capture.notes = r.notes; capture.links = r.links
-        capture.mediaRefs = r.mediaURLs.map(\.lastPathComponent)
-        capture.project = r.project; capture.subreddits = r.subreddits
-        do { try modelContext.save(); return true }
-        catch { NSLog("RedditReminder: update failed: \(error)"); return false }
-    }
-
-    private func markCaptureAsPosted(_ capture: Capture) {
-        capture.markAsPosted()
-        do { try modelContext.save() }
-        catch {
-            NSLog("RedditReminder: mark posted failed: \(error)")
-            modelContext.rollback()
-            showToastAfterReopen("Failed to mark as posted")
-            return
-        }
-        showToastAfterReopen("Marked as posted")
-    }
-
-    private func deleteCapture(_ capture: Capture) {
-        modelContext.delete(capture)
-        do { try modelContext.save() }
-        catch {
-            NSLog("RedditReminder: delete failed: \(error)")
-            modelContext.rollback()
-            showToastAfterReopen("Delete failed")
-            return
-        }
-        showToastAfterReopen("Capture deleted")
-    }
-
-    private func showToastAfterReopen(_ message: String) {
-        toastTask?.cancel()
-        menuBarController.openPopover()
-        toastTask = Task {
-            try? await Task.sleep(for: .milliseconds(300))
-            guard !Task.isCancelled else { return }
-            withAnimation(.easeInOut(duration: 0.2)) { toastMessage = message }
-            try? await Task.sleep(for: .seconds(2))
-            guard !Task.isCancelled else { return }
-            withAnimation(.easeInOut(duration: 0.2)) { toastMessage = nil }
-        }
-    }
+    // Actions live in PopoverContentActions.swift.
 }

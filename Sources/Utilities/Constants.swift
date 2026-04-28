@@ -30,8 +30,81 @@ enum AppColors {
 
 enum SettingsKey {
   static let defaultProjectId = "defaultProjectId"
+  static let defaultLeadTimeMinutes = "defaultLeadTimeMinutes"
   static let notificationsEnabled = "notificationsEnabled"
   static let nudgeWhenEmpty = "nudgeWhenEmpty"
+  static let globalShortcutIdentifier = "globalShortcutIdentifier"
+}
+
+enum SettingsOptions {
+  static let leadTimeMinutes = [15, 30, 60, 120]
+}
+
+enum SubredditName {
+  static let minLength = 3
+  static let maxLength = 21
+
+  enum ValidationError: Error, Equatable {
+    case empty
+    case invalidCharacters
+    case tooShort
+    case tooLong
+
+    var message: String {
+      switch self {
+      case .empty:
+        return "Enter a subreddit name."
+      case .invalidCharacters:
+        return "Use only letters, numbers, and underscores."
+      case .tooShort:
+        return "Subreddit names must be at least \(SubredditName.minLength) characters."
+      case .tooLong:
+        return "Subreddit names must be \(SubredditName.maxLength) characters or fewer."
+      }
+    }
+  }
+
+  static func normalize(_ input: String) -> Result<String, ValidationError> {
+    let candidate = canonicalCandidate(from: input)
+
+    guard !candidate.isEmpty else { return .failure(.empty) }
+    guard candidate.count >= minLength else { return .failure(.tooShort) }
+    guard candidate.count <= maxLength else { return .failure(.tooLong) }
+
+    let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
+    guard candidate.unicodeScalars.allSatisfy({ allowed.contains($0) }) else {
+      return .failure(.invalidCharacters)
+    }
+
+    return .success("r/\(candidate)")
+  }
+
+  static func normalizedName(_ input: String) -> String? {
+    if case .success(let name) = normalize(input) { return name }
+    return nil
+  }
+
+  private static func canonicalCandidate(from input: String) -> String {
+    var trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+      .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
+    if let url = URL(string: trimmed), let host = url.host?.lowercased(),
+       host == "reddit.com" || host == "www.reddit.com" || host.hasSuffix(".reddit.com") {
+      let components = url.pathComponents.filter { $0 != "/" }
+      if let markerIndex = components.firstIndex(where: { $0.lowercased() == "r" }),
+         components.indices.contains(markerIndex + 1) {
+        trimmed = components[markerIndex + 1]
+      }
+    }
+
+    if trimmed.lowercased().hasPrefix("/r/") {
+      trimmed.removeFirst(3)
+    } else if trimmed.lowercased().hasPrefix("r/") {
+      trimmed.removeFirst(2)
+    }
+
+    return trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+  }
 }
 
 struct InputFieldStyle: ViewModifier {

@@ -42,6 +42,92 @@ import AppKit
   #expect(loaded == nil)
 }
 
+@Test func saveFileCopiesDroppedImageIntoMediaStore() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let sourceURL = rootDir
+    .deletingLastPathComponent()
+    .appendingPathComponent("\(UUID().uuidString).png")
+  let image = createTestImage(width: 120, height: 80)
+  guard let tiff = image.tiffRepresentation,
+        let bitmap = NSBitmapImageRep(data: tiff),
+        let png = bitmap.representation(using: .png, properties: [:]) else {
+    Issue.record("Failed to create PNG fixture")
+    return
+  }
+  try png.write(to: sourceURL)
+  defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+  let captureId = UUID()
+  let ref = try store.saveFile(at: sourceURL, captureId: captureId)
+
+  #expect(ref == sourceURL.lastPathComponent)
+  #expect(store.loadImage(captureId: captureId, ref: ref) != nil)
+  #expect(store.loadThumbnail(captureId: captureId, ref: ref) != nil)
+}
+
+@Test func saveFileGeneratesUniqueRefsForDuplicateNames() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let sourceURL = rootDir
+    .deletingLastPathComponent()
+    .appendingPathComponent("duplicate.png")
+  let image = createTestImage(width: 120, height: 80)
+  guard let tiff = image.tiffRepresentation,
+        let bitmap = NSBitmapImageRep(data: tiff),
+        let png = bitmap.representation(using: .png, properties: [:]) else {
+    Issue.record("Failed to create PNG fixture")
+    return
+  }
+  try png.write(to: sourceURL)
+  defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+  let captureId = UUID()
+  let first = try store.saveFile(at: sourceURL, captureId: captureId)
+  let second = try store.saveFile(at: sourceURL, captureId: captureId)
+
+  #expect(first == "duplicate.png")
+  #expect(second == "duplicate-1.png")
+  #expect(store.loadImage(captureId: captureId, ref: first) != nil)
+  #expect(store.loadImage(captureId: captureId, ref: second) != nil)
+}
+
+@Test func deleteSingleMediaRefKeepsOtherMedia() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let image = createTestImage(width: 120, height: 80)
+  let captureId = UUID()
+
+  let first = try store.save(image: image, captureId: captureId, fileName: "first.png")
+  let second = try store.save(image: image, captureId: captureId, fileName: "second.png")
+
+  store.delete(captureId: captureId, ref: first)
+
+  #expect(store.loadImage(captureId: captureId, ref: first) == nil)
+  #expect(store.loadThumbnail(captureId: captureId, ref: first) == nil)
+  #expect(store.loadImage(captureId: captureId, ref: second) != nil)
+  #expect(store.loadThumbnail(captureId: captureId, ref: second) != nil)
+}
+
+@Test func saveFileRejectsUnsupportedTypes() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let sourceURL = rootDir
+    .deletingLastPathComponent()
+    .appendingPathComponent("\(UUID().uuidString).txt")
+  try "not an image".write(to: sourceURL, atomically: true, encoding: .utf8)
+  defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+  do {
+    _ = try store.saveFile(at: sourceURL, captureId: UUID())
+    Issue.record("Expected unsupported type error")
+  } catch MediaError.unsupportedType {
+    return
+  } catch {
+    throw error
+  }
+}
+
 private func createTestImage(width: Int, height: Int) -> NSImage {
   let image = NSImage(size: NSSize(width: width, height: height))
   image.lockFocus()
