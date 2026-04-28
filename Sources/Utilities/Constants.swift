@@ -52,6 +52,8 @@ enum SubredditName {
     case invalidCharacters
     case tooShort
     case tooLong
+    case duplicate
+    case saveFailed
 
     var message: String {
       switch self {
@@ -63,6 +65,10 @@ enum SubredditName {
         return "Subreddit names must be at least \(SubredditName.minLength) characters."
       case .tooLong:
         return "Subreddit names must be \(SubredditName.maxLength) characters or fewer."
+      case .duplicate:
+        return "That subreddit is already in your list."
+      case .saveFailed:
+        return "Could not save subreddit."
       }
     }
   }

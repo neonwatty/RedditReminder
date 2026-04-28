@@ -82,40 +82,23 @@ struct ChannelsTabView: View {
     }
 
     private var canAdd: Bool {
-        guard let name = SubredditName.normalizedName(newSubredditName) else { return false }
-        return isNameAvailable(name)
-    }
-
-    private func isNameAvailable(_ name: String) -> Bool {
-        !subreddits.contains(where: { $0.name.lowercased() == name.lowercased() })
+        SubredditPersistenceActions.canAdd(newSubredditName, subreddits: subreddits)
     }
 
     private func addSubreddit() {
-        let normalized = SubredditName.normalize(newSubredditName)
-        guard case .success(let name) = normalized else {
-            if case .failure(let error) = normalized {
-                nameValidationMessage = error.message
-            }
-            return
+        switch SubredditPersistenceActions.addSubreddit(
+            named: newSubredditName,
+            subreddits: subreddits,
+            modelContext: modelContext,
+            heuristicsStore: heuristicsStore,
+            defaultLeadTimeMinutes: defaultLeadTimeMinutes
+        ) {
+        case .success:
+            newSubredditName = ""
+            nameValidationMessage = nil
+        case .failure(let error):
+            nameValidationMessage = error.message
         }
-        guard isNameAvailable(name) else {
-            nameValidationMessage = "That subreddit is already in your list."
-            return
-        }
-        let nextOrder = (subreddits.map(\.sortOrder).max() ?? -1) + 1
-        let sub = Subreddit(name: name, sortOrder: nextOrder)
-        modelContext.insert(sub)
-        do {
-            try modelContext.save()
-            try syncGeneratedEvents(for: sub)
-        }
-        catch {
-            NSLog("RedditReminder: add subreddit failed: \(error)")
-            modelContext.delete(sub)
-            return
-        }
-        newSubredditName = ""
-        nameValidationMessage = nil
     }
 
     private func toggleExpanded(_ sub: Subreddit) {
@@ -126,39 +109,24 @@ struct ChannelsTabView: View {
     }
 
     private func savePendingChanges() {
-        guard modelContext.hasChanges else { return }
-        do {
-            try modelContext.save()
-            try heuristicsStore.syncGeneratedEvents(
-                for: subreddits,
-                context: modelContext,
-                defaultLeadTimeMinutes: defaultLeadTimeMinutes
-            )
-        }
-        catch { NSLog("RedditReminder: save pending changes failed: \(error)") }
+        SubredditPersistenceActions.savePendingChanges(
+            subreddits: subreddits,
+            modelContext: modelContext,
+            heuristicsStore: heuristicsStore,
+            defaultLeadTimeMinutes: defaultLeadTimeMinutes
+        )
     }
 
     private func deleteSubreddit(_ sub: Subreddit) {
-        for event in sub.events {
-            notificationService.cancelNotifications(eventId: event.id.uuidString)
-        }
-        modelContext.delete(sub)
-        do { try modelContext.save() }
-        catch {
-            NSLog("RedditReminder: delete subreddit failed: \(error)")
-            modelContext.rollback()
-        }
+        SubredditPersistenceActions.deleteSubreddit(
+            sub,
+            modelContext: modelContext,
+            notificationService: notificationService
+        )
     }
 
     private var defaultLeadTimeMinutes: Int {
         UserDefaults.standard.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
     }
 
-    private func syncGeneratedEvents(for sub: Subreddit) throws {
-        try heuristicsStore.syncGeneratedEvents(
-            for: sub,
-            context: modelContext,
-            defaultLeadTimeMinutes: defaultLeadTimeMinutes
-        )
-    }
 }
