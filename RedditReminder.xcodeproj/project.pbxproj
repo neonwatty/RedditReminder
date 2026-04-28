@@ -25,6 +25,7 @@
 		2214090DA72A5B5AF58F6658 /* SubredditPeakTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93DE0D59B5DCB48FAA132EE /* SubredditPeakTimeTests.swift */; };
 		24F1E695ED63B7FB413361C5 /* TimingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B727389070814347602E1AB3 /* TimingEngineTests.swift */; };
 		26A62F837CC395740AA9FB84 /* BackupSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83B39B1CC5EC5FA398914C /* BackupSectionView.swift */; };
+		2C6F6A5981CBCEC7CE258964 /* BackupSettingsPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */; };
 		2D0134DEC22382048A22922F /* AppRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3769CC097D084C4E6DD34081 /* AppRuntime.swift */; };
 		2E04156554C7A2C39EF726A4 /* SubredditPersistenceActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 542C6F359C57A7214CC4B448 /* SubredditPersistenceActions.swift */; };
 		347F4FD54749869424F5CD6C /* SubredditPersistenceActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B43770F07184CA5B9115AD /* SubredditPersistenceActionsTests.swift */; };
@@ -65,6 +66,7 @@
 		B64C0B3A5EF8D5A8827074C1 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28906380DECDA56AD0DDE325 /* PreferencesView.swift */; };
 		B78555115700D912FE912EAE /* CaptureMediaSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288C13F7511FB37215593E12 /* CaptureMediaSelection.swift */; };
 		BA3B263D9D03FA844568F913 /* EventSourceSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B11556A9191FFF70BA98B /* EventSourceSummaryTests.swift */; };
+		BEE74F03864389AD3A108EFE /* BackupSettingsPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */; };
 		C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA51CEB234C228C79959816 /* OnboardingEmptyView.swift */; };
 		CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAFC3BF96ACD4F01D08367F /* MarkdownPreviewView.swift */; };
 		CCE3B3D5EE4B39D55222CA19 /* ResourcePackagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A9BB4582DA895A6C18C321 /* ResourcePackagingTests.swift */; };
@@ -135,6 +137,7 @@
 		5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditRow.swift; sourceTree = "<group>"; };
 		5CEA78C5D7E701E78352BF98 /* PopoverCaptureFilteringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverCaptureFilteringTests.swift; sourceTree = "<group>"; };
 		5DB4E56FCDA7A1CB1F24566D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistence.swift; sourceTree = "<group>"; };
 		614C7BEB91C550AD4F452CD5 /* SubredditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditEvent.swift; sourceTree = "<group>"; };
 		654481D1BBF7AF8DA529EA7E /* ProjectPersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceActionsTests.swift; sourceTree = "<group>"; };
 		65E8FB1218EE842B7D518F5F /* GeneralTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralTabView.swift; sourceTree = "<group>"; };
@@ -169,6 +172,7 @@
 		BD83B39B1CC5EC5FA398914C /* BackupSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSectionView.swift; sourceTree = "<group>"; };
 		C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentActions.swift; sourceTree = "<group>"; };
 		CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTabView.swift; sourceTree = "<group>"; };
+		D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistenceTests.swift; sourceTree = "<group>"; };
 		E440DAF06A5F755B0CFD41F7 /* CapturePersistenceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePersistenceActions.swift; sourceTree = "<group>"; };
 		E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarControllerTests.swift; sourceTree = "<group>"; };
 		EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
@@ -197,6 +201,7 @@
 				4CF8CF5E2ADCE8C17BC17231 /* AppDelegateSchedulingTests.swift */,
 				07A6F301705FB85E1459A403 /* AppRuntimeTests.swift */,
 				EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */,
+				D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */,
 				FACDA0450B3C93FB0CCB13A7 /* CaptureHelpersTests.swift */,
 				3878A1D04F7AC0E3D464CB7B /* CaptureLinksTests.swift */,
 				8B642ED62D86AC09680939A1 /* CaptureMediaSelectionTests.swift */,
@@ -285,6 +290,7 @@
 			children = (
 				9884E228CA7B8C32C3669A85 /* BackupMappers.swift */,
 				1F6975993534B39BF8DEB32E /* BackupService.swift */,
+				61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */,
 				6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */,
 				AE1122ADEB6045619C303C31 /* MediaStore.swift */,
 				B58A523CACB82BF88E46FD3E /* MenuBarController.swift */,
@@ -440,6 +446,7 @@
 				5CA152F3AF2710572F6500B9 /* AppDelegateSchedulingTests.swift in Sources */,
 				E9EDB8A89099DE463C304AA7 /* AppRuntimeTests.swift in Sources */,
 				6CA6C655DE7A6B84021C77CE /* BackupServiceTests.swift in Sources */,
+				2C6F6A5981CBCEC7CE258964 /* BackupSettingsPersistenceTests.swift in Sources */,
 				FFBC4E3EB895C7668654877B /* CRUDTests.swift in Sources */,
 				1014F4F2B82E8F900DAB9773 /* CaptureHelpersTests.swift in Sources */,
 				1D7C85EE78D8FD2D46ACF6C3 /* CaptureLinksTests.swift in Sources */,
@@ -474,6 +481,7 @@
 				0F535262B2F03B867CDD5510 /* BackupMappers.swift in Sources */,
 				26A62F837CC395740AA9FB84 /* BackupSectionView.swift in Sources */,
 				9B6DE864F7F9D78BE7B6CA54 /* BackupService.swift in Sources */,
+				BEE74F03864389AD3A108EFE /* BackupSettingsPersistence.swift in Sources */,
 				F3CF29763AE56B1639138AA1 /* Capture.swift in Sources */,
 				1775ADA388C6665458778DFD /* CaptureCardView.swift in Sources */,
 				6559B6F6894A0EEE0C24A90A /* CaptureFormResult.swift in Sources */,
