@@ -36,7 +36,7 @@ struct CaptureMediaSection: View {
 
             if !droppedFiles.isEmpty {
                 FlowLayout(spacing: 6) {
-                    ForEach(Array(droppedFiles.enumerated()), id: \.element) { index, url in
+                    ForEach(Array(droppedFiles.enumerated()), id: \.offset) { index, url in
                         mediaChip(
                             title: url.lastPathComponent,
                             image: NSImage(contentsOf: url),
@@ -71,7 +71,7 @@ struct CaptureMediaSection: View {
                 ) { result in
                     switch result {
                     case .success(let urls):
-                        droppedFiles.append(contentsOf: urls)
+                        appendImageFiles(urls)
                     case .failure(let error):
                         NSLog("RedditReminder: media import failed: \(error)")
                     }
@@ -144,6 +144,11 @@ struct CaptureMediaSection: View {
         let value: NSImage
     }
 
+    private func appendImageFiles(_ urls: [URL]) {
+        let imageURLs = CaptureMediaSelection.imageURLs(from: urls)
+        droppedFiles.append(contentsOf: imageURLs)
+    }
+
     private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
         for provider in providers {
             _ = provider.loadObject(ofClass: URL.self) { url, error in
@@ -151,7 +156,7 @@ struct CaptureMediaSection: View {
                     NSLog("RedditReminder: file drop failed: \(error)")
                     return
                 }
-                if let url { Task { @MainActor in droppedFiles.append(url) } }
+                if let url { Task { @MainActor in appendImageFiles([url]) } }
             }
         }
         return true
