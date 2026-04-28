@@ -21,7 +21,6 @@ struct CaptureWindowView: View {
     @State private var links: [String] = []
     @State private var newLinkText: String = ""
     @State private var droppedFiles: [URL] = []
-    @State private var isDragOver: Bool = false
     @State private var showPreview: Bool = false
 
     var body: some View {
@@ -66,12 +65,7 @@ struct CaptureWindowView: View {
                                     .frame(minHeight: 72)
                                     .scrollContentBackground(.hidden)
                                     .padding(8)
-                                    .background(.quaternary.opacity(0.3))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                                    )
+                                    .inputFieldStyle()
                             }
                         }
                     }
@@ -93,12 +87,7 @@ struct CaptureWindowView: View {
                         .labelsHidden()
                         .font(.system(size: 12))
                         .padding(4)
-                        .background(.quaternary.opacity(0.3))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                        )
+                        .inputFieldStyle()
                     }
 
                     fieldSection("NOTES", optional: true) {
@@ -106,12 +95,7 @@ struct CaptureWindowView: View {
                             .font(.system(size: 12))
                             .textFieldStyle(.plain)
                             .padding(8)
-                            .background(.quaternary.opacity(0.3))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                            )
+                            .inputFieldStyle()
                     }
 
                     fieldSection("LINKS") {
@@ -119,7 +103,7 @@ struct CaptureWindowView: View {
                     }
 
                     fieldSection("MEDIA") {
-                        CaptureMediaSection(droppedFiles: $droppedFiles, isDragOver: $isDragOver)
+                        CaptureMediaSection(droppedFiles: $droppedFiles)
                     }
                 }
                 .padding(16)

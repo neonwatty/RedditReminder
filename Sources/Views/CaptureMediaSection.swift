@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CaptureMediaSection: View {
     @Binding var droppedFiles: [URL]
-    @Binding var isDragOver: Bool
+    @State private var isDragOver: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {

@@ -34,6 +34,26 @@ enum SettingsKey {
   static let nudgeWhenEmpty = "nudgeWhenEmpty"
 }
 
+struct InputFieldStyle: ViewModifier {
+  var cornerRadius: CGFloat = 8
+
+  func body(content: Content) -> some View {
+    content
+      .background(.quaternary.opacity(0.3))
+      .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+      .overlay(
+        RoundedRectangle(cornerRadius: cornerRadius)
+          .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
+      )
+  }
+}
+
+extension View {
+  func inputFieldStyle(cornerRadius: CGFloat = 8) -> some View {
+    modifier(InputFieldStyle(cornerRadius: cornerRadius))
+  }
+}
+
 enum MediaConstants {
   static let thumbnailMaxSize: CGFloat = 200
   static let supportedImageTypes = ["png", "jpg", "jpeg", "gif"]

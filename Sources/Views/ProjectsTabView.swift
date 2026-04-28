@@ -23,12 +23,7 @@ struct ProjectsTabView: View {
                 .font(.system(size: 11))
                 .textFieldStyle(.plain)
                 .padding(7)
-                .background(.quaternary.opacity(0.3))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                )
+                .inputFieldStyle(cornerRadius: 6)
                 .onSubmit { addProject() }
 
             Button(action: addProject) {
@@ -167,9 +162,15 @@ struct ProjectsTabView: View {
     }
 
     private var canAdd: Bool {
-        let trimmed = newProjectName.trimmingCharacters(in: .whitespacesAndNewlines)
+        isNameAvailable(newProjectName)
+    }
+
+    private func isNameAvailable(_ name: String, excluding: Project? = nil) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
-        return !projects.contains(where: { $0.name.lowercased() == trimmed.lowercased() })
+        return !projects.contains(where: {
+            $0.id != excluding?.id && $0.name.lowercased() == trimmed.lowercased()
+        })
     }
 
     private func addProject() {
@@ -193,7 +194,7 @@ struct ProjectsTabView: View {
 
     private func finishEditing(_ project: Project) {
         let trimmed = editName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
+        if !trimmed.isEmpty, isNameAvailable(trimmed, excluding: project) {
             let oldName = project.name
             project.name = trimmed
             do { try modelContext.save() }

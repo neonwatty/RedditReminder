@@ -17,12 +17,7 @@ struct MarkdownPreviewView: View {
                     .padding(8)
             }
         }
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-        )
+        .inputFieldStyle()
     }
 
     private func renderMarkdown(_ input: String) -> AttributedString? {

@@ -18,12 +18,7 @@ struct ChannelsTabView: View {
                     .font(.system(size: 11))
                     .textFieldStyle(.plain)
                     .padding(7)
-                    .background(.quaternary.opacity(0.3))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-                    )
+                    .inputFieldStyle(cornerRadius: 6)
                     .onSubmit { addSubreddit() }
 
                 Button(action: addSubreddit) {

@@ -42,12 +42,7 @@ struct CaptureSubredditPicker: View {
             }
             .font(.system(size: 12))
             .padding(8)
-            .background(.quaternary.opacity(0.3))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-            )
+            .inputFieldStyle()
         }
         .menuStyle(.borderlessButton)
     }
