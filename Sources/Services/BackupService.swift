@@ -115,6 +115,11 @@ struct BackupService {
     }
 
     private func validate(_ backup: AppBackup) throws {
+        try validateUniqueIds(backup.projects.map(\.id))
+        try validateUniqueIds(backup.subreddits.map(\.id))
+        try validateUniqueIds(backup.events.map(\.id))
+        try validateUniqueIds(backup.captures.map(\.id))
+
         let projectIds = Set(backup.projects.map(\.id))
         let subredditIds = Set(backup.subreddits.map(\.id))
         for event in backup.events {
@@ -128,6 +133,15 @@ struct BackupService {
             }
             for subredditId in capture.subredditIds where !subredditIds.contains(subredditId) {
                 throw BackupError.missingRelationship(subredditId.uuidString)
+            }
+        }
+    }
+
+    private func validateUniqueIds(_ ids: [UUID]) throws {
+        var seen: Set<UUID> = []
+        for id in ids {
+            guard seen.insert(id).inserted else {
+                throw BackupError.duplicateId(id.uuidString)
             }
         }
     }

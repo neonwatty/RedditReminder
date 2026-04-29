@@ -142,6 +142,80 @@ private func makeBackupContainer() throws -> ModelContainer {
     #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 1)
 }
 
+@Test @MainActor func backupImportRejectsDuplicateProjectIdsBeforeClearingData() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    context.insert(Project(name: "Existing"))
+    try context.save()
+
+    let duplicateId = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [
+            BackupProject(
+                id: duplicateId,
+                name: "First",
+                projectDescription: nil,
+                color: nil,
+                archived: false,
+                createdAt: Date()
+            ),
+            BackupProject(
+                id: duplicateId,
+                name: "Second",
+                projectDescription: nil,
+                color: nil,
+                archived: false,
+                createdAt: Date()
+            )
+        ],
+        subreddits: [],
+        events: [],
+        captures: []
+    )
+
+    #expect(throws: BackupError.duplicateId(duplicateId.uuidString)) {
+        try BackupService().importBackup(from: JSONEncoder().encode(backup), into: context)
+    }
+    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 1)
+}
+
+@Test @MainActor func backupImportRejectsDuplicateSubredditIdsBeforeClearingData() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    context.insert(Subreddit(name: "r/Existing"))
+    try context.save()
+
+    let duplicateId = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [
+            BackupSubreddit(
+                id: duplicateId,
+                name: "r/First",
+                sortOrder: 0,
+                peakDaysOverride: nil,
+                peakHoursUtcOverride: nil
+            ),
+            BackupSubreddit(
+                id: duplicateId,
+                name: "r/Second",
+                sortOrder: 1,
+                peakDaysOverride: nil,
+                peakHoursUtcOverride: nil
+            )
+        ],
+        events: [],
+        captures: []
+    )
+
+    #expect(throws: BackupError.duplicateId(duplicateId.uuidString)) {
+        try BackupService().importBackup(from: JSONEncoder().encode(backup), into: context)
+    }
+    #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 1)
+}
+
 @Test @MainActor func backupImportRejectsCaptureMissingProjectBeforeClearingData() throws {
     let container = try makeBackupContainer()
     let context = ModelContext(container)
