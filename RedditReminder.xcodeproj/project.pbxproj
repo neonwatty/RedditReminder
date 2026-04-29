@@ -89,6 +89,8 @@
 		81C26D97123D840A9130AF7E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB4E56FCDA7A1CB1F24566D /* Constants.swift */; };
 		8315863469F9A314E30B6344 /* EventBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB005E503FDAD90271DB0AE /* EventBannerView.swift */; };
 		87AE17FDA4B3C169B340C8AA /* SubredditEventCRUDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFAC40DD76013F2B88EEC64 /* SubredditEventCRUDTests.swift */; };
+		89A0C5B3E5F04C59A02DD001 /* ShortcutRecorderInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89A0C5B1E5F04C59A02DD001 /* ShortcutRecorderInput.swift */; };
+		89A0C5B4E5F04C59A02DD001 /* ShortcutRecorderInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89A0C5B2E5F04C59A02DD001 /* ShortcutRecorderInputTests.swift */; };
 		9308DC394CD017D3E527EF59 /* MenuBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */; };
 		94CF7D2C65A9A2F6CCABCA92 /* CapturePersistenceActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06AAE5BD6FAD212E9C9E5AAB /* CapturePersistenceActionsTests.swift */; };
 		9B6DE864F7F9D78BE7B6CA54 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F6975993534B39BF8DEB32E /* BackupService.swift */; };
@@ -214,6 +216,8 @@
 		8C930E623DE20A82D94D4B3A /* PopoverCaptureFiltering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverCaptureFiltering.swift; sourceTree = "<group>"; };
 		8F3630C63EE6A3A37D6E680B /* RedditReminder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RedditReminder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FA9529C3BB40299A84C6FB8 /* RRuleInvalidInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleInvalidInputTests.swift; sourceTree = "<group>"; };
+		89A0C5B1E5F04C59A02DD001 /* ShortcutRecorderInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderInput.swift; sourceTree = "<group>"; };
+		89A0C5B2E5F04C59A02DD001 /* ShortcutRecorderInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderInputTests.swift; sourceTree = "<group>"; };
 		90876C6D9E2430D963222BFB /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
 		975C23592B958F445105973E /* CaptureWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureWindowView.swift; sourceTree = "<group>"; };
 		9884E228CA7B8C32C3669A85 /* BackupMappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupMappers.swift; sourceTree = "<group>"; };
@@ -310,6 +314,7 @@
 				8FA9529C3BB40299A84C6FB8 /* RRuleInvalidInputTests.swift */,
 				8A6C6B2B1A559FEFF67B391F /* RRuleOccurrenceEdgeCaseTests.swift */,
 				275F5DE20B1832CEA53FF535 /* SettingsOptionsTests.swift */,
+				89A0C5B2E5F04C59A02DD001 /* ShortcutRecorderInputTests.swift */,
 				EB4A20FE04DD7075E02C7092 /* SubredditCRUDTests.swift */,
 				BDFAC40DD76013F2B88EEC64 /* SubredditEventCRUDTests.swift */,
 				B3C81EDF4BBBB49EC3DEDA20 /* SubredditNameValidationTests.swift */,
@@ -440,6 +445,7 @@
 				1C701C57FBE1AFC895E8CF40 /* PostedListView.swift */,
 				28906380DECDA56AD0DDE325 /* PreferencesView.swift */,
 				1F66F6C53D3F37EBF882C677 /* ProjectsTabView.swift */,
+				89A0C5B1E5F04C59A02DD001 /* ShortcutRecorderInput.swift */,
 				90876C6D9E2430D963222BFB /* ShortcutRecorderView.swift */,
 				5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */,
 			);
@@ -591,6 +597,7 @@
 				57454FB537536D907117B756 /* RRuleOccurrenceEdgeCaseTests.swift in Sources */,
 				CCE3B3D5EE4B39D55222CA19 /* ResourcePackagingTests.swift in Sources */,
 				5417A38681E20BA30C06CD26 /* SettingsOptionsTests.swift in Sources */,
+				89A0C5B4E5F04C59A02DD001 /* ShortcutRecorderInputTests.swift in Sources */,
 				4907C5B4B92A0039716F0727 /* SubredditCRUDTests.swift in Sources */,
 				87AE17FDA4B3C169B340C8AA /* SubredditEventCRUDTests.swift in Sources */,
 				03D6222BEC9F6525C2727326 /* SubredditNameValidationTests.swift in Sources */,
@@ -664,6 +671,7 @@
 				17050D203FEDB10BDE6F431A /* QAFixtures.swift in Sources */,
 				FE03D040E4D6926755545F71 /* RRuleHelper.swift in Sources */,
 				1A56E70BA5F05C6021393E22 /* RedditReminderApp.swift in Sources */,
+				89A0C5B3E5F04C59A02DD001 /* ShortcutRecorderInput.swift in Sources */,
 				130E73ADD3C89D99930823B0 /* ShortcutRecorderView.swift in Sources */,
 				35019FA152D3938D32F1CD28 /* Subreddit.swift in Sources */,
 				19F277D9FFDA1E43A857A149 /* SubredditEvent.swift in Sources */,
