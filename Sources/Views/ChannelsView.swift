@@ -12,6 +12,7 @@ struct ChannelsTabView: View {
     @State private var newSubredditName = ""
     @State private var nameValidationMessage: String?
     @State private var draggingSubreddit: Subreddit?
+    @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
 
     var body: some View {
         VStack(spacing: 0) {
@@ -123,10 +124,6 @@ struct ChannelsTabView: View {
             modelContext: modelContext,
             notificationService: notificationService
         )
-    }
-
-    private var defaultLeadTimeMinutes: Int {
-        UserDefaults.standard.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
     }
 
 }
