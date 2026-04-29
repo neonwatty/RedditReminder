@@ -26,7 +26,7 @@ struct EventBannerView: View {
                         }
 
                         HStack(spacing: 4) {
-                            Text(relativeTime(next.eventDate))
+                            Text(Self.relativeTime(next.eventDate))
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
 
@@ -69,8 +69,12 @@ struct EventBannerView: View {
         return f
     }()
 
-    private func relativeTime(_ date: Date) -> String {
-        Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
+    static func relativeTime(
+        _ date: Date,
+        relativeTo referenceDate: Date = Date(),
+        formatter: RelativeDateTimeFormatter = EventBannerView.relativeDateFormatter
+    ) -> String {
+        formatter.localizedString(for: date, relativeTo: referenceDate)
     }
 
     private func eventTitle(_ title: String, event: SubredditEvent) -> some View {
