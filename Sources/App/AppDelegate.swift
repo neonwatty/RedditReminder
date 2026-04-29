@@ -13,7 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     var modelContainer: ModelContainer?
 
-    private let globalShortcut = GlobalShortcut()
+    private let globalShortcut: any GlobalShortcutRegistering
     private var refreshTask: Task<Void, Never>?
     private var shortcutObserver: NSObjectProtocol?
     private var activeShortcutConfig: KeyboardShortcutConfig?
@@ -32,13 +32,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         timingEngine: TimingEngine,
         notificationService: NotificationService,
         heuristicsStore: HeuristicsStore,
-        defaults: UserDefaults = .standard
+        defaults: UserDefaults = .standard,
+        globalShortcut: any GlobalShortcutRegistering = GlobalShortcut()
     ) {
         self.menuBarController = menuBarController
         self.timingEngine = timingEngine
         self.notificationService = notificationService
         self.heuristicsStore = heuristicsStore
         self.defaults = defaults
+        self.globalShortcut = globalShortcut
         self.notificationScheduler = NotificationScheduler(notificationService: notificationService, defaults: defaults)
         super.init()
     }
@@ -75,8 +77,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    private func registerGlobalShortcut() {
-        let config = shortcutConfigForRegistration()
+    func registerGlobalShortcut() {
+        let config = KeyboardShortcutConfig.load(from: defaults)
         guard config != activeShortcutConfig else { return }
         let registered = globalShortcut.register(config: config) { [weak self] in
             MainActor.assumeIsolated {
@@ -89,10 +91,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         } else {
             activeShortcutConfig = nil
         }
-    }
-
-    func shortcutConfigForRegistration() -> KeyboardShortcutConfig {
-        KeyboardShortcutConfig.load(from: defaults)
     }
 
     private func startRefreshLoop() {
