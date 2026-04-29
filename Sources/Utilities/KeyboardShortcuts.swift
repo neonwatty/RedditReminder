@@ -27,11 +27,11 @@ final class GlobalShortcut: GlobalShortcutRegistering {
     config: KeyboardShortcutConfig = .defaultShortcut,
     handler: @escaping @Sendable () -> Void
   ) -> Bool {
+    unregister()
     guard config.isValid else {
       NSLog("RedditReminder: invalid shortcut config \(config.identifier)")
       return false
     }
-    unregister()
     state.withLock {
       $0.handler = handler
       $0.config = config
@@ -39,7 +39,7 @@ final class GlobalShortcut: GlobalShortcutRegistering {
 
     let mask: CGEventMask = (1 << CGEventType.keyDown.rawValue)
     let callback: CGEventTapCallBack = { proxy, type, event, refcon in
-      guard let refcon else { return Unmanaged.passRetained(event) }
+      guard let refcon else { return Unmanaged.passUnretained(event) }
       let shortcut = Unmanaged<GlobalShortcut>.fromOpaque(refcon).takeUnretainedValue()
       return shortcut.handleEvent(proxy: proxy, type: type, event: event)
     }
@@ -104,7 +104,7 @@ final class GlobalShortcut: GlobalShortcutRegistering {
   private nonisolated func handleEvent(
     proxy: CGEventTapProxy, type: CGEventType, event: CGEvent
   ) -> Unmanaged<CGEvent>? {
-    guard type == .keyDown else { return Unmanaged.passRetained(event) }
+    guard type == .keyDown else { return Unmanaged.passUnretained(event) }
 
     let flags = event.flags
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
@@ -118,6 +118,6 @@ final class GlobalShortcut: GlobalShortcutRegistering {
       return nil  // consume the event
     }
 
-    return Unmanaged.passRetained(event)
+    return Unmanaged.passUnretained(event)
   }
 }
