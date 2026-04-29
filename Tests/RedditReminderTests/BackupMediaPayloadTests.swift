@@ -108,6 +108,67 @@ import Testing
     }
 }
 
+@Test @MainActor func backupImportDeletesRestoredMediaWhenLaterEmbeddedMediaFails() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    let existing = Capture(text: "Existing")
+    context.insert(existing)
+    try context.save()
+
+    let mediaStore = MediaStore(rootDir: temporaryBackupMediaRoot())
+    let importedCaptureId = UUID()
+    let validRef = "valid.png"
+    let invalidRef = "invalid.png"
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [],
+        events: [],
+        captures: [
+            BackupCapture(
+                id: importedCaptureId,
+                text: "Imported",
+                notes: nil,
+                links: [],
+                mediaRefs: [validRef, invalidRef],
+                status: .queued,
+                createdAt: Date(),
+                postedAt: nil,
+                projectId: nil,
+                subredditIds: []
+            )
+        ],
+        mediaFiles: [
+            BackupMediaFile(
+                captureId: importedCaptureId,
+                ref: validRef,
+                data: try backupPNGFixtureData()
+            ),
+            BackupMediaFile(
+                captureId: importedCaptureId,
+                ref: invalidRef,
+                data: Data("not image data".utf8)
+            )
+        ]
+    )
+
+    do {
+        try BackupService().importBackup(
+            from: JSONEncoder().encode(backup),
+            into: context,
+            mediaStore: mediaStore
+        )
+        Issue.record("Expected invalid embedded media error")
+    } catch MediaError.decodingFailed {
+        let captures = try context.fetch(FetchDescriptor<Capture>())
+        #expect(captures.map(\.text) == ["Existing"])
+        #expect(!mediaStore.exists(captureId: importedCaptureId, ref: validRef))
+        #expect(!mediaStore.exists(captureId: importedCaptureId, ref: invalidRef))
+    } catch {
+        throw error
+    }
+}
+
 private func backupPNGFixtureData() throws -> Data {
     let image = backupTestImage()
     guard let tiff = image.tiffRepresentation,
