@@ -68,12 +68,15 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     )
 
     #expect(mock.addedRequests.count == 1)
-    #expect(mock.addedRequests[0].identifier == "window-\(eventId)")
-    #expect(mock.addedRequests[0].content.categoryIdentifier == "POSTING_WINDOW")
+    #expect(mock.addedRequests[0].identifier == AppNotificationIdentifiers.windowRequestId(eventId: eventId))
+    #expect(mock.addedRequests[0].content.categoryIdentifier == AppNotificationIdentifiers.postingWindowCategory)
     #expect(mock.addedRequests[0].content.title == "Post time")
     #expect(mock.addedRequests[0].content.body == "2 captures ready")
-    #expect(mock.addedRequests[0].content.userInfo["subredditName"] as? String == "r/Swift")
-    #expect(mock.addedRequests[0].content.userInfo["eventId"] as? String == eventId)
+    #expect(
+        mock.addedRequests[0].content.userInfo[AppNotificationIdentifiers.subredditNameUserInfoKey] as? String ==
+            "r/Swift"
+    )
+    #expect(mock.addedRequests[0].content.userInfo[AppNotificationIdentifiers.eventIdUserInfoKey] as? String == eventId)
 }
 
 @Test @MainActor func nudgeNotificationUsesCorrectIdentifier() {
@@ -89,12 +92,32 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     )
 
     #expect(mock.addedRequests.count == 1)
-    #expect(mock.addedRequests[0].identifier == "nudge-\(eventId)")
-    #expect(mock.addedRequests[0].content.categoryIdentifier == "EMPTY_QUEUE_NUDGE")
+    #expect(mock.addedRequests[0].identifier == AppNotificationIdentifiers.nudgeRequestId(eventId: eventId))
+    #expect(mock.addedRequests[0].content.categoryIdentifier == AppNotificationIdentifiers.emptyQueueNudgeCategory)
     #expect(mock.addedRequests[0].content.title == "Show-off Saturday is approaching")
     #expect(mock.addedRequests[0].content.body == "Nothing queued for r/SideProject yet — capture something?")
-    #expect(mock.addedRequests[0].content.userInfo["subredditName"] as? String == "r/SideProject")
-    #expect(mock.addedRequests[0].content.userInfo["eventId"] as? String == eventId)
+    #expect(
+        mock.addedRequests[0].content.userInfo[AppNotificationIdentifiers.subredditNameUserInfoKey] as? String ==
+            "r/SideProject"
+    )
+    #expect(mock.addedRequests[0].content.userInfo[AppNotificationIdentifiers.eventIdUserInfoKey] as? String == eventId)
+}
+
+@Test @MainActor func notificationCategoriesUseSharedActionIdentifiers() {
+    let categories = NotificationService.categories()
+    let windowCategory = categories.first {
+        $0.identifier == AppNotificationIdentifiers.postingWindowCategory
+    }
+    let nudgeCategory = categories.first {
+        $0.identifier == AppNotificationIdentifiers.emptyQueueNudgeCategory
+    }
+
+    #expect(categories.count == 2)
+    #expect(windowCategory?.actions.map(\.identifier) == [
+        AppNotificationIdentifiers.openAction,
+        AppNotificationIdentifiers.markPostedAction
+    ])
+    #expect(nudgeCategory?.actions.map(\.identifier) == [AppNotificationIdentifiers.openAction])
 }
 
 // MARK: - Cancellation
@@ -107,8 +130,8 @@ private final class MockNotificationCenter: NotificationCenterProtocol, @uncheck
     service.cancelNotifications(eventId: eventId)
 
     #expect(mock.removedIdentifiers.count == 1)
-    #expect(mock.removedIdentifiers[0].contains("window-TEST-UUID"))
-    #expect(mock.removedIdentifiers[0].contains("nudge-TEST-UUID"))
+    #expect(mock.removedIdentifiers[0].contains(AppNotificationIdentifiers.windowRequestId(eventId: eventId)))
+    #expect(mock.removedIdentifiers[0].contains(AppNotificationIdentifiers.nudgeRequestId(eventId: eventId)))
 }
 
 @Test @MainActor func cancelAllRemovesEverything() {

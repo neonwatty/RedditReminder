@@ -68,8 +68,14 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 
     await delegate.scheduleNotifications(activeEvents: [event], windows: [window])
 
-    #expect(center.addedRequests.map(\.identifier).contains("window-\(event.id.uuidString)"))
-    #expect(center.addedRequests.map(\.identifier).contains("nudge-\(event.id.uuidString)"))
+    #expect(
+        center.addedRequests.map(\.identifier)
+            .contains(AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString))
+    )
+    #expect(
+        center.addedRequests.map(\.identifier)
+            .contains(AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString))
+    )
 }
 
 @Test @MainActor func appDelegateSkipsPastNotificationFireDatesAndCancelsExistingRequests() async {
@@ -100,8 +106,16 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 
     #expect(center.addedRequests.isEmpty)
     #expect(center.removedIdentifiers.count == 1)
-    #expect(center.removedIdentifiers[0].contains("window-\(event.id.uuidString)"))
-    #expect(center.removedIdentifiers[0].contains("nudge-\(event.id.uuidString)"))
+    #expect(
+        center.removedIdentifiers[0].contains(
+            AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)
+        )
+    )
+    #expect(
+        center.removedIdentifiers[0].contains(
+            AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)
+        )
+    )
 }
 
 @Test @MainActor func appDelegateCancelsStaleActiveEvents() async {
@@ -124,8 +138,16 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     await delegate.scheduleNotifications(activeEvents: [stale], windows: [])
 
     #expect(center.removedIdentifiers.count == 1)
-    #expect(center.removedIdentifiers[0].contains("window-\(stale.id.uuidString)"))
-    #expect(center.removedIdentifiers[0].contains("nudge-\(stale.id.uuidString)"))
+    #expect(
+        center.removedIdentifiers[0].contains(
+            AppNotificationIdentifiers.windowRequestId(eventId: stale.id.uuidString)
+        )
+    )
+    #expect(
+        center.removedIdentifiers[0].contains(
+            AppNotificationIdentifiers.nudgeRequestId(eventId: stale.id.uuidString)
+        )
+    )
 }
 
 @Test @MainActor func appDelegateCancelsAllWhenNotificationsDisabled() async {

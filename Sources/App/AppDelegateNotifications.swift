@@ -8,7 +8,7 @@ extension AppDelegate {
         withCompletionHandler completionHandler: @escaping @Sendable () -> Void
     ) {
         let userInfo = response.notification.request.content.userInfo
-        let subredditName = userInfo["subredditName"] as? String
+        let subredditName = userInfo[AppNotificationIdentifiers.subredditNameUserInfoKey] as? String
         let actionId = response.actionIdentifier
 
         Task { @MainActor in
@@ -27,12 +27,12 @@ extension AppDelegate {
 
     func handleNotificationAction(_ actionId: String, subredditName: String?) {
         switch actionId {
-        case "MARK_POSTED_ACTION":
+        case AppNotificationIdentifiers.markPostedAction:
             if let subredditName {
                 markCapturesAsPosted(forSubreddit: subredditName)
             }
             menuBarController.openPopover()
-        case UNNotificationDefaultActionIdentifier, "OPEN_ACTION":
+        case UNNotificationDefaultActionIdentifier, AppNotificationIdentifiers.openAction:
             menuBarController.openPopover()
         default:
             break

@@ -150,8 +150,8 @@ private func makeSubredditActionsContainer() throws -> ModelContainer {
 
     #expect(ok)
     #expect(center.removedIdentifiers.count == 1)
-    #expect(center.removedIdentifiers[0].contains("window-\(eventId)"))
-    #expect(center.removedIdentifiers[0].contains("nudge-\(eventId)"))
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.windowRequestId(eventId: eventId)))
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.nudgeRequestId(eventId: eventId)))
     #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 0)
     #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 0)
 }

@@ -16,6 +16,23 @@ extension UNUserNotificationCenter: NotificationCenterProtocol {
   }
 }
 
+enum AppNotificationIdentifiers {
+  static let openAction = "OPEN_ACTION"
+  static let markPostedAction = "MARK_POSTED_ACTION"
+  static let postingWindowCategory = "POSTING_WINDOW"
+  static let emptyQueueNudgeCategory = "EMPTY_QUEUE_NUDGE"
+  static let eventIdUserInfoKey = "eventId"
+  static let subredditNameUserInfoKey = "subredditName"
+
+  static func windowRequestId(eventId: String) -> String {
+    "window-\(eventId)"
+  }
+
+  static func nudgeRequestId(eventId: String) -> String {
+    "nudge-\(eventId)"
+  }
+}
+
 @MainActor
 final class NotificationService {
   private let center: any NotificationCenterProtocol
@@ -38,31 +55,36 @@ final class NotificationService {
   }
 
   func registerCategories() {
+    let categories = Self.categories()
+    if let realCenter = center as? UNUserNotificationCenter {
+      realCenter.setNotificationCategories(categories)
+    }
+  }
+
+  static func categories() -> Set<UNNotificationCategory> {
     let openAction = UNNotificationAction(
-      identifier: "OPEN_ACTION",
+      identifier: AppNotificationIdentifiers.openAction,
       title: "Open",
       options: [.foreground]
     )
     let markPostedAction = UNNotificationAction(
-      identifier: "MARK_POSTED_ACTION",
+      identifier: AppNotificationIdentifiers.markPostedAction,
       title: "Mark as Posted",
       options: []
     )
 
     let windowCategory = UNNotificationCategory(
-      identifier: "POSTING_WINDOW",
+      identifier: AppNotificationIdentifiers.postingWindowCategory,
       actions: [openAction, markPostedAction],
       intentIdentifiers: []
     )
     let nudgeCategory = UNNotificationCategory(
-      identifier: "EMPTY_QUEUE_NUDGE",
+      identifier: AppNotificationIdentifiers.emptyQueueNudgeCategory,
       actions: [openAction],
       intentIdentifiers: []
     )
 
-    if let realCenter = center as? UNUserNotificationCenter {
-      realCenter.setNotificationCategories([windowCategory, nudgeCategory])
-    }
+    return [windowCategory, nudgeCategory]
   }
 
   func scheduleWindowNotification(
@@ -76,8 +98,11 @@ final class NotificationService {
     content.title = title
     content.body = body
     content.sound = .default
-    content.categoryIdentifier = "POSTING_WINDOW"
-    content.userInfo = ["eventId": eventId, "subredditName": subredditName]
+    content.categoryIdentifier = AppNotificationIdentifiers.postingWindowCategory
+    content.userInfo = [
+      AppNotificationIdentifiers.eventIdUserInfoKey: eventId,
+      AppNotificationIdentifiers.subredditNameUserInfoKey: subredditName
+    ]
 
     let comps = Calendar.current.dateComponents(
       [.year, .month, .day, .hour, .minute],
@@ -86,7 +111,7 @@ final class NotificationService {
     let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
     let request = UNNotificationRequest(
-      identifier: "window-\(eventId)",
+      identifier: AppNotificationIdentifiers.windowRequestId(eventId: eventId),
       content: content,
       trigger: trigger
     )
@@ -108,8 +133,11 @@ final class NotificationService {
     content.title = "\(eventName) is approaching"
     content.body = "Nothing queued for \(subredditName) yet — capture something?"
     content.sound = .default
-    content.categoryIdentifier = "EMPTY_QUEUE_NUDGE"
-    content.userInfo = ["eventId": eventId, "subredditName": subredditName]
+    content.categoryIdentifier = AppNotificationIdentifiers.emptyQueueNudgeCategory
+    content.userInfo = [
+      AppNotificationIdentifiers.eventIdUserInfoKey: eventId,
+      AppNotificationIdentifiers.subredditNameUserInfoKey: subredditName
+    ]
 
     let comps = Calendar.current.dateComponents(
       [.year, .month, .day, .hour, .minute],
@@ -118,7 +146,7 @@ final class NotificationService {
     let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
     let request = UNNotificationRequest(
-      identifier: "nudge-\(eventId)",
+      identifier: AppNotificationIdentifiers.nudgeRequestId(eventId: eventId),
       content: content,
       trigger: trigger
     )
@@ -132,7 +160,10 @@ final class NotificationService {
 
   func cancelNotifications(eventId: String) {
     center.removePendingNotificationRequests(
-      withIdentifiers: ["window-\(eventId)", "nudge-\(eventId)"]
+      withIdentifiers: [
+        AppNotificationIdentifiers.windowRequestId(eventId: eventId),
+        AppNotificationIdentifiers.nudgeRequestId(eventId: eventId)
+      ]
     )
   }
 
