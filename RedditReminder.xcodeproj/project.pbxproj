@@ -51,6 +51,7 @@
 		396D6C3C7B144AC6AD58F3E1 /* CaptureSubredditPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BBC25F859C9533DF9820A7 /* CaptureSubredditPicker.swift */; };
 		3B26AC6E0CA725948AA2CA74 /* PostedListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C701C57FBE1AFC895E8CF40 /* PostedListView.swift */; };
 		3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0972EE8B384E16C0A49F8555 /* AppDelegate.swift */; };
+		3DE7A8E55D5C4F0BB12A7002 /* AppDelegateNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE7A8E45D5C4F0BB12A7002 /* AppDelegateNotifications.swift */; };
 		3DE8E37C7A3549B1865C0AC2 /* AppDelegateShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF8E37C7A3549B1865C0AC2 /* AppDelegateShortcuts.swift */; };
 		3E3AB083447626CC69DF693B /* SubredditPeakSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31CB6F345C1C2B72D954744 /* SubredditPeakSelectionTests.swift */; };
 		42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
@@ -72,6 +73,7 @@
 		59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1122ADEB6045619C303C31 /* MediaStore.swift */; };
 		5A2B495DD4D68A03E298A1BE /* QAFixturesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25CB54C32FE0925CD459588 /* QAFixturesTests.swift */; };
 		5B9E3F47EA4B9D3D5028C11A /* NotificationsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */; };
+		5C4E15B3F3DD4D0CA9977002 /* AppDelegateNotificationActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E15B2F3DD4D0CA9977002 /* AppDelegateNotificationActionTests.swift */; };
 		5CA152F3AF2710572F6500B9 /* AppDelegateSchedulingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF8CF5E2ADCE8C17BC17231 /* AppDelegateSchedulingTests.swift */; };
 		5F1D46DD680783625B42F553 /* ProjectPersistenceActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654481D1BBF7AF8DA529EA7E /* ProjectPersistenceActionsTests.swift */; };
 		5F6AEF6B669D52EA62900F1A /* PopoverTimingPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319AF7913AB415361A12500A /* PopoverTimingPresentationTests.swift */; };
@@ -144,6 +146,7 @@
 		07A63D3714291E8917CA1694 /* PopoverContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentView.swift; sourceTree = "<group>"; };
 		07A6F301705FB85E1459A403 /* AppRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntimeTests.swift; sourceTree = "<group>"; };
 		0972EE8B384E16C0A49F8555 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3DE7A8E45D5C4F0BB12A7002 /* AppDelegateNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateNotifications.swift; sourceTree = "<group>"; };
 		3DF8E37C7A3549B1865C0AC2 /* AppDelegateShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateShortcuts.swift; sourceTree = "<group>"; };
 		09DDADF6ECF30ECDD255DED4 /* ChannelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsView.swift; sourceTree = "<group>"; };
 		0B7E48EB48E8F199029DC134 /* RRuleHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleHelperTests.swift; sourceTree = "<group>"; };
@@ -186,6 +189,7 @@
 		4ECD69E89EE2DA46D1776595 /* DefaultSubreddits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultSubreddits.swift; sourceTree = "<group>"; };
 		4F38E7578683EAB7EC5530F4 /* CaptureLinksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureLinksSection.swift; sourceTree = "<group>"; };
 		4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingEngine.swift; sourceTree = "<group>"; };
+		5C4E15B2F3DD4D0CA9977002 /* AppDelegateNotificationActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateNotificationActionTests.swift; sourceTree = "<group>"; };
 		542C6F359C57A7214CC4B448 /* SubredditPersistenceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditPersistenceActions.swift; sourceTree = "<group>"; };
 		560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsStoreTests.swift; sourceTree = "<group>"; };
 		56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
@@ -285,6 +289,7 @@
 				EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */,
 				D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */,
 				1041614D1D7B295800149206 /* BackupTestSupport.swift */,
+				5C4E15B2F3DD4D0CA9977002 /* AppDelegateNotificationActionTests.swift */,
 				E02E746452EDD7B17443C493 /* CaptureCRUDTests.swift */,
 				FACDA0450B3C93FB0CCB13A7 /* CaptureHelpersTests.swift */,
 				3878A1D04F7AC0E3D464CB7B /* CaptureLinksTests.swift */,
@@ -459,6 +464,7 @@
 			isa = PBXGroup;
 			children = (
 				0972EE8B384E16C0A49F8555 /* AppDelegate.swift */,
+				3DE7A8E45D5C4F0BB12A7002 /* AppDelegateNotifications.swift */,
 				3DF8E37C7A3549B1865C0AC2 /* AppDelegateShortcuts.swift */,
 				D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */,
 				787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */,
@@ -560,6 +566,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C4E15B3F3DD4D0CA9977002 /* AppDelegateNotificationActionTests.swift in Sources */,
 				5CA152F3AF2710572F6500B9 /* AppDelegateSchedulingTests.swift in Sources */,
 				A049BB3E8B0B7E4BF8A24C90 /* AppModelContainerFactoryTests.swift in Sources */,
 				E9EDB8A89099DE463C304AA7 /* AppRuntimeTests.swift in Sources */,
@@ -619,6 +626,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3DD479FBD3DE62E93690C4AF /* AppDelegate.swift in Sources */,
+				3DE7A8E55D5C4F0BB12A7002 /* AppDelegateNotifications.swift in Sources */,
 				3DE8E37C7A3549B1865C0AC2 /* AppDelegateShortcuts.swift in Sources */,
 				F4DE010F9076D36DD9D98288 /* AppModelContainerFactory.swift in Sources */,
 				2D0134DEC22382048A22922F /* AppRuntime.swift in Sources */,
