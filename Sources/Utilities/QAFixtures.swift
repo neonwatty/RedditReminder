@@ -3,8 +3,8 @@ import SwiftData
 
 enum QAFixtures {
   @MainActor
-  static func seed(context: ModelContext) {
-    clearAll(context: context)
+  static func seed(context: ModelContext, defaults: UserDefaults = .standard) {
+    clearAll(context: context, defaults: defaults)
 
     // 4 subreddits — some with peak overrides, some without
     let sideProject = Subreddit(name: "r/SideProject", sortOrder: 0)
@@ -133,7 +133,7 @@ enum QAFixtures {
     context.insert(farOut)
 
     // Seed default project preference
-    UserDefaults.standard.set(project.id.uuidString, forKey: SettingsKey.defaultProjectId)
+    defaults.set(project.id.uuidString, forKey: SettingsKey.defaultProjectId)
 
     do {
       try context.save()
@@ -144,14 +144,14 @@ enum QAFixtures {
   }
 
   @MainActor
-  static func clearAll(context: ModelContext) {
+  static func clearAll(context: ModelContext, defaults: UserDefaults = .standard) {
     do {
       try context.delete(model: Capture.self)
       try context.delete(model: SubredditEvent.self)
       try context.delete(model: Project.self)
       try context.delete(model: Subreddit.self)
       try context.save()
-      UserDefaults.standard.removeObject(forKey: SettingsKey.defaultProjectId)
+      defaults.removeObject(forKey: SettingsKey.defaultProjectId)
       NSLog("RedditReminder: all data cleared")
     } catch {
       NSLog("RedditReminder: failed to clear data: \(error)")
