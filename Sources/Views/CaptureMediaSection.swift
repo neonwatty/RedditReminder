@@ -17,9 +17,11 @@ struct CaptureMediaSection: View {
             if let captureId, !existingRefs.isEmpty {
                 FlowLayout(spacing: 6) {
                     ForEach(existingRefs, id: \.self) { ref in
-                        mediaChip(
+                        CaptureMediaChip(
                             title: ref,
                             image: mediaStore.loadThumbnail(captureId: captureId, ref: ref),
+                            previewIdentifier: CaptureMediaAccessibility.previewExisting(ref: ref),
+                            removeIdentifier: CaptureMediaAccessibility.removeExisting(ref: ref),
                             onPreview: {
                                 if let image = mediaStore.loadImage(captureId: captureId, ref: ref) {
                                     previewImage = PreviewImage(value: image)
@@ -40,9 +42,10 @@ struct CaptureMediaSection: View {
             if let captureId, !removedRefs.isEmpty {
                 FlowLayout(spacing: 6) {
                     ForEach(removedRefs, id: \.self) { ref in
-                        removedMediaChip(
+                        RemovedCaptureMediaChip(
                             title: ref,
                             image: mediaStore.loadThumbnail(captureId: captureId, ref: ref),
+                            restoreIdentifier: CaptureMediaAccessibility.restoreExisting(ref: ref),
                             onRestore: {
                                 CaptureMediaEditing.restoreExisting(
                                     ref: ref,
@@ -58,9 +61,11 @@ struct CaptureMediaSection: View {
             if !droppedFiles.isEmpty {
                 FlowLayout(spacing: 6) {
                     ForEach(Array(droppedFiles.enumerated()), id: \.offset) { index, url in
-                        mediaChip(
+                        CaptureMediaChip(
                             title: url.lastPathComponent,
                             image: NSImage(contentsOf: url),
+                            previewIdentifier: CaptureMediaAccessibility.previewNew(fileName: url.lastPathComponent),
+                            removeIdentifier: CaptureMediaAccessibility.removeNew(index: index),
                             onPreview: {
                                 if let image = NSImage(contentsOf: url) {
                                     previewImage = PreviewImage(value: image)
@@ -82,6 +87,7 @@ struct CaptureMediaSection: View {
                 .background(isDragOver ? Color.blue.opacity(0.05) : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .onTapGesture { isShowingImporter = true }
+                .accessibilityIdentifier(CaptureMediaAccessibility.dropZone)
                 .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
                     handleFileDrop(providers)
                 }
@@ -124,79 +130,9 @@ struct CaptureMediaSection: View {
         self.mediaStore = mediaStore
     }
 
-    private func mediaChip(
-        title: String,
-        image: NSImage?,
-        onPreview: @escaping () -> Void,
-        onRemove: @escaping () -> Void
-    ) -> some View {
-        HStack(spacing: 5) {
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 18, height: 18)
-                    .clipShape(RoundedRectangle(cornerRadius: 3))
-            } else {
-                Image(systemName: "photo")
-                    .font(.system(size: 9))
-            }
-            Button(action: onPreview) {
-                Text(title)
-                    .font(.system(size: 10))
-                    .lineLimit(1)
-            }
-            .buttonStyle(.plain)
-            Button(action: onRemove) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 7, weight: .bold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-    }
-
     private struct PreviewImage: Identifiable {
         let id = UUID()
         let value: NSImage
-    }
-
-    private func removedMediaChip(
-        title: String,
-        image: NSImage?,
-        onRestore: @escaping () -> Void
-    ) -> some View {
-        HStack(spacing: 5) {
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 18, height: 18)
-                    .clipShape(RoundedRectangle(cornerRadius: 3))
-            } else {
-                Image(systemName: "photo")
-                    .font(.system(size: 9))
-            }
-            Text(title)
-                .font(.system(size: 10))
-                .lineLimit(1)
-                .strikethrough()
-                .foregroundStyle(.secondary)
-            Button(action: onRestore) {
-                Image(systemName: "arrow.uturn.backward")
-                    .font(.system(size: 8, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(.quaternary.opacity(0.18))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private func appendImageFiles(_ urls: [URL]) {
