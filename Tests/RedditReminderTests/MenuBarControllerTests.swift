@@ -25,6 +25,24 @@ struct MenuBarControllerTests {
         defaults.removePersistentDomain(forName: suiteName)
     }
 
+    @Test func shortcutPresetClearsStaleCustomValues() {
+        let suiteName = "ShortcutTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let custom = KeyboardShortcutConfig.custom(
+            keyCode: 35,
+            modifiers: [.maskCommand, .maskAlternate],
+            keyDisplay: "P"
+        )
+
+        KeyboardShortcutConfig.save(custom, to: defaults)
+        KeyboardShortcutConfig.save(KeyboardShortcutConfig.presets[1], to: defaults)
+
+        #expect(defaults.object(forKey: SettingsKey.globalShortcutKeyCode) == nil)
+        #expect(defaults.object(forKey: SettingsKey.globalShortcutModifiers) == nil)
+        #expect(defaults.object(forKey: SettingsKey.globalShortcutDisplay) == nil)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
     @Test func shortcutInvalidStoredIdentifierFallsBackToDefault() {
         let suiteName = "ShortcutTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
