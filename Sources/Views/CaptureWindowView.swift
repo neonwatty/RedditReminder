@@ -24,6 +24,7 @@ struct CaptureWindowView: View {
     @State private var existingMediaRefs: [String] = []
     @State private var removedMediaRefs: [String] = []
     @State private var showPreview: Bool = false
+    @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -195,8 +196,7 @@ struct CaptureWindowView: View {
     private func populateFromMode() {
         switch mode {
         case .create:
-            if let defaultId = UserDefaults.standard.string(forKey: SettingsKey.defaultProjectId),
-               let uuid = UUID(uuidString: defaultId) {
+            if let uuid = UUID(uuidString: defaultProjectId) {
                 selectedProject = projects.first { $0.id == uuid }
             }
         case .edit(let capture):
