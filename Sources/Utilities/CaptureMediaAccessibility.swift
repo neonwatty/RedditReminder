@@ -2,6 +2,7 @@ import Foundation
 
 enum CaptureMediaAccessibility {
     static let dropZone = "capture-media-drop-zone"
+    static let selectionError = "capture-media-selection-error"
 
     static func previewExisting(ref: String) -> String {
         "capture-media-preview-existing-\(token(ref))"
