@@ -4,6 +4,7 @@ import UserNotifications
 
 struct NotificationsTabView: View {
     let notificationService: NotificationService
+    var notificationSettingsOpener: NotificationSettingsOpener = .system
 
     @AppStorage(SettingsKey.notificationsEnabled) private var notificationsEnabled: Bool = true
     @AppStorage(SettingsKey.nudgeWhenEmpty) private var nudgeWhenEmpty: Bool = true
@@ -86,7 +87,6 @@ struct NotificationsTabView: View {
     }
 
     private func openNotificationSettings() {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") else { return }
-        NSWorkspace.shared.open(url)
+        _ = notificationSettingsOpener.openSettings()
     }
 }

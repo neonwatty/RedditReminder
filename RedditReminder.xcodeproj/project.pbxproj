@@ -86,6 +86,8 @@
 		A049BB3E8B0B7E4BF8A24C90 /* AppModelContainerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618187DB22F5025BA72A0166 /* AppModelContainerFactoryTests.swift */; };
 		A45C2634E04FC8E88CD17018 /* PopoverContentActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */; };
 		AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */; };
+		AF81908B71E4E383D63467DD /* NotificationSettingsOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A01564D830A81EEF54CF9 /* NotificationSettingsOpener.swift */; };
+		B10546669B16B587E5C2D40E /* NotificationSettingsOpenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AEC6DD3FA5A8034E07E6B9 /* NotificationSettingsOpenerTests.swift */; };
 		B3807D895E708C33AAA6D242 /* HeuristicsTimezoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274444AB5DE03A36248F96F2 /* HeuristicsTimezoneTests.swift */; };
 		B64C0B3A5EF8D5A8827074C1 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28906380DECDA56AD0DDE325 /* PreferencesView.swift */; };
 		B78555115700D912FE912EAE /* CaptureMediaSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288C13F7511FB37215593E12 /* CaptureMediaSelection.swift */; };
@@ -147,6 +149,7 @@
 		317B217ED06D209DAFACA344 /* RedditReminderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RedditReminderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		319AF7913AB415361A12500A /* PopoverTimingPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverTimingPresentationTests.swift; sourceTree = "<group>"; };
 		3769CC097D084C4E6DD34081 /* AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntime.swift; sourceTree = "<group>"; };
+		37AEC6DD3FA5A8034E07E6B9 /* NotificationSettingsOpenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsOpenerTests.swift; sourceTree = "<group>"; };
 		3878A1D04F7AC0E3D464CB7B /* CaptureLinksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureLinksTests.swift; sourceTree = "<group>"; };
 		3BDDF7799BF55CF7FFC730BA /* peak-times.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "peak-times.json"; sourceTree = "<group>"; };
 		3C9B6699AB8158EF4CE8C9DF /* BackupImportValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupImportValidationTests.swift; sourceTree = "<group>"; };
@@ -182,6 +185,7 @@
 		75B43770F07184CA5B9115AD /* SubredditPersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditPersistenceActionsTests.swift; sourceTree = "<group>"; };
 		787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedditReminderApp.swift; sourceTree = "<group>"; };
 		793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutConfig.swift; sourceTree = "<group>"; };
+		843A01564D830A81EEF54CF9 /* NotificationSettingsOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsOpener.swift; sourceTree = "<group>"; };
 		8667BBC305F7B1E7A92856AC /* CaptureHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureHelpers.swift; sourceTree = "<group>"; };
 		88999911A1A3157EE5DBB4A7 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		8A6C6B2B1A559FEFF67B391F /* RRuleOccurrenceEdgeCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleOccurrenceEdgeCaseTests.swift; sourceTree = "<group>"; };
@@ -272,6 +276,7 @@
 				B1ABCB2C47C7D7B2B9D3809B /* ModelEdgeCaseTests.swift */,
 				9FB2E1C9A8D9A636C13EEA0C /* ModelTests.swift */,
 				3D5124BE8F9D4637788D2557 /* NotificationServiceTests.swift */,
+				37AEC6DD3FA5A8034E07E6B9 /* NotificationSettingsOpenerTests.swift */,
 				5CEA78C5D7E701E78352BF98 /* PopoverCaptureFilteringTests.swift */,
 				319AF7913AB415361A12500A /* PopoverTimingPresentationTests.swift */,
 				2462E2B8BF95342CCBB4FC70 /* ProjectCRUDTests.swift */,
@@ -309,6 +314,7 @@
 				8AA0E39705C2A66347A1E21C /* EventSourceSummary.swift */,
 				793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */,
 				56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */,
+				843A01564D830A81EEF54CF9 /* NotificationSettingsOpener.swift */,
 				8C930E623DE20A82D94D4B3A /* PopoverCaptureFiltering.swift */,
 				EA35E25161F731ACAB85FE8C /* PopoverTimingPresentation.swift */,
 				5AD560BCF0F23A397D3EF341 /* ProjectPersistenceActions.swift */,
@@ -542,6 +548,7 @@
 				6665F0F720DA51B85DEAF841 /* ModelEdgeCaseTests.swift in Sources */,
 				AAE18F8CEE99E9D8E91C6ECD /* ModelTests.swift in Sources */,
 				7AB3BE6F02539F0147F73E23 /* NotificationServiceTests.swift in Sources */,
+				B10546669B16B587E5C2D40E /* NotificationSettingsOpenerTests.swift in Sources */,
 				E91A5DDE67643B2D081C9340 /* PopoverCaptureFilteringTests.swift in Sources */,
 				5F6AEF6B669D52EA62900F1A /* PopoverTimingPresentationTests.swift in Sources */,
 				1B491EC2EFC1BEC12FABB169 /* ProjectCRUDTests.swift in Sources */,
@@ -604,6 +611,7 @@
 				474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */,
 				73D1EA6EF5BCBC4321589A5D /* NotificationScheduler.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
+				AF81908B71E4E383D63467DD /* NotificationSettingsOpener.swift in Sources */,
 				5B9E3F47EA4B9D3D5028C11A /* NotificationsTabView.swift in Sources */,
 				C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */,
 				03D259AE4EF62D35955D2D09 /* PopoverCaptureFiltering.swift in Sources */,
