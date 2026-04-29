@@ -1,5 +1,4 @@
 import AppKit
-import Carbon.HIToolbox
 import SwiftUI
 
 struct ShortcutRecorderView: View {
@@ -47,64 +46,26 @@ struct ShortcutRecorderView: View {
   }
 
   private func record(_ event: NSEvent) {
-    guard event.keyCode != UInt16(kVK_Escape) else {
-      isRecording = false
-      validationMessage = nil
-      return
-    }
-
-    let keyDisplay = Self.keyDisplay(for: event)
-    let next = KeyboardShortcutConfig.custom(
-      keyCode: Int64(event.keyCode),
+    let keyDisplay = ShortcutRecorderInput.keyDisplay(
+      keyCode: event.keyCode,
+      charactersIgnoringModifiers: event.charactersIgnoringModifiers
+    )
+    switch ShortcutRecorderInput.evaluate(
+      keyCode: event.keyCode,
       modifiers: event.modifierFlags.cgEventFlags,
       keyDisplay: keyDisplay
-    )
-
-    guard next.isValid else {
-      validationMessage = "Use Command, Control, or Option with a key."
-      return
+    ) {
+    case .cancelled:
+      isRecording = false
+      validationMessage = nil
+    case let .invalid(message):
+      validationMessage = message
+    case let .shortcut(next):
+      config = next
+      validationMessage = nil
+      isRecording = false
     }
-
-    config = next
-    validationMessage = nil
-    isRecording = false
   }
-
-  private static func keyDisplay(for event: NSEvent) -> String {
-    if let special = specialKeyDisplay[event.keyCode] {
-      return special
-    }
-
-    let characters = event.charactersIgnoringModifiers?
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-      .uppercased()
-    return characters?.isEmpty == false ? characters! : "Key \(event.keyCode)"
-  }
-
-  private static let specialKeyDisplay: [UInt16: String] = [
-    UInt16(kVK_Space): "Space",
-    UInt16(kVK_Return): "Return",
-    UInt16(kVK_Tab): "Tab",
-    UInt16(kVK_Delete): "Delete",
-    UInt16(kVK_ForwardDelete): "Forward Delete",
-    UInt16(kVK_Escape): "Escape",
-    UInt16(kVK_LeftArrow): "←",
-    UInt16(kVK_RightArrow): "→",
-    UInt16(kVK_UpArrow): "↑",
-    UInt16(kVK_DownArrow): "↓",
-    UInt16(kVK_F1): "F1",
-    UInt16(kVK_F2): "F2",
-    UInt16(kVK_F3): "F3",
-    UInt16(kVK_F4): "F4",
-    UInt16(kVK_F5): "F5",
-    UInt16(kVK_F6): "F6",
-    UInt16(kVK_F7): "F7",
-    UInt16(kVK_F8): "F8",
-    UInt16(kVK_F9): "F9",
-    UInt16(kVK_F10): "F10",
-    UInt16(kVK_F11): "F11",
-    UInt16(kVK_F12): "F12",
-  ]
 }
 
 private struct ShortcutKeyCaptureView: NSViewRepresentable {
