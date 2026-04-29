@@ -37,6 +37,7 @@ enum SettingsKey {
     static let globalShortcutKeyCode = "globalShortcutKeyCode"
     static let globalShortcutModifiers = "globalShortcutModifiers"
     static let globalShortcutDisplay = "globalShortcutDisplay"
+    static let globalShortcutRegistrationFailed = "globalShortcutRegistrationFailed"
 }
 
 enum SettingsOptions {

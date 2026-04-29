@@ -4,6 +4,7 @@ import SwiftData
 struct GeneralTabView: View {
     @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
+    @AppStorage(SettingsKey.globalShortcutRegistrationFailed) private var shortcutRegistrationFailed = false
     @State private var shortcutConfig = KeyboardShortcutConfig.load()
 
     @Query(sort: \Project.name) private var projects: [Project]
@@ -12,6 +13,11 @@ struct GeneralTabView: View {
         Form {
             Section("Keyboard Shortcut") {
                 ShortcutRecorderView(config: $shortcutConfig)
+                if shortcutRegistrationFailed {
+                    Text("Shortcut unavailable. Grant Accessibility permission or choose another shortcut.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section("Defaults") {

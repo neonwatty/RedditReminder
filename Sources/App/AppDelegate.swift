@@ -13,10 +13,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     var modelContainer: ModelContainer?
 
-    private let globalShortcut: any GlobalShortcutRegistering
+    let globalShortcut: any GlobalShortcutRegistering
     private var refreshTask: Task<Void, Never>?
     private var shortcutObserver: NSObjectProtocol?
-    private var activeShortcutConfig: KeyboardShortcutConfig?
+    var activeShortcutConfig: KeyboardShortcutConfig?
 
     override convenience init() {
         self.init(
@@ -74,22 +74,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         refreshTask?.cancel()
         if let shortcutObserver {
             NotificationCenter.default.removeObserver(shortcutObserver)
-        }
-    }
-
-    func registerGlobalShortcut() {
-        let config = KeyboardShortcutConfig.load(from: defaults)
-        guard config != activeShortcutConfig else { return }
-        let registered = globalShortcut.register(config: config) { [weak self] in
-            MainActor.assumeIsolated {
-                self?.menuBarController.togglePopover()
-            }
-        }
-        if registered {
-            activeShortcutConfig = config
-            NSLog("RedditReminder: \(config.display) registered")
-        } else {
-            activeShortcutConfig = nil
         }
     }
 
