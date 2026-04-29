@@ -181,6 +181,24 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
 }
 
+@Test @MainActor func appDelegateLoadsShortcutConfigFromInjectedDefaults() {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    let shortcut = KeyboardShortcutConfig.presets[1]
+    KeyboardShortcutConfig.save(shortcut, to: defaults)
+
+    let delegate = AppDelegate(
+        menuBarController: MenuBarController(),
+        timingEngine: TimingEngine(),
+        notificationService: NotificationService(center: RecordingNotificationCenter()),
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        defaults: defaults
+    )
+
+    #expect(delegate.shortcutConfigForRegistration() == shortcut)
+}
+
 private func makeTemporaryDefaults() -> TemporaryDefaults {
     let suiteName = "AppDelegateSchedulingTests-\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suiteName)!

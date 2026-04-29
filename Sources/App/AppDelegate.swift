@@ -76,7 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
 
     private func registerGlobalShortcut() {
-        let config = KeyboardShortcutConfig.load()
+        let config = shortcutConfigForRegistration()
         guard config != activeShortcutConfig else { return }
         let registered = globalShortcut.register(config: config) { [weak self] in
             MainActor.assumeIsolated {
@@ -89,6 +89,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         } else {
             activeShortcutConfig = nil
         }
+    }
+
+    func shortcutConfigForRegistration() -> KeyboardShortcutConfig {
+        KeyboardShortcutConfig.load(from: defaults)
     }
 
     private func startRefreshLoop() {
