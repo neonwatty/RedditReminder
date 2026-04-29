@@ -54,6 +54,7 @@ final class MediaStore {
   }
 
   func loadImage(captureId: UUID, ref: String) -> NSImage? {
+    guard isValidMediaRef(ref) else { return nil }
     let url = rootDir
       .appendingPathComponent(captureId.uuidString)
       .appendingPathComponent(ref)
@@ -61,6 +62,7 @@ final class MediaStore {
   }
 
   func loadThumbnail(captureId: UUID, ref: String) -> NSImage? {
+    guard isValidMediaRef(ref) else { return nil }
     let url = rootDir
       .appendingPathComponent(captureId.uuidString)
       .appendingPathComponent("thumbnails")
@@ -82,10 +84,12 @@ final class MediaStore {
   }
 
   func exists(captureId: UUID, ref: String) -> Bool {
-    fm.fileExists(atPath: mediaURL(captureId: captureId, ref: ref).path)
+    guard isValidMediaRef(ref) else { return false }
+    return fm.fileExists(atPath: mediaURL(captureId: captureId, ref: ref).path)
   }
 
   func delete(captureId: UUID, ref: String) {
+    guard isValidMediaRef(ref) else { return }
     for url in [mediaURL(captureId: captureId, ref: ref), thumbnailURL(captureId: captureId, ref: ref)] {
       do {
         try fm.removeItem(at: url)
@@ -144,6 +148,15 @@ final class MediaStore {
       index += 1
     }
     return candidate
+  }
+
+  private func isValidMediaRef(_ ref: String) -> Bool {
+    !ref.isEmpty &&
+      ref != "." &&
+      ref != ".." &&
+      !ref.contains("/") &&
+      !ref.contains("\\") &&
+      URL(fileURLWithPath: ref).lastPathComponent == ref
   }
 
   private func pngData(from image: NSImage) -> Data? {
