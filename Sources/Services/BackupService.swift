@@ -33,8 +33,25 @@ struct BackupService {
         guard backup.version == 1 else { throw BackupError.unsupportedVersion(backup.version) }
         try validate(backup)
 
-        try clearData(in: context)
+        do {
+            try clearData(in: context)
+            try insert(backup, into: context, mediaStore: mediaStore)
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+        BackupSettingsPersistence.apply(backup.settings, to: defaults)
+    }
 
+    private func clearData(in context: ModelContext) throws {
+        for capture in try context.fetch(FetchDescriptor<Capture>()) { context.delete(capture) }
+        for event in try context.fetch(FetchDescriptor<SubredditEvent>()) { context.delete(event) }
+        for project in try context.fetch(FetchDescriptor<Project>()) { context.delete(project) }
+        for subreddit in try context.fetch(FetchDescriptor<Subreddit>()) { context.delete(subreddit) }
+    }
+
+    private func insert(_ backup: AppBackup, into context: ModelContext, mediaStore: MediaStore?) throws {
         var projectsById: [UUID: Project] = [:]
         var subredditsById: [UUID: Subreddit] = [:]
 
@@ -101,17 +118,6 @@ struct BackupService {
             capture.postedAt = item.postedAt
             context.insert(capture)
         }
-
-        BackupSettingsPersistence.apply(backup.settings, to: defaults)
-        try context.save()
-    }
-
-    private func clearData(in context: ModelContext) throws {
-        for capture in try context.fetch(FetchDescriptor<Capture>()) { context.delete(capture) }
-        for event in try context.fetch(FetchDescriptor<SubredditEvent>()) { context.delete(event) }
-        for project in try context.fetch(FetchDescriptor<Project>()) { context.delete(project) }
-        for subreddit in try context.fetch(FetchDescriptor<Subreddit>()) { context.delete(subreddit) }
-        try context.save()
     }
 
     private func validate(_ backup: AppBackup) throws {
