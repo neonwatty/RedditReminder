@@ -6,9 +6,17 @@ enum CaptureHelpers {
     static func normalizeLink(_ input: String) -> String? {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
-        return trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://")
-            ? trimmed
-            : "https://\(trimmed)"
+        guard trimmed.rangeOfCharacter(from: .whitespacesAndNewlines) == nil else { return nil }
+
+        let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+        guard let url = URL(string: candidate),
+              let scheme = url.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              url.host != nil,
+              url.user == nil,
+              url.password == nil else { return nil }
+
+        return candidate
     }
 
     /// Validates that a capture form has the minimum required fields.

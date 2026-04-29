@@ -33,6 +33,20 @@ import SwiftData
     #expect(CaptureHelpers.normalizeLink("reddit.com/r/SwiftUI") == "https://reddit.com/r/SwiftUI")
 }
 
+@Test func normalizeLinkRejectsUnsupportedSchemes() {
+    #expect(CaptureHelpers.normalizeLink("ftp://example.com/file.zip") == nil)
+    #expect(CaptureHelpers.normalizeLink("mailto:test@example.com") == nil)
+}
+
+@Test func normalizeLinkRejectsInternalWhitespace() {
+    #expect(CaptureHelpers.normalizeLink("https://example.com/bad path") == nil)
+    #expect(CaptureHelpers.normalizeLink("bad domain.com") == nil)
+}
+
+@Test func normalizeLinkRejectsMissingHost() {
+    #expect(CaptureHelpers.normalizeLink("https://") == nil)
+}
+
 // MARK: - canSave
 
 @Test func canSaveRequiresNonEmptyTextAndSubreddits() {
