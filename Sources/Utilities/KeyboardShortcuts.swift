@@ -3,7 +3,13 @@ import AppKit
 import os
 
 @MainActor
-final class GlobalShortcut {
+protocol GlobalShortcutRegistering: AnyObject {
+  func register(config: KeyboardShortcutConfig, handler: @escaping @Sendable () -> Void) -> Bool
+  func unregister()
+}
+
+@MainActor
+final class GlobalShortcut: GlobalShortcutRegistering {
   private var eventTap: CFMachPort?
   private var tapThread: Thread?
 
