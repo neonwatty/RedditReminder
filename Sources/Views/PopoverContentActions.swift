@@ -21,8 +21,11 @@ extension PopoverContentView {
                 case .create: saveCapture(result)
                 case .edit(let capture): updateCapture(capture, with: result)
                 }
-                menuBarController.closeCaptureWindow()
-                showToastAfterReopen(ok ? successMsg : "Save failed")
+                if ok {
+                    menuBarController.closeCaptureWindow()
+                    showToastAfterReopen(successMsg)
+                }
+                return ok
             },
             onCancel: { menuBarController.closeCaptureWindow() }
         ).modelContainer(modelContext.container)
