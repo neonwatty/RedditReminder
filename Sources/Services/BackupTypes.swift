@@ -25,6 +25,7 @@ struct AppBackup: Codable, Equatable {
     var subreddits: [BackupSubreddit]
     var events: [BackupSubredditEvent]
     var captures: [BackupCapture]
+    var mediaFiles: [BackupMediaFile]? = nil
 }
 
 struct BackupSettings: Codable, Equatable {
@@ -101,4 +102,10 @@ struct BackupCapture: Codable, Equatable {
     var postedAt: Date?
     var projectId: UUID?
     var subredditIds: [UUID]
+}
+
+struct BackupMediaFile: Codable, Equatable {
+    var captureId: UUID
+    var ref: String
+    var data: Data
 }

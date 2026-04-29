@@ -70,6 +70,28 @@ final class MediaStore {
     return NSImage(contentsOf: url)
   }
 
+  func loadData(captureId: UUID, ref: String) throws -> Data? {
+    guard isValidMediaRef(ref) else { return nil }
+    let url = mediaURL(captureId: captureId, ref: ref)
+    guard fm.fileExists(atPath: url.path) else { return nil }
+    return try Data(contentsOf: url)
+  }
+
+  func saveData(_ data: Data, captureId: UUID, ref: String) throws {
+    guard isValidMediaRef(ref) else { throw MediaError.invalidReference }
+    guard let image = NSImage(data: data) else { throw MediaError.decodingFailed }
+    let captureDir = rootDir.appendingPathComponent(captureId.uuidString)
+    let thumbDir = captureDir.appendingPathComponent("thumbnails")
+    try fm.createDirectory(at: captureDir, withIntermediateDirectories: true)
+    try fm.createDirectory(at: thumbDir, withIntermediateDirectories: true)
+    try data.write(to: mediaURL(captureId: captureId, ref: ref))
+
+    let thumbnail = generateThumbnail(from: image, maxSize: MediaConstants.thumbnailMaxSize)
+    if let thumbData = pngData(from: thumbnail) {
+      try thumbData.write(to: thumbnailURL(captureId: captureId, ref: ref))
+    }
+  }
+
   private func mediaURL(captureId: UUID, ref: String) -> URL {
     rootDir
       .appendingPathComponent(captureId.uuidString)
@@ -171,5 +193,6 @@ final class MediaStore {
 enum MediaError: Error {
   case decodingFailed
   case encodingFailed
+  case invalidReference
   case unsupportedType
 }
