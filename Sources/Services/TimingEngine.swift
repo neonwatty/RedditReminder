@@ -52,8 +52,7 @@ final class TimingEngine {
         return nil
     }
 
-    func refresh(events: [SubredditEvent], captures: [Capture]) {
-        let now = Date()
+    func refresh(events: [SubredditEvent], captures: [Capture], now: Date = Date()) {
         let horizon = now.addingTimeInterval(24 * 3600)
 
         // Pre-index: count queued captures per subreddit ID once,

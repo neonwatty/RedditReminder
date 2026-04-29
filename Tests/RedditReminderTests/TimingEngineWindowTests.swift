@@ -2,6 +2,8 @@ import Foundation
 import Testing
 @testable import RedditReminder
 
+private let timingWindowNow = Date(timeIntervalSince1970: 1_700_000_000)
+
 @Test @MainActor func nextWindowOneOffPrioritizedOverRRule() {
     let sub = Subreddit(name: "r/Test")
     let futureDate = Date().addingTimeInterval(3600)
@@ -28,16 +30,16 @@ import Testing
     let soon = SubredditEvent(
         name: "Soon",
         subreddit: sub,
-        oneOffDate: Date().addingTimeInterval(0.25 * 3600)
+        oneOffDate: timingWindowNow.addingTimeInterval(0.25 * 3600)
     )
     let later = SubredditEvent(
         name: "Later",
         subreddit: sub,
-        oneOffDate: Date().addingTimeInterval(18 * 3600)
+        oneOffDate: timingWindowNow.addingTimeInterval(18 * 3600)
     )
 
     let engine = TimingEngine()
-    engine.refresh(events: [soon, later], captures: [])
+    engine.refresh(events: [soon, later], captures: [], now: timingWindowNow)
 
     let soonWindow = engine.upcomingWindows.first { $0.event.name == "Soon" }
     let laterWindow = engine.upcomingWindows.first { $0.event.name == "Later" }
@@ -47,7 +49,7 @@ import Testing
 
 @Test @MainActor func leadTimeSubtractedFromNotificationFireDate() {
     let sub = Subreddit(name: "r/Test")
-    let eventTime = Date().addingTimeInterval(6 * 3600)
+    let eventTime = timingWindowNow.addingTimeInterval(6 * 3600)
     let event = SubredditEvent(
         name: "With Lead",
         subreddit: sub,
@@ -56,7 +58,7 @@ import Testing
     )
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [])
+    engine.refresh(events: [event], captures: [], now: timingWindowNow)
 
     #expect(engine.upcomingWindows.count == 1)
     let window = engine.upcomingWindows[0]
@@ -67,7 +69,7 @@ import Testing
 
 @Test @MainActor func zeroLeadTimeNotificationFireDateEqualsEventDate() {
     let sub = Subreddit(name: "r/Test")
-    let eventTime = Date().addingTimeInterval(3 * 3600)
+    let eventTime = timingWindowNow.addingTimeInterval(3 * 3600)
     let event = SubredditEvent(
         name: "No Lead",
         subreddit: sub,
@@ -76,7 +78,7 @@ import Testing
     )
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [])
+    engine.refresh(events: [event], captures: [], now: timingWindowNow)
 
     #expect(engine.upcomingWindows.count == 1)
     let window = engine.upcomingWindows[0]
@@ -88,12 +90,12 @@ import Testing
     let event = SubredditEvent(
         name: "FarEvent",
         subreddit: sub,
-        oneOffDate: Date().addingTimeInterval(18 * 3600),
+        oneOffDate: timingWindowNow.addingTimeInterval(18 * 3600),
         reminderLeadMinutes: 120
     )
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [])
+    engine.refresh(events: [event], captures: [], now: timingWindowNow)
 
     #expect(engine.upcomingWindows.count == 1)
     #expect(engine.upcomingWindows[0].urgency == .low)
