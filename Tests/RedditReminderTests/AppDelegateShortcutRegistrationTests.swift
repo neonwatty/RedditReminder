@@ -78,6 +78,32 @@ private final class RecordingGlobalShortcut: GlobalShortcutRegistering {
     #expect(globalShortcut.registeredConfigs == [.defaultShortcut, .defaultShortcut])
 }
 
+@Test @MainActor func appDelegateRecordsShortcutRegistrationFailure() {
+    let temporaryDefaults = makeShortcutDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    let globalShortcut = RecordingGlobalShortcut()
+    globalShortcut.registerResults = [false]
+    let delegate = makeShortcutDelegate(defaults: defaults, globalShortcut: globalShortcut)
+
+    delegate.registerGlobalShortcut()
+
+    #expect(defaults.bool(forKey: SettingsKey.globalShortcutRegistrationFailed))
+}
+
+@Test @MainActor func appDelegateClearsShortcutRegistrationFailureAfterSuccess() {
+    let temporaryDefaults = makeShortcutDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.globalShortcutRegistrationFailed)
+    let globalShortcut = RecordingGlobalShortcut()
+    let delegate = makeShortcutDelegate(defaults: defaults, globalShortcut: globalShortcut)
+
+    delegate.registerGlobalShortcut()
+
+    #expect(defaults.bool(forKey: SettingsKey.globalShortcutRegistrationFailed) == false)
+}
+
 @Test @MainActor func appDelegateUnregistersShortcutOnTerminate() {
     let temporaryDefaults = makeShortcutDefaults()
     let defaults = temporaryDefaults.defaults
