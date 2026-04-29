@@ -8,7 +8,7 @@ struct CaptureWindowView: View {
     }
 
     let mode: Mode
-    let onSave: (CaptureFormResult) -> Void
+    let onSave: (CaptureFormResult) -> Bool
     let onCancel: () -> Void
 
     @Query(sort: \Project.name) private var projects: [Project]
@@ -24,8 +24,8 @@ struct CaptureWindowView: View {
     @State private var existingMediaRefs: [String] = []
     @State private var removedMediaRefs: [String] = []
     @State private var showPreview: Bool = false
+    @State private var saveError: String?
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
-
     var body: some View {
         VStack(spacing: 0) {
             titleBar
@@ -113,6 +113,11 @@ struct CaptureWindowView: View {
                             removedRefs: $removedMediaRefs
                         )
                     }
+
+                    if let saveError {
+                        Text(saveError)
+                            .font(.system(size: 11)).foregroundStyle(.red).accessibilityIdentifier("capture-save-error")
+                    }
                 }
                 .padding(16)
             }
@@ -178,7 +183,8 @@ struct CaptureWindowView: View {
     private func save() {
         guard canSave else { return }
         let selectedSubs = subreddits.filter { selectedSubreddits.contains($0.id) }
-        onSave(CaptureFormResult(
+        saveError = nil
+        let didSave = onSave(CaptureFormResult(
             text: text.trimmingCharacters(in: .whitespacesAndNewlines),
             notes: notes.isEmpty ? nil : notes, links: links,
             project: selectedProject,
@@ -186,6 +192,9 @@ struct CaptureWindowView: View {
             mediaURLs: droppedFiles,
             removedMediaRefs: removedMediaRefs
         ))
+        if !didSave {
+            saveError = "Save failed. Check selected media files and try again."
+        }
     }
 
     private var editCaptureId: UUID? {
