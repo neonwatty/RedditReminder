@@ -6,6 +6,7 @@ struct CaptureMediaSection: View {
     var captureId: UUID?
     @Binding var existingRefs: [String]
     @Binding var removedRefs: [String]
+    var originalRefs: [String]
     var mediaStore: MediaStore = MediaStore()
 
     @State private var isDragOver: Bool = false
@@ -50,7 +51,8 @@ struct CaptureMediaSection: View {
                                 CaptureMediaEditing.restoreExisting(
                                     ref: ref,
                                     existingRefs: &existingRefs,
-                                    removedRefs: &removedRefs
+                                    removedRefs: &removedRefs,
+                                    originalRefs: originalRefs
                                 )
                             }
                         )
@@ -121,12 +123,14 @@ struct CaptureMediaSection: View {
         captureId: UUID? = nil,
         existingRefs: Binding<[String]> = .constant([]),
         removedRefs: Binding<[String]> = .constant([]),
+        originalRefs: [String] = [],
         mediaStore: MediaStore = MediaStore()
     ) {
         self._droppedFiles = droppedFiles
         self.captureId = captureId
         self._existingRefs = existingRefs
         self._removedRefs = removedRefs
+        self.originalRefs = originalRefs
         self.mediaStore = mediaStore
     }
 
