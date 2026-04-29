@@ -49,13 +49,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     defaults.set(true, forKey: SettingsKey.nudgeWhenEmpty)
 
     let center = RecordingNotificationCenter()
-    let delegate = AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
-        defaults: defaults
-    )
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(3600))
     let window = TimingEngine.UpcomingWindow(
@@ -68,14 +62,8 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 
     await delegate.scheduleNotifications(activeEvents: [event], windows: [window])
 
-    #expect(
-        center.addedRequests.map(\.identifier)
-            .contains(AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString))
-    )
-    #expect(
-        center.addedRequests.map(\.identifier)
-            .contains(AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString))
-    )
+    #expect(center.addedRequests.map(\.identifier).contains(AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)))
+    #expect(center.addedRequests.map(\.identifier).contains(AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)))
 }
 
 @Test @MainActor func appDelegateSkipsPastNotificationFireDatesAndCancelsExistingRequests() async {
@@ -85,13 +73,7 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     defaults.set(true, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
-    let delegate = AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
-        defaults: defaults
-    )
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Peak", subreddit: sub, oneOffDate: Date().addingTimeInterval(1800))
     let window = TimingEngine.UpcomingWindow(
@@ -106,16 +88,8 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
 
     #expect(center.addedRequests.isEmpty)
     #expect(center.removedIdentifiers.count == 1)
-    #expect(
-        center.removedIdentifiers[0].contains(
-            AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)
-        )
-    )
-    #expect(
-        center.removedIdentifiers[0].contains(
-            AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)
-        )
-    )
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)))
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)))
 }
 
 @Test @MainActor func appDelegateCancelsStaleActiveEvents() async {
@@ -125,29 +99,15 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     defaults.set(true, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
-    let delegate = AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
-        defaults: defaults
-    )
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
     let sub = Subreddit(name: "r/Test")
     let stale = SubredditEvent(name: "Too Far", subreddit: sub, oneOffDate: Date().addingTimeInterval(48 * 3600))
 
     await delegate.scheduleNotifications(activeEvents: [stale], windows: [])
 
     #expect(center.removedIdentifiers.count == 1)
-    #expect(
-        center.removedIdentifiers[0].contains(
-            AppNotificationIdentifiers.windowRequestId(eventId: stale.id.uuidString)
-        )
-    )
-    #expect(
-        center.removedIdentifiers[0].contains(
-            AppNotificationIdentifiers.nudgeRequestId(eventId: stale.id.uuidString)
-        )
-    )
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.windowRequestId(eventId: stale.id.uuidString)))
+    #expect(center.removedIdentifiers[0].contains(AppNotificationIdentifiers.nudgeRequestId(eventId: stale.id.uuidString)))
 }
 
 @Test @MainActor func appDelegateCancelsAllWhenNotificationsDisabled() async {
@@ -157,18 +117,41 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     defaults.set(false, forKey: SettingsKey.notificationsEnabled)
 
     let center = RecordingNotificationCenter()
-    let delegate = AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: center),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
-        defaults: defaults
-    )
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
 
     await delegate.scheduleNotifications(activeEvents: [], windows: [])
 
     #expect(center.removedAll)
     #expect(center.addedRequests.isEmpty)
+}
+
+@Test @MainActor func appDelegateCancelsAllWhenNotificationPermissionDenied() async {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.notificationsEnabled)
+
+    let center = RecordingNotificationCenter()
+    center.authorizationStatus = .denied
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
+    let event = SubredditEvent(
+        name: "Peak",
+        subreddit: Subreddit(name: "r/Test"),
+        oneOffDate: Date().addingTimeInterval(3600)
+    )
+    let window = TimingEngine.UpcomingWindow(
+        event: event,
+        eventDate: event.oneOffDate!,
+        notificationFireDate: Date().addingTimeInterval(300),
+        urgency: .high,
+        matchingCaptureCount: 1
+    )
+
+    await delegate.scheduleNotifications(activeEvents: [event], windows: [window])
+
+    #expect(center.removedAll)
+    #expect(center.addedRequests.isEmpty)
+    #expect(center.removedIdentifiers.isEmpty)
 }
 
 @Test @MainActor func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() throws {
@@ -187,13 +170,9 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     context.insert(subreddit)
     try context.save()
 
-    let delegate = AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: RecordingNotificationCenter()),
-        heuristicsStore: HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false),
-        defaults: defaults
-    )
+    let center = RecordingNotificationCenter()
+    let store = HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false)
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults, heuristicsStore: store)
     delegate.modelContainer = container
 
     delegate.runRefreshCycle()
@@ -201,6 +180,24 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     let events = try context.fetch(FetchDescriptor<SubredditEvent>())
     #expect(!events.isEmpty)
     #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
+}
+
+@MainActor
+private func makeSchedulingDelegate(
+    center: RecordingNotificationCenter,
+    defaults: UserDefaults,
+    heuristicsStore: HeuristicsStore = HeuristicsStore(
+        bundle: Bundle(path: "/tmp") ?? .main,
+        logsMissingResource: false
+    )
+) -> AppDelegate {
+    AppDelegate(
+        menuBarController: MenuBarController(),
+        timingEngine: TimingEngine(),
+        notificationService: NotificationService(center: center),
+        heuristicsStore: heuristicsStore,
+        defaults: defaults
+    )
 }
 
 private func makeTemporaryDefaults() -> TemporaryDefaults {
