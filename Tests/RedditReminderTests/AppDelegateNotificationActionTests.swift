@@ -5,6 +5,61 @@ import UserNotifications
 @testable import RedditReminder
 
 @Test @MainActor func appDelegateMarksQueuedCapturesForNotificationSubredditAsPosted() throws {
+    let fixture = try makeCaptureFixture()
+    let delegate = makeNotificationActionDelegate()
+    delegate.modelContainer = fixture.container
+
+    delegate.markCapturesAsPosted(forSubreddit: "r/Test")
+
+    #expect(fixture.matching.status == .posted)
+    #expect(fixture.matching.postedAt != nil)
+    #expect(fixture.alreadyPosted.status == .posted)
+    #expect(fixture.unrelated.status == .queued)
+}
+
+@Test @MainActor func appDelegateMarkPostedActionIsNoopWithoutContainer() {
+    let delegate = makeNotificationActionDelegate()
+
+    delegate.markCapturesAsPosted(forSubreddit: "r/Test")
+}
+
+@Test @MainActor func appDelegateMarkPostedActionMarksCapturesAndOpensPopoverHeadlessly() throws {
+    let fixture = try makeCaptureFixture()
+    let recorder = PopoverActionRecorder()
+    let delegate = makeNotificationActionDelegate(popoverOpener: recorder.open)
+    delegate.modelContainer = fixture.container
+
+    delegate.handleNotificationAction(AppNotificationIdentifiers.markPostedAction, subredditName: "r/Test")
+
+    #expect(fixture.matching.status == .posted)
+    #expect(fixture.unrelated.status == .queued)
+    #expect(recorder.openCount == 1)
+}
+
+@Test @MainActor func appDelegateOpenActionOpensPopoverHeadlessly() {
+    let recorder = PopoverActionRecorder()
+    let delegate = makeNotificationActionDelegate(popoverOpener: recorder.open)
+
+    delegate.handleNotificationAction(AppNotificationIdentifiers.openAction, subredditName: nil)
+    delegate.handleNotificationAction(UNNotificationDefaultActionIdentifier, subredditName: nil)
+    delegate.handleNotificationAction("UNKNOWN_ACTION", subredditName: nil)
+
+    #expect(recorder.openCount == 2)
+}
+
+@MainActor
+private func makeNotificationActionDelegate(popoverOpener: (@MainActor () -> Void)? = nil) -> AppDelegate {
+    AppDelegate(
+        menuBarController: MenuBarController(),
+        timingEngine: TimingEngine(),
+        notificationService: NotificationService(center: NotificationActionCenter()),
+        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false),
+        notificationActionPopoverOpener: popoverOpener
+    )
+}
+
+@MainActor
+private func makeCaptureFixture() throws -> CaptureFixture {
     let container = try ModelContainer(
         for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
@@ -22,31 +77,28 @@ import UserNotifications
     context.insert(alreadyPosted)
     context.insert(unrelated)
     try context.save()
-    let delegate = makeNotificationActionDelegate()
-    delegate.modelContainer = container
-
-    delegate.markCapturesAsPosted(forSubreddit: "r/Test")
-
-    #expect(matching.status == .posted)
-    #expect(matching.postedAt != nil)
-    #expect(alreadyPosted.status == .posted)
-    #expect(unrelated.status == .queued)
+    return CaptureFixture(
+        container: container,
+        matching: matching,
+        alreadyPosted: alreadyPosted,
+        unrelated: unrelated
+    )
 }
 
-@Test @MainActor func appDelegateMarkPostedActionIsNoopWithoutContainer() {
-    let delegate = makeNotificationActionDelegate()
-
-    delegate.markCapturesAsPosted(forSubreddit: "r/Test")
+private struct CaptureFixture {
+    let container: ModelContainer
+    let matching: Capture
+    let alreadyPosted: Capture
+    let unrelated: Capture
 }
 
 @MainActor
-private func makeNotificationActionDelegate() -> AppDelegate {
-    AppDelegate(
-        menuBarController: MenuBarController(),
-        timingEngine: TimingEngine(),
-        notificationService: NotificationService(center: NotificationActionCenter()),
-        heuristicsStore: HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
-    )
+private final class PopoverActionRecorder {
+    private(set) var openCount = 0
+
+    func open() {
+        openCount += 1
+    }
 }
 
 private final class NotificationActionCenter: NotificationCenterProtocol, @unchecked Sendable {
