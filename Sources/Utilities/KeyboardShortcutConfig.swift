@@ -64,6 +64,10 @@ struct KeyboardShortcutConfig: Equatable, Sendable {
       defaults.set(Int(config.keyCode), forKey: SettingsKey.globalShortcutKeyCode)
       defaults.set(Int(config.modifiers.rawValue), forKey: SettingsKey.globalShortcutModifiers)
       defaults.set(config.display, forKey: SettingsKey.globalShortcutDisplay)
+    } else {
+      defaults.removeObject(forKey: SettingsKey.globalShortcutKeyCode)
+      defaults.removeObject(forKey: SettingsKey.globalShortcutModifiers)
+      defaults.removeObject(forKey: SettingsKey.globalShortcutDisplay)
     }
     defaults.set(config.identifier, forKey: SettingsKey.globalShortcutIdentifier)
   }
