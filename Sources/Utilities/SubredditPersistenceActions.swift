@@ -10,8 +10,7 @@ enum SubredditPersistenceActions {
     }
 
     static func canAdd(_ input: String, subreddits: [Subreddit]) -> Bool {
-        guard let name = SubredditName.normalizedName(input) else { return false }
-        return isNameAvailable(name, subreddits: subreddits)
+        SubredditInputValidation.evaluate(input, subreddits: subreddits).canAdd
     }
 
     @discardableResult

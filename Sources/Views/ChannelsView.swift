@@ -10,7 +10,7 @@ struct ChannelsTabView: View {
 
     @State private var expandedSubredditId: UUID?
     @State private var newSubredditName = ""
-    @State private var nameValidationMessage: String?
+    @State private var addFailureMessage: String?
     @State private var draggingSubreddit: Subreddit?
     @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
 
@@ -24,7 +24,7 @@ struct ChannelsTabView: View {
                         .padding(7)
                         .inputFieldStyle(cornerRadius: 6)
                         .onChange(of: newSubredditName) {
-                            nameValidationMessage = nil
+                            addFailureMessage = nil
                         }
                         .onSubmit { addSubreddit() }
 
@@ -44,10 +44,10 @@ struct ChannelsTabView: View {
                     .disabled(!canAdd)
                 }
 
-                if let nameValidationMessage {
-                    Text(nameValidationMessage)
+                if let feedbackMessage {
+                    Text(feedbackMessage.text)
                         .font(.system(size: 10))
-                        .foregroundStyle(.red)
+                        .foregroundStyle(feedbackMessage.isError ? .red : .secondary)
                 }
             }
             .padding(12)
@@ -83,7 +83,26 @@ struct ChannelsTabView: View {
     }
 
     private var canAdd: Bool {
-        SubredditPersistenceActions.canAdd(newSubredditName, subreddits: subreddits)
+        inputValidation.canAdd
+    }
+
+    private var inputValidation: SubredditInputValidation {
+        SubredditInputValidation.evaluate(newSubredditName, subreddits: subreddits)
+    }
+
+    private var feedbackMessage: (text: String, isError: Bool)? {
+        if let addFailureMessage {
+            return (addFailureMessage, true)
+        }
+
+        switch inputValidation.feedback {
+        case .error(let message):
+            return (message, true)
+        case .preview(let message):
+            return (message, false)
+        case nil:
+            return nil
+        }
     }
 
     private func addSubreddit() {
@@ -96,9 +115,9 @@ struct ChannelsTabView: View {
         ) {
         case .success:
             newSubredditName = ""
-            nameValidationMessage = nil
+            addFailureMessage = nil
         case .failure(let error):
-            nameValidationMessage = error.message
+            addFailureMessage = error.message
         }
     }
 
