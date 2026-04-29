@@ -36,3 +36,40 @@ import Testing
 @Test func subredditNameRejectsTooLong() {
     #expect(SubredditName.normalize(String(repeating: "a", count: 22)) == .failure(.tooLong))
 }
+
+@Test @MainActor func subredditInputValidationHasNoFeedbackForEmptyInput() {
+    let validation = SubredditInputValidation.evaluate(" ", subreddits: [])
+
+    #expect(validation == SubredditInputValidation(canAdd: false, feedback: nil))
+}
+
+@Test @MainActor func subredditInputValidationShowsInvalidNameMessage() {
+    let validation = SubredditInputValidation.evaluate("bad name", subreddits: [])
+
+    #expect(validation == SubredditInputValidation(
+        canAdd: false,
+        feedback: .error(SubredditName.ValidationError.invalidCharacters.message)
+    ))
+}
+
+@Test @MainActor func subredditInputValidationShowsDuplicateMessage() {
+    let existing = Subreddit(name: "r/SwiftUI")
+    let validation = SubredditInputValidation.evaluate("swiftui", subreddits: [existing])
+
+    #expect(validation == SubredditInputValidation(
+        canAdd: false,
+        feedback: .error(SubredditName.ValidationError.duplicate.message)
+    ))
+}
+
+@Test @MainActor func subredditInputValidationPreviewsNormalizedName() {
+    let validation = SubredditInputValidation.evaluate(
+        "https://www.reddit.com/r/macOS/comments/abc",
+        subreddits: []
+    )
+
+    #expect(validation == SubredditInputValidation(
+        canAdd: true,
+        feedback: .preview("Will add r/macOS")
+    ))
+}
