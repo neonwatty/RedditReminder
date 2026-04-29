@@ -12,13 +12,19 @@ struct BackupService {
         decoder = JSONDecoder()
     }
 
-    func exportBackup(from context: ModelContext, defaults: UserDefaults = .standard) throws -> Data {
+    func exportBackup(
+        from context: ModelContext,
+        defaults: UserDefaults = .standard,
+        mediaStore: MediaStore? = nil
+    ) throws -> Data {
+        let captures = try context.fetch(FetchDescriptor<Capture>())
         let backup = AppBackup(
             settings: BackupSettingsPersistence.snapshot(from: defaults),
             projects: try context.fetch(FetchDescriptor<Project>()).map { BackupProject(project: $0) },
             subreddits: try context.fetch(FetchDescriptor<Subreddit>()).map { BackupSubreddit(subreddit: $0) },
             events: try context.fetch(FetchDescriptor<SubredditEvent>()).map { BackupSubredditEvent(event: $0) },
-            captures: try context.fetch(FetchDescriptor<Capture>()).map { BackupCapture(capture: $0) }
+            captures: captures.map { BackupCapture(capture: $0) },
+            mediaFiles: try mediaFiles(from: captures, mediaStore: mediaStore)
         )
         return try encoder.encode(backup)
     }
@@ -33,12 +39,15 @@ struct BackupService {
         guard backup.version == 1 else { throw BackupError.unsupportedVersion(backup.version) }
         try validate(backup)
 
+        var restoredMedia: Set<MediaIdentity> = []
         do {
+            restoredMedia = try restoreEmbeddedMedia(from: backup, mediaStore: mediaStore)
             try clearData(in: context)
-            try insert(backup, into: context, mediaStore: mediaStore)
+            try insert(backup, into: context, mediaStore: mediaStore, restoredMedia: restoredMedia)
             try context.save()
         } catch {
             context.rollback()
+            deleteMedia(restoredMedia, mediaStore: mediaStore)
             throw error
         }
         BackupSettingsPersistence.apply(backup.settings, to: defaults)
@@ -51,7 +60,12 @@ struct BackupService {
         for subreddit in try context.fetch(FetchDescriptor<Subreddit>()) { context.delete(subreddit) }
     }
 
-    private func insert(_ backup: AppBackup, into context: ModelContext, mediaStore: MediaStore?) throws {
+    private func insert(
+        _ backup: AppBackup,
+        into context: ModelContext,
+        mediaStore: MediaStore?,
+        restoredMedia: Set<MediaIdentity>
+    ) throws {
         var projectsById: [UUID: Project] = [:]
         var subredditsById: [UUID: Subreddit] = [:]
 
@@ -108,7 +122,7 @@ struct BackupService {
                 text: item.text,
                 notes: item.notes,
                 links: item.links,
-                mediaRefs: restoredMediaRefs(from: item, mediaStore: mediaStore),
+                mediaRefs: restoredMediaRefs(from: item, mediaStore: mediaStore, restoredMedia: restoredMedia),
                 project: item.projectId.flatMap { projectsById[$0] },
                 subreddits: subreddits
             )
@@ -150,11 +164,6 @@ struct BackupService {
                 throw BackupError.duplicateId(id.uuidString)
             }
         }
-    }
-
-    private func restoredMediaRefs(from capture: BackupCapture, mediaStore: MediaStore?) -> [String] {
-        guard let mediaStore else { return capture.mediaRefs }
-        return capture.mediaRefs.filter { mediaStore.exists(captureId: capture.id, ref: $0) }
     }
 
 }

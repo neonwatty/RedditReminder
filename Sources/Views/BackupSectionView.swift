@@ -60,7 +60,7 @@ struct BackupSectionView: View {
 
     private func exportBackup() {
         do {
-            let data = try backupService.exportBackup(from: modelContext)
+            let data = try backupService.exportBackup(from: modelContext, mediaStore: mediaStore)
             exportDocument = BackupDocument(data: data)
             isExporting = true
             statusMessage = nil
