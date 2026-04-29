@@ -26,8 +26,29 @@ struct CaptureMediaSection: View {
                                 }
                             },
                             onRemove: {
-                                existingRefs.removeAll { $0 == ref }
-                                removedRefs.append(ref)
+                                CaptureMediaEditing.removeExisting(
+                                    ref: ref,
+                                    existingRefs: &existingRefs,
+                                    removedRefs: &removedRefs
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            if let captureId, !removedRefs.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(removedRefs, id: \.self) { ref in
+                        removedMediaChip(
+                            title: ref,
+                            image: mediaStore.loadThumbnail(captureId: captureId, ref: ref),
+                            onRestore: {
+                                CaptureMediaEditing.restoreExisting(
+                                    ref: ref,
+                                    existingRefs: &existingRefs,
+                                    removedRefs: &removedRefs
+                                )
                             }
                         )
                     }
@@ -142,6 +163,40 @@ struct CaptureMediaSection: View {
     private struct PreviewImage: Identifiable {
         let id = UUID()
         let value: NSImage
+    }
+
+    private func removedMediaChip(
+        title: String,
+        image: NSImage?,
+        onRestore: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: 5) {
+            if let image {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 18, height: 18)
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 9))
+            }
+            Text(title)
+                .font(.system(size: 10))
+                .lineLimit(1)
+                .strikethrough()
+                .foregroundStyle(.secondary)
+            Button(action: onRestore) {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(.quaternary.opacity(0.18))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private func appendImageFiles(_ urls: [URL]) {
