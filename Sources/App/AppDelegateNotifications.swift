@@ -31,9 +31,9 @@ extension AppDelegate {
             if let subredditName {
                 markCapturesAsPosted(forSubreddit: subredditName)
             }
-            menuBarController.openPopover()
+            openPopoverForNotificationAction()
         case UNNotificationDefaultActionIdentifier, AppNotificationIdentifiers.openAction:
-            menuBarController.openPopover()
+            openPopoverForNotificationAction()
         default:
             break
         }

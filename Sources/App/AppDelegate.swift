@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     let heuristicsStore: HeuristicsStore
     let notificationScheduler: NotificationScheduler
     let defaults: UserDefaults
+    let openPopoverForNotificationAction: @MainActor () -> Void
 
     var modelContainer: ModelContainer?
 
@@ -33,7 +34,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         notificationService: NotificationService,
         heuristicsStore: HeuristicsStore,
         defaults: UserDefaults = .standard,
-        globalShortcut: any GlobalShortcutRegistering = GlobalShortcut()
+        globalShortcut: any GlobalShortcutRegistering = GlobalShortcut(),
+        notificationActionPopoverOpener: (@MainActor () -> Void)? = nil
     ) {
         self.menuBarController = menuBarController
         self.timingEngine = timingEngine
@@ -41,6 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         self.heuristicsStore = heuristicsStore
         self.defaults = defaults
         self.globalShortcut = globalShortcut
+        self.openPopoverForNotificationAction = notificationActionPopoverOpener ?? {
+            menuBarController.openPopover()
+        }
         self.notificationScheduler = NotificationScheduler(notificationService: notificationService, defaults: defaults)
         super.init()
     }
