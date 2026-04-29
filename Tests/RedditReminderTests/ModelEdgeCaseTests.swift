@@ -3,6 +3,8 @@ import Testing
 import SwiftData
 @testable import RedditReminder
 
+private let edgeCaseNow = Date(timeIntervalSince1970: 1_700_000_000)
+
 @Test func degenerateEventIsNotRecurring() {
     let sub = Subreddit(name: "r/Test")
     let event = SubredditEvent(name: "Empty", subreddit: sub)
@@ -23,7 +25,7 @@ import SwiftData
     let event = SubredditEvent(name: "Empty", subreddit: sub)
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [])
+    engine.refresh(events: [event], captures: [], now: edgeCaseNow)
     #expect(engine.upcomingWindows.isEmpty)
 }
 

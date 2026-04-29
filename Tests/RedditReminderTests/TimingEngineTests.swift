@@ -2,6 +2,8 @@ import Testing
 import Foundation
 @testable import RedditReminder
 
+private let timingRefreshNow = Date(timeIntervalSince1970: 1_700_000_000)
+
 @Test @MainActor func urgencyFromHoursAway() {
     #expect(TimingEngine.urgencyLevel(hoursUntilWindow: 30) == .none)
     #expect(TimingEngine.urgencyLevel(hoursUntilWindow: 18) == .low)
@@ -56,7 +58,7 @@ import Foundation
     let sub1 = Subreddit(name: "r/SideProject")
     let sub2 = Subreddit(name: "r/MacApps")
 
-    let fireDate = Date().addingTimeInterval(6 * 3600)
+    let fireDate = timingRefreshNow.addingTimeInterval(6 * 3600)
     let event = SubredditEvent(name: "Post time", subreddit: sub1, oneOffDate: fireDate)
 
     let queued1 = Capture(text: "Cap 1", subreddits: [sub1])
@@ -65,7 +67,7 @@ import Foundation
     posted.markAsPosted()
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [queued1, queued2, posted])
+    engine.refresh(events: [event], captures: [queued1, queued2, posted], now: timingRefreshNow)
 
     #expect(engine.upcomingWindows.count == 1)
     #expect(engine.upcomingWindows.first?.matchingCaptureCount == 2)
@@ -75,13 +77,13 @@ import Foundation
     let sub1 = Subreddit(name: "r/SideProject")
     let sub2 = Subreddit(name: "r/MacApps")
 
-    let fireDate = Date().addingTimeInterval(6 * 3600)
+    let fireDate = timingRefreshNow.addingTimeInterval(6 * 3600)
     let event = SubredditEvent(name: "Post time", subreddit: sub2, oneOffDate: fireDate)
 
     let capture = Capture(text: "Cap 1", subreddits: [sub1])
 
     let engine = TimingEngine()
-    engine.refresh(events: [event], captures: [capture])
+    engine.refresh(events: [event], captures: [capture], now: timingRefreshNow)
 
     #expect(engine.upcomingWindows.count == 1)
     #expect(engine.upcomingWindows.first?.matchingCaptureCount == 0)
@@ -90,13 +92,13 @@ import Foundation
 @Test @MainActor func refreshSortsWindowsByEventDate() {
     let sub = Subreddit(name: "r/SideProject")
 
-    let later = Date().addingTimeInterval(12 * 3600)
-    let sooner = Date().addingTimeInterval(3 * 3600)
+    let later = timingRefreshNow.addingTimeInterval(12 * 3600)
+    let sooner = timingRefreshNow.addingTimeInterval(3 * 3600)
     let event1 = SubredditEvent(name: "Later", subreddit: sub, oneOffDate: later)
     let event2 = SubredditEvent(name: "Sooner", subreddit: sub, oneOffDate: sooner)
 
     let engine = TimingEngine()
-    engine.refresh(events: [event1, event2], captures: [])
+    engine.refresh(events: [event1, event2], captures: [], now: timingRefreshNow)
 
     #expect(engine.upcomingWindows.count == 2)
     #expect(engine.upcomingWindows[0].event.name == "Sooner")
