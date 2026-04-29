@@ -128,6 +128,31 @@ import AppKit
   }
 }
 
+@Test func invalidMediaRefsDoNotLoadOrExist() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let captureId = UUID()
+
+  #expect(store.loadImage(captureId: captureId, ref: "../outside.png") == nil)
+  #expect(store.loadThumbnail(captureId: captureId, ref: "nested/outside.png") == nil)
+  #expect(!store.exists(captureId: captureId, ref: ""))
+  #expect(!store.exists(captureId: captureId, ref: ".."))
+}
+
+@Test func deleteIgnoresInvalidMediaRefs() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let image = createTestImage(width: 100, height: 100)
+  let captureId = UUID()
+  let otherCaptureId = UUID()
+  let otherRef = try store.save(image: image, captureId: otherCaptureId, fileName: "other.png")
+
+  store.delete(captureId: captureId, ref: "../\(otherCaptureId.uuidString)/\(otherRef)")
+
+  #expect(store.loadImage(captureId: otherCaptureId, ref: otherRef) != nil)
+  #expect(store.loadThumbnail(captureId: otherCaptureId, ref: otherRef) != nil)
+}
+
 private func createTestImage(width: Int, height: Int) -> NSImage {
   let image = NSImage(size: NSSize(width: width, height: height))
   image.lockFocus()
