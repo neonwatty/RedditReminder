@@ -3,6 +3,7 @@ import Foundation
 enum BackupError: Error, Equatable, LocalizedError {
     case unsupportedVersion(Int)
     case missingRelationship(String)
+    case duplicateId(String)
 
     var errorDescription: String? {
         switch self {
@@ -10,6 +11,8 @@ enum BackupError: Error, Equatable, LocalizedError {
             return "Unsupported backup version \(version)."
         case .missingRelationship(let id):
             return "Backup references missing item \(id)."
+        case .duplicateId(let id):
+            return "Backup contains duplicate item \(id)."
         }
     }
 }
