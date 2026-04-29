@@ -2,8 +2,18 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum CaptureMediaSelection {
+    struct Result: Equatable {
+        let imageURLs: [URL]
+        let rejectedCount: Int
+    }
+
     static func imageURLs(from urls: [URL]) -> [URL] {
-        urls.filter(isImageURL)
+        result(from: urls).imageURLs
+    }
+
+    static func result(from urls: [URL]) -> Result {
+        let imageURLs = urls.filter(isImageURL)
+        return Result(imageURLs: imageURLs, rejectedCount: urls.count - imageURLs.count)
     }
 
     static func isImageURL(_ url: URL) -> Bool {

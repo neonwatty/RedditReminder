@@ -12,6 +12,7 @@ struct CaptureMediaSection: View {
     @State private var isDragOver: Bool = false
     @State private var isShowingImporter: Bool = false
     @State private var previewImage: PreviewImage?
+    @State private var mediaSelectionError: String?
 
     var body: some View {
         VStack(spacing: 8) {
@@ -105,6 +106,11 @@ struct CaptureMediaSection: View {
                         NSLog("RedditReminder: media import failed: \(error)")
                     }
                 }
+            if let mediaSelectionError {
+                Text(mediaSelectionError)
+                    .font(.system(size: 11)).foregroundStyle(.red)
+                    .accessibilityIdentifier(CaptureMediaAccessibility.selectionError)
+            }
         }
         .sheet(item: $previewImage) { image in
             VStack(spacing: 0) {
@@ -140,8 +146,9 @@ struct CaptureMediaSection: View {
     }
 
     private func appendImageFiles(_ urls: [URL]) {
-        let imageURLs = CaptureMediaSelection.imageURLs(from: urls)
-        droppedFiles.append(contentsOf: imageURLs)
+        let result = CaptureMediaSelection.result(from: urls)
+        droppedFiles.append(contentsOf: result.imageURLs)
+        mediaSelectionError = result.rejectedCount > 0 ? "Only image files can be attached." : nil
     }
 
     private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {

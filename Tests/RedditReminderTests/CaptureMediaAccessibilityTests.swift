@@ -3,6 +3,7 @@ import Testing
 
 @Test func captureMediaAccessibilityDefinesStableDropZoneIdentifier() {
     #expect(CaptureMediaAccessibility.dropZone == "capture-media-drop-zone")
+    #expect(CaptureMediaAccessibility.selectionError == "capture-media-selection-error")
 }
 
 @Test func captureMediaAccessibilityNormalizesExistingRefIdentifiers() {

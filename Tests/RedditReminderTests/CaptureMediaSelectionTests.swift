@@ -14,6 +14,9 @@ import Testing
         try? FileManager.default.removeItem(at: textURL)
     }
 
+    let result = CaptureMediaSelection.result(from: [imageURL, textURL])
+    #expect(result.imageURLs == [imageURL])
+    #expect(result.rejectedCount == 1)
     #expect(CaptureMediaSelection.imageURLs(from: [imageURL, textURL]) == [imageURL])
 }
 
