@@ -100,9 +100,9 @@ enum SubredditName {
     if let url = URL(string: trimmed), let host = url.host?.lowercased(),
        host == "reddit.com" || host == "www.reddit.com" || host.hasSuffix(".reddit.com") {
       let components = url.pathComponents.filter { $0 != "/" }
-      if let markerIndex = components.firstIndex(where: { $0.lowercased() == "r" }),
-         components.indices.contains(markerIndex + 1) {
-        trimmed = components[markerIndex + 1]
+      if components.first?.lowercased() == "r",
+         components.indices.contains(1) {
+        trimmed = components[1]
       }
     }
 

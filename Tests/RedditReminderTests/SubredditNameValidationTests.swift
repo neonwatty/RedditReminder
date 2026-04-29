@@ -13,6 +13,14 @@ import Testing
     #expect(SubredditName.normalizedName("https://www.reddit.com/r/macOS/") == "r/macOS")
 }
 
+@Test func subredditNameNormalizesRedditSubdomainUrl() {
+    #expect(SubredditName.normalizedName("https://old.reddit.com/r/SwiftUI/comments/abc") == "r/SwiftUI")
+}
+
+@Test func subredditNameRejectsNonSubredditRedditUrl() {
+    #expect(SubredditName.normalizedName("https://www.reddit.com/user/r/macOS") == nil)
+}
+
 @Test func subredditNameRejectsSpaces() {
     #expect(SubredditName.normalize("bad name") == .failure(.invalidCharacters))
 }
