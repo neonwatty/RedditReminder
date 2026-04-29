@@ -153,6 +153,23 @@ import AppKit
   #expect(store.loadThumbnail(captureId: otherCaptureId, ref: otherRef) != nil)
 }
 
+@Test func saveDataRejectsInvalidMediaRefsBeforeWriting() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let outsideURL = rootDir.deletingLastPathComponent().appendingPathComponent("outside.png")
+  try? FileManager.default.removeItem(at: outsideURL)
+  let data = try pngFixtureData()
+
+  do {
+    try store.saveData(data, captureId: UUID(), ref: "../outside.png")
+    Issue.record("Expected invalid reference error")
+  } catch MediaError.invalidReference {
+    #expect(!FileManager.default.fileExists(atPath: outsideURL.path))
+  } catch {
+    throw error
+  }
+}
+
 private func createTestImage(width: Int, height: Int) -> NSImage {
   let image = NSImage(size: NSSize(width: width, height: height))
   image.lockFocus()
@@ -160,4 +177,14 @@ private func createTestImage(width: Int, height: Int) -> NSImage {
   NSRect(x: 0, y: 0, width: width, height: height).fill()
   image.unlockFocus()
   return image
+}
+
+private func pngFixtureData() throws -> Data {
+  let image = createTestImage(width: 32, height: 32)
+  guard let tiff = image.tiffRepresentation,
+        let bitmap = NSBitmapImageRep(data: tiff),
+        let png = bitmap.representation(using: .png, properties: [:]) else {
+    throw MediaError.encodingFailed
+  }
+  return png
 }
