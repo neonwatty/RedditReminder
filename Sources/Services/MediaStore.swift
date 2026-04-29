@@ -70,13 +70,13 @@ final class MediaStore {
     return NSImage(contentsOf: url)
   }
 
-  func mediaURL(captureId: UUID, ref: String) -> URL {
+  private func mediaURL(captureId: UUID, ref: String) -> URL {
     rootDir
       .appendingPathComponent(captureId.uuidString)
       .appendingPathComponent(ref)
   }
 
-  func thumbnailURL(captureId: UUID, ref: String) -> URL {
+  private func thumbnailURL(captureId: UUID, ref: String) -> URL {
     rootDir
       .appendingPathComponent(captureId.uuidString)
       .appendingPathComponent("thumbnails")
