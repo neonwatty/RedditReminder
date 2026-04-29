@@ -23,6 +23,7 @@ struct CaptureWindowView: View {
     @State private var droppedFiles: [URL] = []
     @State private var existingMediaRefs: [String] = []
     @State private var removedMediaRefs: [String] = []
+    @State private var originalMediaRefs: [String] = []
     @State private var showPreview: Bool = false
     @State private var saveError: String?
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
@@ -46,7 +47,6 @@ struct CaptureWindowView: View {
                                             .clipShape(RoundedRectangle(cornerRadius: 3))
                                     }
                                     .buttonStyle(.plain)
-
                                     Button(action: { showPreview = true }) {
                                         Text("Preview")
                                             .font(.system(size: 9, weight: showPreview ? .semibold : .medium))
@@ -58,7 +58,6 @@ struct CaptureWindowView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
-
                             if showPreview {
                                 MarkdownPreviewView(text: text)
                                     .frame(minHeight: 72)
@@ -72,7 +71,6 @@ struct CaptureWindowView: View {
                             }
                         }
                     }
-
                     fieldSection("SUBREDDIT") {
                         CaptureSubredditPicker(
                             subreddits: subreddits,
@@ -110,7 +108,8 @@ struct CaptureWindowView: View {
                             droppedFiles: $droppedFiles,
                             captureId: editCaptureId,
                             existingRefs: $existingMediaRefs,
-                            removedRefs: $removedMediaRefs
+                            removedRefs: $removedMediaRefs,
+                            originalRefs: originalMediaRefs
                         )
                     }
 
@@ -215,6 +214,7 @@ struct CaptureWindowView: View {
             selectedSubreddits = Set(capture.subreddits.map(\.id))
             links = capture.links
             existingMediaRefs = capture.mediaRefs
+            originalMediaRefs = capture.mediaRefs
         }
     }
 }

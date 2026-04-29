@@ -29,7 +29,22 @@ import Testing
     #expect(removedRefs == ["first.png"])
 }
 
-@Test func captureMediaEditingRestoresRemovedRef() {
+@Test func captureMediaEditingRestoresRemovedRefToOriginalPosition() {
+    var existingRefs = ["second.png"]
+    var removedRefs = ["first.png"]
+
+    CaptureMediaEditing.restoreExisting(
+        ref: "first.png",
+        existingRefs: &existingRefs,
+        removedRefs: &removedRefs,
+        originalRefs: ["first.png", "second.png"]
+    )
+
+    #expect(existingRefs == ["first.png", "second.png"])
+    #expect(removedRefs.isEmpty)
+}
+
+@Test func captureMediaEditingAppendsRestoredRefWithoutOriginalPosition() {
     var existingRefs = ["second.png"]
     var removedRefs = ["first.png"]
 
@@ -50,7 +65,8 @@ import Testing
     CaptureMediaEditing.restoreExisting(
         ref: "first.png",
         existingRefs: &existingRefs,
-        removedRefs: &removedRefs
+        removedRefs: &removedRefs,
+        originalRefs: ["first.png", "second.png"]
     )
 
     #expect(existingRefs == ["first.png", "second.png"])
