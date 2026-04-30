@@ -65,14 +65,13 @@ enum RRuleHelper {
   private static func nextDailyOccurrences(
     after: Date, time: DateComponents, count: Int, cal: Calendar
   ) -> [Date] {
-    var results: [Date] = []
-    guard var day = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: after)) else { return [] }
+    guard count > 0 else { return [] }
 
-    for _ in 0..<count {
-      var c = cal.dateComponents([.year, .month, .day], from: day)
-      c.hour = time.hour
-      c.minute = time.minute
-      if let date = cal.date(from: c), date > after {
+    var results: [Date] = []
+    guard var day = cal.date(byAdding: .day, value: 0, to: cal.startOfDay(for: after)) else { return [] }
+
+    while results.count < count {
+      if let date = date(on: day, time: time, cal: cal), date > after {
         results.append(date)
       }
       guard let nextDay = cal.date(byAdding: .day, value: 1, to: day) else { break }
@@ -84,6 +83,8 @@ enum RRuleHelper {
   private static func nextWeeklyOccurrences(
     after: Date, targetWeekday: Int, time: DateComponents, count: Int, cal: Calendar
   ) -> [Date] {
+    guard count > 0 else { return [] }
+
     var results: [Date] = []
     let currentWeekday = cal.component(.weekday, from: after)
 
@@ -104,17 +105,31 @@ enum RRuleHelper {
 
     guard var candidate = cal.date(byAdding: .day, value: daysAhead, to: cal.startOfDay(for: after)) else { return [] }
 
-    for _ in 0..<count {
-      var c = cal.dateComponents([.year, .month, .day], from: candidate)
-      c.hour = time.hour
-      c.minute = time.minute
-      if let date = cal.date(from: c), date > after {
+    while results.count < count {
+      if let date = date(on: candidate, time: time, cal: cal), date > after {
         results.append(date)
       }
       guard let nextCandidate = cal.date(byAdding: .day, value: 7, to: candidate) else { break }
       candidate = nextCandidate
     }
     return results
+  }
+
+  private static func date(on day: Date, time: DateComponents, cal: Calendar) -> Date? {
+    var components = cal.dateComponents([.year, .month, .day], from: day)
+    components.hour = time.hour
+    components.minute = time.minute
+    guard let date = cal.date(from: components) else { return nil }
+
+    let resolved = cal.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+    guard resolved.year == components.year,
+          resolved.month == components.month,
+          resolved.day == components.day,
+          resolved.hour == components.hour,
+          resolved.minute == components.minute else {
+      return nil
+    }
+    return date
   }
 
   private enum ParsedRule {
@@ -129,13 +144,18 @@ enum RRuleHelper {
     }
 
     guard let freq = parts["FREQ"] else { return nil }
+    let supportedKeys: Set<String>
 
     switch freq {
     case "WEEKLY":
+      supportedKeys = ["FREQ", "BYDAY"]
+      guard Set(parts.keys).isSubset(of: supportedKeys) else { return nil }
       guard let byday = parts["BYDAY"] else { return nil }
       guard let weekday = weekdayNumber(byday) else { return nil }
       return .weekly(weekday)
     case "DAILY":
+      supportedKeys = ["FREQ"]
+      guard Set(parts.keys).isSubset(of: supportedKeys) else { return nil }
       return .daily
     default:
       return nil

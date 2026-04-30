@@ -1,81 +1,168 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct CaptureCardView: View {
-    let capture: Capture
-    var urgency: UrgencyLevel = .none
-    var onTap: (() -> Void)? = nil
-    var onMarkPosted: (() -> Void)? = nil
-    var onDelete: (() -> Void)? = nil
+  static let copyTextAccessibilityLabel = "Copy post text"
+  static let openHandoffAccessibilityLabel = "Prepare post handoff"
+  static let openSubmitAccessibilityLabel = "Open Reddit submit page"
+  static let markPostedAccessibilityLabel = "Mark as posted"
 
-    var body: some View {
-        Button(action: { onTap?() }) {
-            HStack(alignment: .top, spacing: 10) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(capture.text)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
+  let capture: Capture
+  var urgency: UrgencyLevel = .none
+  var nextWindowText: String? = nil
+  var onTap: (() -> Void)? = nil
+  var onOpenHandoff: (() -> Void)? = nil
+  var onCopyText: (() -> Void)? = nil
+  var onOpenSubmit: (() -> Void)? = nil
+  var onMarkPosted: (() -> Void)? = nil
+  var onDelete: (() -> Void)? = nil
 
-                    HStack(spacing: 6) {
-                        if let sub = capture.subreddits.first {
-                            Text(sub.name)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(AppColors.redditOrange)
-                        }
+  var body: some View {
+    HStack(alignment: .top, spacing: 10) {
+      Button(action: { onTap?() }) {
+        captureSummary
+      }
+      .buttonStyle(.plain)
+      .contentShape(Rectangle())
 
-                        if !capture.links.isEmpty || !capture.mediaRefs.isEmpty || capture.notes != nil {
-                            Text("·")
-                                .font(.system(size: 9))
-                                .foregroundStyle(.secondary)
-                            Text(attachmentSummary)
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
+      Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
-
-                if let dotColor = urgencyDotColor {
-                    Circle()
-                        .fill(dotColor)
-                        .frame(width: 6, height: 6)
-                        .padding(.top, 4)
-                }
-            }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 16)
-            .contentShape(Rectangle())
+      HStack(spacing: 8) {
+        if let onOpenHandoff {
+          actionButton(
+            systemName: "paperplane",
+            label: Self.openHandoffAccessibilityLabel,
+            action: onOpenHandoff
+          )
         }
-        .buttonStyle(.plain)
-        .contextMenu {
-            if let onTap { Button("Edit") { onTap() } }
-            if let onMarkPosted { Button("Mark as Posted") { onMarkPosted() } }
-            if onTap != nil || onMarkPosted != nil { Divider() }
-            if let onDelete { Button("Delete", role: .destructive) { onDelete() } }
+
+        if let onCopyText {
+          actionButton(
+            systemName: "doc.on.doc",
+            label: Self.copyTextAccessibilityLabel,
+            action: onCopyText
+          )
         }
+
+        if let onOpenSubmit {
+          actionButton(
+            systemName: "arrow.up.right.square",
+            label: Self.openSubmitAccessibilityLabel,
+            action: onOpenSubmit
+          )
+        }
+
+        if let onMarkPosted {
+          actionButton(
+            systemName: "checkmark.circle",
+            label: Self.markPostedAccessibilityLabel,
+            action: onMarkPosted
+          )
+        }
+
+        if let dotColor = urgencyDotColor {
+          Circle()
+            .fill(dotColor)
+            .frame(width: 7, height: 7)
+            .padding(.top, 6)
+            .help(UrgencyPresentation.label(for: urgency))
+            .accessibilityLabel(UrgencyPresentation.accessibilityLabel(for: urgency))
+        }
+      }
     }
-
-    private var urgencyDotColor: Color? {
-        switch urgency {
-        case .active, .high: AppColors.redditOrange
-        case .medium: Color.green
-        case .none, .low, .expired: nil
-        }
+    .padding(.vertical, 10)
+    .padding(.horizontal, 16)
+    .contextMenu {
+      if let onTap { Button("Edit") { onTap() } }
+      if let onOpenHandoff { Button("Prepare Post") { onOpenHandoff() } }
+      if let onCopyText { Button("Copy Post Text") { onCopyText() } }
+      if let onOpenSubmit { Button("Open Reddit Submit Page") { onOpenSubmit() } }
+      if let onMarkPosted { Button("Mark as Posted") { onMarkPosted() } }
+      if onTap != nil || onOpenHandoff != nil || onCopyText != nil || onOpenSubmit != nil
+        || onMarkPosted != nil
+      {
+        Divider()
+      }
+      if let onDelete { Button("Delete", role: .destructive) { onDelete() } }
     }
+  }
 
-    private var attachmentSummary: String {
-        var parts: [String] = []
-        if !capture.links.isEmpty {
-            parts.append("\(capture.links.count) link\(capture.links.count == 1 ? "" : "s")")
+  private var captureSummary: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      if let title = capture.title, !title.isEmpty {
+        Text(title)
+          .font(.system(size: 12, weight: .semibold))
+          .foregroundStyle(.primary)
+          .lineLimit(1)
+        Text(capture.text)
+          .font(.system(size: 11))
+          .foregroundStyle(.secondary)
+          .lineLimit(2)
+      } else {
+        Text(capture.text)
+          .font(.system(size: 12))
+          .foregroundStyle(.primary)
+          .lineLimit(2)
+      }
+
+      HStack(spacing: 6) {
+        if let sub = capture.subreddits.first {
+          Text(sub.name)
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(AppColors.redditOrange)
         }
-        if !capture.mediaRefs.isEmpty {
-            parts.append("\(capture.mediaRefs.count) image\(capture.mediaRefs.count == 1 ? "" : "s")")
+
+        if !capture.links.isEmpty || !capture.mediaRefs.isEmpty || capture.notes != nil {
+          Text("·")
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
+          Text(attachmentSummary)
+            .font(.system(size: 10))
+            .foregroundStyle(.secondary)
         }
-        if capture.notes != nil {
-            parts.append("notes")
+
+        if let nextWindowText {
+          Text("·")
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
+          Text(nextWindowText)
+            .font(.system(size: 10))
+            .foregroundStyle(.secondary)
         }
-        return parts.joined(separator: " · ")
+      }
     }
+  }
+
+  private func actionButton(systemName: String, label: String, action: @escaping () -> Void)
+    -> some View
+  {
+    Button(action: action) {
+      Image(systemName: systemName)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(.secondary)
+        .frame(width: 18, height: 18)
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .help(label)
+    .accessibilityLabel(label)
+  }
+
+  private var urgencyDotColor: Color? {
+    UrgencyPresentation.color(for: urgency)
+  }
+
+  private var attachmentSummary: String {
+    var parts: [String] = []
+    if !capture.links.isEmpty {
+      parts.append("\(capture.links.count) link\(capture.links.count == 1 ? "" : "s")")
+    }
+    if !capture.mediaRefs.isEmpty {
+      parts.append("\(capture.mediaRefs.count) image\(capture.mediaRefs.count == 1 ? "" : "s")")
+    }
+    if capture.notes != nil {
+      parts.append("notes")
+    }
+    return parts.joined(separator: " · ")
+  }
 }

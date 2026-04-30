@@ -17,6 +17,10 @@ struct PopoverToastView: View {
 }
 
 struct PopoverHeaderView: View {
+    static let settingsButtonTitle = "Settings"
+    static let preferencesAccessibilityLabel = "Open preferences"
+    static let newCaptureAccessibilityLabel = "New capture"
+
     @Binding var showPosted: Bool
     let onOpenPreferences: () -> Void
     let onNewCapture: () -> Void
@@ -33,12 +37,21 @@ struct PopoverHeaderView: View {
             }
             Spacer()
             Button(action: onOpenPreferences) {
-                Image(systemName: "gearshape").font(.system(size: 11)).foregroundStyle(.secondary)
-            }.buttonStyle(.plain)
+                Label(Self.settingsButtonTitle, systemImage: "gearshape")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help(Self.preferencesAccessibilityLabel)
+            .accessibilityLabel(Self.preferencesAccessibilityLabel)
             Button(action: onNewCapture) {
                 Image(systemName: "plus").font(.system(size: 14, weight: .light))
                     .foregroundStyle(AppColors.redditOrange)
-            }.buttonStyle(.plain).padding(.leading, 8)
+            }
+            .buttonStyle(.plain)
+            .help(Self.newCaptureAccessibilityLabel)
+            .accessibilityLabel(Self.newCaptureAccessibilityLabel)
+            .padding(.leading, 8)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

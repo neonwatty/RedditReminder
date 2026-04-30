@@ -4,6 +4,7 @@ import UserNotifications
 
 struct NotificationsTabView: View {
     let notificationService: NotificationService
+    var onAppStateChanged: AppRefreshAction = {}
     var notificationSettingsOpener: NotificationSettingsOpener = .system
 
     @AppStorage(SettingsKey.notificationsEnabled) private var notificationsEnabled: Bool = true
@@ -54,6 +55,15 @@ struct NotificationsTabView: View {
         .formStyle(.grouped)
         .padding(8)
         .task { await refreshPermissionStatus() }
+        .onChange(of: notificationsEnabled) {
+            onAppStateChanged()
+        }
+        .onChange(of: defaultLeadTimeMinutes) {
+            onAppStateChanged()
+        }
+        .onChange(of: nudgeWhenEmpty) {
+            onAppStateChanged()
+        }
     }
 
     private static func leadTimeLabel(_ minutes: Int) -> String {

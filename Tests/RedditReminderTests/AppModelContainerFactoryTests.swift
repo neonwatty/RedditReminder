@@ -17,3 +17,22 @@ import Testing
     let projects = try context.fetch(FetchDescriptor<Project>())
     #expect(projects.map(\.name) == ["Smoke"])
 }
+
+@Test @MainActor func appModelContainerFactoryPropagatesPersistentStoreFailure() throws {
+    enum StoreFailure: Error, Equatable {
+        case unavailable
+    }
+
+    #expect(throws: StoreFailure.unavailable) {
+        _ = try AppModelContainerFactory.makeContainer {
+            throw StoreFailure.unavailable
+        }
+    }
+}
+
+@Test func appModelContainerFactoryExposesAppSupportDirectory() {
+    let directory = AppModelContainerFactory.appSupportDirectory
+
+    #expect(directory.lastPathComponent == "RedditReminder")
+    #expect(directory.path.contains("Application Support"))
+}

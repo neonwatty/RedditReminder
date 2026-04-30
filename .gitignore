@@ -13,6 +13,9 @@ build/
 DerivedData/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
+*.xcresult/
+coverage.json
+coverage.txt
 
 # Node (semantic-release tooling only)
 node_modules/

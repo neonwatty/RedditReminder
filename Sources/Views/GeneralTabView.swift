@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct GeneralTabView: View {
+    var onAppStateChanged: AppRefreshAction = {}
+
     @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
     @AppStorage(SettingsKey.globalShortcutRegistrationFailed) private var shortcutRegistrationFailed = false
@@ -47,10 +49,6 @@ struct GeneralTabView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-
-            Section("Backup") {
-                BackupSectionView()
-            }
         }
         .formStyle(.grouped)
         .padding(8)
@@ -59,6 +57,9 @@ struct GeneralTabView: View {
         }
         .onChange(of: shortcutConfig) { _, newValue in
             KeyboardShortcutConfig.save(newValue)
+        }
+        .onChange(of: defaultLeadTimeMinutes) {
+            onAppStateChanged()
         }
     }
 

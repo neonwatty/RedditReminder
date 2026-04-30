@@ -41,6 +41,21 @@ import Testing
     #expect(next == nil)
 }
 
+@Test func unsupportedDailyIntervalReturnsNil() {
+    let next = RRuleHelper.nextOccurrence(rrule: "FREQ=DAILY;INTERVAL=2", after: Date())
+    #expect(next == nil)
+}
+
+@Test func unsupportedWeeklyUntilReturnsNil() {
+    let next = RRuleHelper.nextOccurrence(rrule: "FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T000000Z", after: Date())
+    #expect(next == nil)
+}
+
+@Test func unknownRRulePropertyReturnsNil() {
+    let next = RRuleHelper.nextOccurrence(rrule: "FREQ=DAILY;WKST=MO", after: Date())
+    #expect(next == nil)
+}
+
 @Test func countZeroReturnsEmpty() {
     let occurrences = RRuleHelper.nextOccurrences(
         rrule: "FREQ=DAILY",

@@ -182,6 +182,58 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
 }
 
+@Test @MainActor func appDelegateCoreWorkflowRefreshesBadgeAndNotificationsAfterMarkPosted() async throws {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(true, forKey: SettingsKey.notificationsEnabled)
+    defaults.set(true, forKey: SettingsKey.nudgeWhenEmpty)
+
+    let container = try ModelContainer(
+        for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let subreddit = Subreddit(name: "r/Test")
+    let event = SubredditEvent(
+        name: "Soon",
+        subreddit: subreddit,
+        oneOffDate: Date().addingTimeInterval(3600),
+        reminderLeadMinutes: 0
+    )
+    let capture = Capture(text: "Draft", subreddits: [subreddit])
+    context.insert(subreddit)
+    context.insert(event)
+    context.insert(capture)
+    try context.save()
+
+    let center = RecordingNotificationCenter()
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
+    delegate.modelContainer = container
+
+    delegate.runRefreshCycle()
+    await waitForNotificationRequests(in: center, count: 1)
+
+    #expect(delegate.menuBarController.badgeCount == 1)
+    #expect(delegate.menuBarController.isUrgent)
+    #expect(center.addedRequests.count == 1)
+    #expect(center.addedRequests.last?.content.body == "1 captures ready for r/Test")
+
+    delegate.handleNotificationAction(AppNotificationIdentifiers.markPostedAction, subredditName: "r/Test")
+    await waitForNotificationRequests(in: center, count: 3)
+
+    #expect(capture.status == .posted)
+    #expect(delegate.menuBarController.badgeCount == 0)
+    #expect(delegate.menuBarController.isUrgent)
+    #expect(center.addedRequests.suffix(2).map(\.identifier).contains(
+        AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)
+    ))
+    #expect(center.addedRequests.suffix(2).map(\.identifier).contains(
+        AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)
+    ))
+    #expect(center.addedRequests.suffix(2).contains { $0.content.body == "0 captures ready for r/Test" })
+}
+
 @MainActor
 private func makeSchedulingDelegate(
     center: RecordingNotificationCenter,
@@ -204,6 +256,16 @@ private func makeTemporaryDefaults() -> TemporaryDefaults {
     let suiteName = "AppDelegateSchedulingTests-\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suiteName)!
     return TemporaryDefaults(defaults: defaults, suiteName: suiteName)
+}
+
+private func waitForNotificationRequests(
+    in center: RecordingNotificationCenter,
+    count: Int
+) async {
+    for _ in 0..<50 {
+        if center.addedRequests.count >= count { return }
+        try? await Task.sleep(for: .milliseconds(10))
+    }
 }
 
 private func makeHeuristicsTestBundle() -> Bundle {

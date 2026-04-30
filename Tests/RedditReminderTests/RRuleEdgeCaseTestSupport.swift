@@ -23,3 +23,23 @@ func rruleEdgeLocalDate(_ y: Int, _ m: Int, _ d: Int, _ h: Int, _ min: Int) -> D
     c.timeZone = Calendar.current.timeZone
     return Calendar.current.date(from: c)!
 }
+
+func rruleDate(
+    _ y: Int,
+    _ m: Int,
+    _ d: Int,
+    _ h: Int,
+    _ min: Int,
+    timeZone: TimeZone
+) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = timeZone
+    return calendar.date(from: DateComponents(
+        timeZone: timeZone,
+        year: y,
+        month: m,
+        day: d,
+        hour: h,
+        minute: min
+    ))!
+}
