@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PostedListView: View {
-  static let openPostedLinkAccessibilityLabel = "Open posted link"
+  nonisolated static let openPostedLinkAccessibilityLabel = "Open posted link"
 
   let captures: [Capture]
   var onOpenPostedURL: ((Capture) -> Void)? = nil

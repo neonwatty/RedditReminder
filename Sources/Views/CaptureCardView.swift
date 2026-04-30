@@ -2,11 +2,11 @@ import SwiftData
 import SwiftUI
 
 struct CaptureCardView: View {
-  static let copyTextAccessibilityLabel = "Copy post text"
-  static let openHandoffAccessibilityLabel = "Prepare post handoff"
-  static let openSubmitAccessibilityLabel = "Open Reddit submit page"
-  static let markPostedAccessibilityLabel = "Mark as posted"
-  static let deleteAccessibilityLabel = "Delete capture"
+  nonisolated static let copyTextAccessibilityLabel = "Copy post text"
+  nonisolated static let openHandoffAccessibilityLabel = "Prepare post handoff"
+  nonisolated static let openSubmitAccessibilityLabel = "Open Reddit submit page"
+  nonisolated static let markPostedAccessibilityLabel = "Mark as posted"
+  nonisolated static let deleteAccessibilityLabel = "Delete capture"
 
   let capture: Capture
   var urgency: UrgencyLevel = .none

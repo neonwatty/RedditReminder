@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct PostHandoffView: View {
-  static let copyTitleAccessibilityLabel = "Copy post title"
-  static let copyBodyAccessibilityLabel = "Copy post body"
-  static let copyLinksAccessibilityLabel = "Copy post links"
-  static let copyAllAccessibilityLabel = "Copy full post text"
-  static let openSubmitAccessibilityLabel = "Open Reddit submit page"
+  nonisolated static let copyTitleAccessibilityLabel = "Copy post title"
+  nonisolated static let copyBodyAccessibilityLabel = "Copy post body"
+  nonisolated static let copyLinksAccessibilityLabel = "Copy post links"
+  nonisolated static let copyAllAccessibilityLabel = "Copy full post text"
+  nonisolated static let openSubmitAccessibilityLabel = "Open Reddit submit page"
 
   let capture: Capture
   var checklistItems: [String] = []

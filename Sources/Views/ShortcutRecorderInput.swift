@@ -9,7 +9,7 @@ struct ShortcutRecorderInput {
     case shortcut(KeyboardShortcutConfig)
   }
 
-  static let validationMessage = "Use Command, Control, or Option with a key."
+  nonisolated static let validationMessage = "Use Command, Control, or Option with a key."
 
   static func evaluate(keyCode: UInt16, modifiers: CGEventFlags, keyDisplay: String) -> Result {
     guard keyCode != UInt16(kVK_Escape) else { return .cancelled }
