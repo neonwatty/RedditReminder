@@ -89,7 +89,7 @@ extension PopoverContentView {
     do { try modelContext.save() } catch {
       NSLog("RedditReminder: mark posted failed: \(error)")
       modelContext.rollback()
-      showToastAfterReopen("Failed to mark as posted")
+      showToastAfterReopen("Failed to mark as posted", style: .error)
       return
     }
     onAppStateChanged()
@@ -134,7 +134,7 @@ extension PopoverContentView {
   @discardableResult
   func copyHandoffText(_ text: String, successMessage: String, emptyMessage: String) -> Bool {
     guard !text.isEmpty else {
-      showToast(emptyMessage)
+      showToast(emptyMessage, style: .error)
       return false
     }
 
@@ -142,14 +142,14 @@ extension PopoverContentView {
       showToast(successMessage)
       return true
     } else {
-      showToast("Copy failed")
+      showToast("Copy failed", style: .error)
       return false
     }
   }
 
   func openRedditSubmitPage(for capture: Capture) {
     guard let url = RedditPostingActions.submitURL(for: capture) else {
-      showToast("No subreddit selected")
+      showToast("No subreddit selected", style: .error)
       return
     }
 
@@ -161,7 +161,7 @@ extension PopoverContentView {
     if NSWorkspace.shared.open(url) {
       showToast("Copied text and opened Reddit")
     } else {
-      showToast("Could not open Reddit")
+      showToast("Could not open Reddit", style: .error)
     }
   }
 
@@ -171,7 +171,7 @@ extension PopoverContentView {
       let url = URL(string: postedURL),
       NSWorkspace.shared.open(url)
     else {
-      showToast("Could not open posted link")
+      showToast("Could not open posted link", style: .error)
       return
     }
     showToast("Opened posted link")
@@ -182,7 +182,7 @@ extension PopoverContentView {
     do { try modelContext.save() } catch {
       NSLog("RedditReminder: restore queued failed: \(error)")
       modelContext.rollback()
-      showToastAfterReopen("Restore failed")
+      showToastAfterReopen("Restore failed", style: .error)
       return
     }
     onAppStateChanged()
@@ -200,7 +200,7 @@ extension PopoverContentView {
         onAppStateChanged: onAppStateChanged
       )
     } catch {
-      showToastAfterReopen("Delete failed")
+      showToastAfterReopen("Delete failed", style: .error)
       return
     }
     showToastAfterReopen("Capture deleted")
@@ -210,23 +210,23 @@ extension PopoverContentView {
     try CapturePersistenceActions.saveMediaFiles(urls, captureId: captureId, mediaStore: mediaStore)
   }
 
-  func showToastAfterReopen(_ message: String) {
-    menuBarController.openPopover()
-    showToast(message, delay: .milliseconds(300))
-  }
-
-  func showToast(_ message: String, delay: Duration = .zero) {
+  func showToast(_ message: String, style: ToastStyle = .success, delay: Duration = .zero) {
     toastTask?.cancel()
     toastTask = Task {
       if delay > .zero {
         try? await Task.sleep(for: delay)
       }
       guard !Task.isCancelled else { return }
-      withAnimation(.easeInOut(duration: 0.2)) { toastMessage = message }
+      withAnimation(.easeInOut(duration: 0.2)) { toast = Toast(message: message, style: style) }
       try? await Task.sleep(for: .seconds(2))
       guard !Task.isCancelled else { return }
-      withAnimation(.easeInOut(duration: 0.2)) { toastMessage = nil }
+      withAnimation(.easeInOut(duration: 0.2)) { toast = nil }
     }
+  }
+
+  func showToastAfterReopen(_ message: String, style: ToastStyle = .success) {
+    menuBarController.openPopover()
+    showToast(message, style: style, delay: .milliseconds(300))
   }
 
   private func promptForPostedURL() -> (accepted: Bool, url: String?) {
