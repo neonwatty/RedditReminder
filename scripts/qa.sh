@@ -258,18 +258,28 @@ set_popover_state() {
 click_menu_item() {
     local menu_name="$1"
     local item_name="$2"
-    if ! osascript -e "
+    local attempt
+
+    for attempt in $(seq 1 3); do
+        if osascript -e "
 tell application \"System Events\"
     tell process \"$APP_NAME\"
+        key code 53
         set frontmost to true
-        click menu bar item \"$menu_name\" of menu bar 1
-        delay 0.1
+        perform action \"AXPress\" of menu bar item \"$menu_name\" of menu bar 1
+        delay 0.2
         click menu item \"$item_name\" of menu \"$menu_name\" of menu bar item \"$menu_name\" of menu bar 1
     end tell
 end tell
 " >/dev/null 2>&1; then
-        echo "  $(red WARNING): click_menu_item '$menu_name' > '$item_name' failed" >&2
-    fi
+            sleep "$WINDOW_WAIT"
+            return
+        fi
+
+        sleep "$POLL_INTERVAL"
+    done
+
+    echo "  $(red WARNING): click_menu_item '$menu_name' > '$item_name' failed" >&2
     sleep "$WINDOW_WAIT"
 }
 
@@ -498,6 +508,26 @@ printf "sentinel" | pbcopy
 click_menu_item "QA" "Copy First Queued Capture"
 copied_after_mark=$(pbpaste)
 assert_true "QA mark posted advances first queued capture" "$([ "$copied_after_mark" != "$copied_capture" ] && echo true || echo false)"
+
+click_menu_item "QA" "Create Test Capture"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture Title"
+created_title=$(pbpaste)
+assert_eq "QA create test capture title" "QA Workflow Capture" "$created_title"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture"
+created_capture=$(pbpaste)
+assert_eq "QA create test capture body" "Created by RedditReminder automated QA.
+
+https://example.com/reddit-reminder-qa" "$created_capture"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Submit URL"
+created_submit_url=$(pbpaste)
+assert_eq "QA create test capture submit URL" "https://www.reddit.com/r/SideProject/submit" "$created_submit_url"
+
+click_menu_item "QA" "Delete Test Captures"
 
 # ─── 10. Restart persistence ──────────────────────────────────────
 

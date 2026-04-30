@@ -24,6 +24,9 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     var onQACopyFirstQueuedCapture: (() -> Void)?
     var onQACopyFirstQueuedSubmitURL: (() -> Void)?
     var onQAMarkFirstQueuedCapturePosted: (() -> Void)?
+    var onQACreateTestCapture: (() -> Void)?
+    var onQADeleteTestCaptures: (() -> Void)?
+    var onQACopyFirstQueuedCaptureTitle: (() -> Void)?
   #endif
 
   func setup(popoverContent: some View) {
@@ -263,6 +266,14 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
       copyCaptureItem.target = self
       qaMenu.addItem(copyCaptureItem)
 
+      let copyTitleItem = NSMenuItem(
+        title: "Copy First Queued Capture Title",
+        action: #selector(handleQACopyFirstQueuedCaptureTitle),
+        keyEquivalent: ""
+      )
+      copyTitleItem.target = self
+      qaMenu.addItem(copyTitleItem)
+
       let copySubmitURLItem = NSMenuItem(
         title: "Copy First Queued Submit URL",
         action: #selector(handleQACopyFirstQueuedSubmitURL),
@@ -278,6 +289,24 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
       )
       markPostedItem.target = self
       qaMenu.addItem(markPostedItem)
+
+      qaMenu.addItem(NSMenuItem.separator())
+
+      let createTestCaptureItem = NSMenuItem(
+        title: "Create Test Capture",
+        action: #selector(handleQACreateTestCapture),
+        keyEquivalent: ""
+      )
+      createTestCaptureItem.target = self
+      qaMenu.addItem(createTestCaptureItem)
+
+      let deleteTestCapturesItem = NSMenuItem(
+        title: "Delete Test Captures",
+        action: #selector(handleQADeleteTestCaptures),
+        keyEquivalent: ""
+      )
+      deleteTestCapturesItem.target = self
+      qaMenu.addItem(deleteTestCapturesItem)
 
       mainMenu.addItem(qaMenuItem)
     #endif
@@ -304,6 +333,18 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
 
     @objc private func handleQAMarkFirstQueuedCapturePosted() {
       onQAMarkFirstQueuedCapturePosted?()
+    }
+
+    @objc private func handleQACreateTestCapture() {
+      onQACreateTestCapture?()
+    }
+
+    @objc private func handleQADeleteTestCaptures() {
+      onQADeleteTestCaptures?()
+    }
+
+    @objc private func handleQACopyFirstQueuedCaptureTitle() {
+      onQACopyFirstQueuedCaptureTitle?()
     }
   #endif
 }

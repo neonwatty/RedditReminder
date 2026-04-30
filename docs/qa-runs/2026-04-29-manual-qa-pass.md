@@ -115,3 +115,22 @@ Status: Partial pass with an automation blocker.
 
 - `make test` passed: 348 tests.
 - `./scripts/format-check.sh` passed.
+
+## Workflow 2 Follow-Up - Deterministic Posting Handoff
+
+Status: Passed with debug QA coverage.
+
+### Changes Verified
+
+- [x] Debug QA can create a deterministic queued capture titled `QA Workflow Capture`.
+- [x] Debug QA can copy the first queued capture title for verification.
+- [x] Debug QA can copy the deterministic capture body plus link.
+- [x] Debug QA can copy the deterministic Reddit submit URL.
+- [x] Seeded posting handoff still copies the original seeded body and submit URL.
+- [x] Mark Posted advances the first queued capture.
+
+### Automated Evidence
+
+```text
+ALL 26 TESTS PASSED
+```
