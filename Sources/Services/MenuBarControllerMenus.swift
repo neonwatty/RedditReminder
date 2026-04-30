@@ -57,6 +57,9 @@ extension MenuBarController {
       addQAItem("Copy First Queued Capture", #selector(handleQACopyFirstQueuedCapture), to: qaMenu)
       addQAItem(
         "Copy First Queued Capture Title", #selector(handleQACopyFirstQueuedCaptureTitle), to: qaMenu)
+      addQAItem(
+        "Copy First Queued Capture Summary", #selector(handleQACopyFirstQueuedCaptureSummary),
+        to: qaMenu)
       addQAItem("Copy First Queued Submit URL", #selector(handleQACopyFirstQueuedSubmitURL), to: qaMenu)
       addQAItem("Mark First Queued Capture Posted", #selector(handleQAMarkFirstQueuedCapturePosted), to: qaMenu)
       addQAItem(
@@ -69,6 +72,10 @@ extension MenuBarController {
 
       qaMenu.addItem(NSMenuItem.separator())
       addQAItem("Create Test Capture", #selector(handleQACreateTestCapture), to: qaMenu)
+      addQAItem("Create Title Only Test Capture", #selector(handleQACreateTitleOnlyTestCapture), to: qaMenu)
+      addQAItem(
+        "Create Multi Subreddit Test Capture", #selector(handleQACreateMultiSubredditTestCapture),
+        to: qaMenu)
       addQAItem("Delete Test Captures", #selector(handleQADeleteTestCaptures), to: qaMenu)
 
       mainMenu.addItem(qaMenuItem)
@@ -100,12 +107,24 @@ extension MenuBarController {
       onQACreateTestCapture?()
     }
 
+    @objc private func handleQACreateTitleOnlyTestCapture() {
+      onQACreateTitleOnlyTestCapture?()
+    }
+
+    @objc private func handleQACreateMultiSubredditTestCapture() {
+      onQACreateMultiSubredditTestCapture?()
+    }
+
     @objc private func handleQADeleteTestCaptures() {
       onQADeleteTestCaptures?()
     }
 
     @objc private func handleQACopyFirstQueuedCaptureTitle() {
       onQACopyFirstQueuedCaptureTitle?()
+    }
+
+    @objc private func handleQACopyFirstQueuedCaptureSummary() {
+      onQACopyFirstQueuedCaptureSummary?()
     }
 
     @objc private func handleQACopyFirstPostedCaptureSummary() {

@@ -34,6 +34,12 @@ Use this checklist after UX changes to verify the app still supports the full po
 - [ ] Confirm selected subreddit names appear.
 - [ ] Edit the capture if editing is available.
 - [ ] Confirm changes persist.
+- [ ] Create a title-only capture.
+- [ ] Confirm Save enables after selecting a subreddit.
+- [ ] Confirm the title-only queue row has no blank body gap.
+- [ ] Create a capture assigned to multiple subreddits.
+- [ ] Confirm the queue row shows the first destination plus the remaining count, such as `r/SideProject +1`.
+- [ ] Confirm the compact destination text does not crowd the action buttons.
 
 ## 3. Post Handoff
 
@@ -61,6 +67,11 @@ Use this checklist after UX changes to verify the app still supports the full po
 - [ ] Open the saved Reddit URL.
 - [ ] Repeat with another capture and leave the URL blank.
 - [ ] Confirm history records the post without showing a broken link.
+- [ ] Confirm posted rows show visible restore and delete actions.
+- [ ] Confirm the restore and delete icons are understandable and not too dense.
+- [ ] Restore a posted capture and confirm it returns to the queue.
+- [ ] Delete a posted capture and confirm the destructive confirmation/toast behavior feels correct.
+- [ ] Confirm posted rows for multi-subreddit captures show the first destination plus the remaining count.
 
 ## 5. Delete Safety
 
@@ -84,6 +95,8 @@ Use this checklist after UX changes to verify the app still supports the full po
 - [ ] Confirm readiness count updates.
 - [ ] Post or delete the capture.
 - [ ] Confirm readiness updates again.
+- [ ] Leave Planner open for over one minute.
+- [ ] Confirm the timer refresh does not cause visible flicker, scroll jumps, or row overlap.
 
 ## 7. Backup And Restore
 

@@ -49,30 +49,58 @@ import SwiftData
 
 // MARK: - canSave
 
-@Test func canSaveRequiresNonEmptyTextAndSubreddits() {
-    #expect(CaptureHelpers.canSave(text: "Hello", selectedSubredditCount: 1) == true)
+@Test func canSaveAcceptsNonEmptyTextAndSubreddits() {
+    #expect(CaptureHelpers.canSave(title: "", text: "Hello", selectedSubredditCount: 1))
 }
 
-@Test func canSaveRejectsEmptyText() {
-    #expect(CaptureHelpers.canSave(text: "", selectedSubredditCount: 1) == false)
+@Test func canSaveAcceptsNonEmptyTitleAndSubreddits() {
+    #expect(CaptureHelpers.canSave(title: "Hello", text: "", selectedSubredditCount: 1))
 }
 
-@Test func canSaveRejectsWhitespaceOnlyText() {
-    #expect(CaptureHelpers.canSave(text: "   \n  ", selectedSubredditCount: 1) == false)
+@Test func canSaveRejectsEmptyTitleAndText() {
+    #expect(CaptureHelpers.canSave(title: "", text: "", selectedSubredditCount: 1) == false)
+}
+
+@Test func canSaveRejectsWhitespaceOnlyTitleAndText() {
+    #expect(
+        CaptureHelpers.canSave(title: "  ", text: "   \n  ", selectedSubredditCount: 1) == false)
 }
 
 @Test func canSaveRejectsZeroSubreddits() {
-    #expect(CaptureHelpers.canSave(text: "Hello", selectedSubredditCount: 0) == false)
+    #expect(CaptureHelpers.canSave(title: "Title", text: "Hello", selectedSubredditCount: 0) == false)
 }
 
 @Test func canSaveRejectsBothEmpty() {
-    #expect(CaptureHelpers.canSave(text: "", selectedSubredditCount: 0) == false)
+    #expect(CaptureHelpers.canSave(title: "", text: "", selectedSubredditCount: 0) == false)
+}
+
+// MARK: - subredditSummary
+
+@Test func subredditSummaryReturnsNilForNoSubreddits() {
+    #expect(CaptureHelpers.subredditSummary(for: []) == nil)
+}
+
+@Test func subredditSummaryReturnsSingleSubredditName() {
+    #expect(CaptureHelpers.subredditSummary(for: [Subreddit(name: "r/SwiftUI")]) == "r/SwiftUI")
+}
+
+@Test func subredditSummaryUsesSortOrderAndRemainingCount() {
+    let later = Subreddit(name: "r/macOS", sortOrder: 2)
+    let first = Subreddit(name: "r/SideProject", sortOrder: 0)
+    let middle = Subreddit(name: "r/SwiftUI", sortOrder: 1)
+
+    #expect(CaptureHelpers.subredditSummary(for: [later, first, middle]) == "r/SideProject +2")
 }
 
 // MARK: - search
 
 @Test func captureSearchMatchesText() {
     let capture = Capture(text: "Launch notes")
+    #expect(CaptureHelpers.matchesSearch(capture, query: "launch"))
+}
+
+@Test func captureSearchMatchesTitle() {
+    let capture = Capture(title: "Launch notes", text: "")
     #expect(CaptureHelpers.matchesSearch(capture, query: "launch"))
 }
 

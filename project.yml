@@ -52,3 +52,33 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminderTests
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/RedditReminder.app/Contents/MacOS/RedditReminder
         BUNDLE_LOADER: $(TEST_HOST)
+
+  RedditReminderUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: Tests/RedditReminderUITests
+    dependencies:
+      - target: RedditReminder
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminderUITests
+
+schemes:
+  RedditReminder:
+    build:
+      targets:
+        RedditReminder: all
+    test:
+      targets:
+        - RedditReminderTests
+
+  RedditReminderUITests:
+    build:
+      targets:
+        RedditReminder: all
+        RedditReminderUITests: [test]
+    test:
+      targets:
+        - RedditReminderUITests

@@ -20,20 +20,39 @@ enum CaptureHelpers {
     }
 
     /// Validates that a capture form has the minimum required fields.
-    static func canSave(text: String, selectedSubredditCount: Int) -> Bool {
-        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedSubredditCount > 0
+    static func canSave(title: String, text: String, selectedSubredditCount: Int) -> Bool {
+        let hasTitle = !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return (hasTitle || hasText) && selectedSubredditCount > 0
+    }
+
+    static func subredditSummary(for subreddits: [Subreddit]) -> String? {
+        let names = subreddits
+            .sorted {
+                if $0.sortOrder == $1.sortOrder {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+                return $0.sortOrder < $1.sortOrder
+            }
+            .map(\.name)
+        guard let first = names.first else { return nil }
+        return names.count == 1 ? first : "\(first) +\(names.count - 1)"
     }
 
     static func matchesSearch(_ capture: Capture, query: String) -> Bool {
         let normalized = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !normalized.isEmpty else { return true }
 
-        let fields = [
+        var fields: [String] = [
+            capture.title ?? "",
             capture.text,
             capture.notes ?? "",
             capture.project?.name ?? "",
-            capture.project?.projectDescription ?? ""
-        ] + capture.links + capture.mediaRefs + capture.subreddits.map(\.name)
+            capture.project?.projectDescription ?? "",
+        ]
+        fields.append(contentsOf: capture.links)
+        fields.append(contentsOf: capture.mediaRefs)
+        fields.append(contentsOf: capture.subreddits.map(\.name))
 
         return fields.contains { $0.lowercased().contains(normalized) }
     }

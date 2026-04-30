@@ -9,3 +9,9 @@ import Testing
   #expect(CaptureCardView.markPostedAccessibilityLabel == "Mark as posted")
   #expect(CaptureCardView.deleteAccessibilityLabel == "Delete capture")
 }
+
+@Test func postedListExposesVisibleRecoveryActionAccessibilityLabels() {
+  #expect(PostedListView.openPostedLinkAccessibilityLabel == "Open posted link")
+  #expect(PostedListView.restoreAccessibilityLabel == "Move posted capture back to queue")
+  #expect(PostedListView.deleteAccessibilityLabel == "Delete posted capture")
+}

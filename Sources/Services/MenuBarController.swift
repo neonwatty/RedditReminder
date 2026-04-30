@@ -26,8 +26,11 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     var onQAMarkFirstQueuedCapturePosted: (() -> Void)?
     var onQAMarkFirstQueuedCapturePostedWithURL: (() -> Void)?
     var onQACreateTestCapture: (() -> Void)?
+    var onQACreateTitleOnlyTestCapture: (() -> Void)?
+    var onQACreateMultiSubredditTestCapture: (() -> Void)?
     var onQADeleteTestCaptures: (() -> Void)?
     var onQACopyFirstQueuedCaptureTitle: (() -> Void)?
+    var onQACopyFirstQueuedCaptureSummary: (() -> Void)?
     var onQACopyFirstPostedCaptureSummary: (() -> Void)?
     var onQACopyFirstPostedURL: (() -> Void)?
   #endif

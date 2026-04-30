@@ -44,7 +44,7 @@ struct CaptureWindowView: View {
               .accessibilityIdentifier("captureWindow.title")
           }
 
-          fieldSection("CAPTURE TEXT") {
+          fieldSection("CAPTURE TEXT", optional: true) {
             VStack(spacing: 6) {
               HStack {
                 Spacer()
@@ -204,7 +204,11 @@ struct CaptureWindowView: View {
   }
 
   private var canSave: Bool {
-    CaptureHelpers.canSave(text: text, selectedSubredditCount: selectedSubreddits.count)
+    CaptureHelpers.canSave(
+      title: title,
+      text: text,
+      selectedSubredditCount: selectedSubreddits.count
+    )
   }
   private func save() {
     guard canSave else { return }

@@ -35,6 +35,7 @@ The global shortcut requires macOS Accessibility permission for the terminal/app
 ```sh
 make generate
 make test
+make ui-test
 make build-debug
 make install-debug
 ```
@@ -46,6 +47,7 @@ make qa
 ```
 
 The QA script uses System Events and CGWindowList, so the terminal needs Accessibility and Screen Recording permissions.
+The UI test target exercises native menu/window smoke coverage. It requires macOS UI automation permission for Xcode or the invoking terminal, and a signing setup that can run XCTest UI bundles.
 
 ## Notes
 

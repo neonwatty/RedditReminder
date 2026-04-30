@@ -67,11 +67,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
       menuBarController.onQACreateTestCapture = { [weak self] in
         self?.qaCreateTestCapture()
       }
+      menuBarController.onQACreateTitleOnlyTestCapture = { [weak self] in
+        self?.qaCreateTitleOnlyTestCapture()
+      }
+      menuBarController.onQACreateMultiSubredditTestCapture = { [weak self] in
+        self?.qaCreateMultiSubredditTestCapture()
+      }
       menuBarController.onQADeleteTestCaptures = { [weak self] in
         self?.qaDeleteTestCaptures()
       }
       menuBarController.onQACopyFirstQueuedCaptureTitle = { [weak self] in
         self?.qaCopyFirstQueuedCaptureTitle()
+      }
+      menuBarController.onQACopyFirstQueuedCaptureSummary = { [weak self] in
+        self?.qaCopyFirstQueuedCaptureSummary()
       }
       menuBarController.onQACopyFirstPostedCaptureSummary = { [weak self] in
         self?.qaCopyFirstPostedCaptureSummary()

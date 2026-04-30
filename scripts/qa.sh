@@ -562,6 +562,33 @@ Posted URL: <none>" "$posted_without_url_summary"
 
 click_menu_item "QA" "Delete Test Captures"
 
+click_menu_item "QA" "Create Title Only Test Capture"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture Summary"
+title_only_summary=$(pbpaste)
+assert_eq "QA title-only queued summary" "Title: QA Title Only Capture
+Body: <none>
+Subreddit: r/SideProject" "$title_only_summary"
+
+click_menu_item "QA" "Create Multi Subreddit Test Capture"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture Summary"
+multi_subreddit_summary=$(pbpaste)
+assert_eq "QA multi-subreddit queued summary" "Title: QA Multi Subreddit Capture
+Body: Created to verify compact destination summaries.
+Subreddit: r/SideProject +1" "$multi_subreddit_summary"
+
+click_menu_item "QA" "Mark First Queued Capture Posted"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted Capture Summary"
+multi_posted_summary=$(pbpaste)
+assert_eq "QA multi-subreddit posted summary" "Title: QA Multi Subreddit Capture
+Body: Created to verify compact destination summaries.
+Subreddit: r/SideProject +1
+Posted URL: <none>" "$multi_posted_summary"
+
+click_menu_item "QA" "Delete Test Captures"
+
 # ─── 10. Restart persistence ──────────────────────────────────────
 
 echo ""
