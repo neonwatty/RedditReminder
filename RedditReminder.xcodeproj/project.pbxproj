@@ -15,6 +15,7 @@
 		090F9D3B18C2B5C92FB9F5B7 /* EdgeCaseTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A4C24B7D668794706240A8 /* EdgeCaseTestSupport.swift */; };
 		0A9365CFB7B1AB4C02CF61DB /* SubredditPeakSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C20E318FF03A914D88CB08 /* SubredditPeakSelection.swift */; };
 		0CA7BC0B1883C66A529F0E2A /* GeneralTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E8FB1218EE842B7D518F5F /* GeneralTabView.swift */; };
+		0D450A66EF492AF4779AD92B /* PostHandoffViewHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB15AEFC17C70DC66CA4A05 /* PostHandoffViewHelpers.swift */; };
 		0F535262B2F03B867CDD5510 /* BackupMappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9884E228CA7B8C32C3669A85 /* BackupMappers.swift */; };
 		0FED0DF0846890CB2DEE1F53 /* PostHandoffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303FB325A99764563E4FB2AC /* PostHandoffView.swift */; };
 		1014F4F2B82E8F900DAB9773 /* CaptureHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACDA0450B3C93FB0CCB13A7 /* CaptureHelpersTests.swift */; };
@@ -94,6 +95,7 @@
 		73DA1B8D3DA7E2410FAD189D /* ProjectsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F66F6C53D3F37EBF882C677 /* ProjectsTabView.swift */; };
 		75C175CE268B7C7B29D8E3F2 /* TimingEngineUrgencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C77B4031AB91C412094FA2C /* TimingEngineUrgencyTests.swift */; };
 		7AB3BE6F02539F0147F73E23 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5124BE8F9D4637788D2557 /* NotificationServiceTests.swift */; };
+		8125DD9D788F57B8CA1BA791 /* MenuBarControllerMenus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59CDE29A1F978DF7DFBC7661 /* MenuBarControllerMenus.swift */; };
 		81C26D97123D840A9130AF7E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB4E56FCDA7A1CB1F24566D /* Constants.swift */; };
 		8315863469F9A314E30B6344 /* EventBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB005E503FDAD90271DB0AE /* EventBannerView.swift */; };
 		87AE17FDA4B3C169B340C8AA /* SubredditEventCRUDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFAC40DD76013F2B88EEC64 /* SubredditEventCRUDTests.swift */; };
@@ -212,6 +214,7 @@
 		560C97A16044A98AB4D11D63 /* HeuristicsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeuristicsStoreTests.swift; sourceTree = "<group>"; };
 		56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		599273192FBCFDD93D1241B0 /* Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project.swift; sourceTree = "<group>"; };
+		59CDE29A1F978DF7DFBC7661 /* MenuBarControllerMenus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarControllerMenus.swift; sourceTree = "<group>"; };
 		5AD560BCF0F23A397D3EF341 /* ProjectPersistenceActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceActions.swift; sourceTree = "<group>"; };
 		5C958510062F2EAA969645F8 /* PreferencesViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewTests.swift; sourceTree = "<group>"; };
 		5CCEA3C12E0C9865DA5A4656 /* SubredditRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditRow.swift; sourceTree = "<group>"; };
@@ -283,6 +286,7 @@
 		D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainerFactory.swift; sourceTree = "<group>"; };
 		D5570C2EF1DD747B43C6F4ED /* PopoverChromeViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverChromeViewTests.swift; sourceTree = "<group>"; };
 		D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistenceTests.swift; sourceTree = "<group>"; };
+		DCB15AEFC17C70DC66CA4A05 /* PostHandoffViewHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHandoffViewHelpers.swift; sourceTree = "<group>"; };
 		E02E746452EDD7B17443C493 /* CaptureCRUDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCRUDTests.swift; sourceTree = "<group>"; };
 		E1A24B20995755A25E411F4F /* UrgencyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgencyPresentation.swift; sourceTree = "<group>"; };
 		E2C4CE3383CDFF1A7E03C00D /* PopoverChromeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverChromeViews.swift; sourceTree = "<group>"; };
@@ -461,6 +465,7 @@
 				6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */,
 				AE1122ADEB6045619C303C31 /* MediaStore.swift */,
 				B58A523CACB82BF88E46FD3E /* MenuBarController.swift */,
+				59CDE29A1F978DF7DFBC7661 /* MenuBarControllerMenus.swift */,
 				4B9511753E51E30A7111B248 /* NotificationScheduler.swift */,
 				050BB3D18ECE13E70E7CED42 /* NotificationService.swift */,
 				4F6BE81712D79E2725C4FC11 /* TimingEngine.swift */,
@@ -503,6 +508,7 @@
 				07A63D3714291E8917CA1694 /* PopoverContentView.swift */,
 				1C701C57FBE1AFC895E8CF40 /* PostedListView.swift */,
 				303FB325A99764563E4FB2AC /* PostHandoffView.swift */,
+				DCB15AEFC17C70DC66CA4A05 /* PostHandoffViewHelpers.swift */,
 				28906380DECDA56AD0DDE325 /* PreferencesView.swift */,
 				1F66F6C53D3F37EBF882C677 /* ProjectsTabView.swift */,
 				BB9D18BDF63A57734A4A6C7A /* ShortcutRecorderInput.swift */,
@@ -729,6 +735,7 @@
 				CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */,
 				59D5CBD905672F86F0295673 /* MediaStore.swift in Sources */,
 				474176ACD33799B0C433D8C5 /* MenuBarController.swift in Sources */,
+				8125DD9D788F57B8CA1BA791 /* MenuBarControllerMenus.swift in Sources */,
 				73D1EA6EF5BCBC4321589A5D /* NotificationScheduler.swift in Sources */,
 				42EF49CDAB403FE9D2C36047 /* NotificationService.swift in Sources */,
 				AF81908B71E4E383D63467DD /* NotificationSettingsOpener.swift in Sources */,
@@ -743,6 +750,7 @@
 				EA437C7902BEFE4C1F701586 /* PopoverContentView.swift in Sources */,
 				2D2A3ADE0E9F1C8BE10A948A /* PopoverTimingPresentation.swift in Sources */,
 				0FED0DF0846890CB2DEE1F53 /* PostHandoffView.swift in Sources */,
+				0D450A66EF492AF4779AD92B /* PostHandoffViewHelpers.swift in Sources */,
 				3B26AC6E0CA725948AA2CA74 /* PostedListView.swift in Sources */,
 				62761A56A55BD30D9D7FC87E /* PostingChecklistItems.swift in Sources */,
 				B64C0B3A5EF8D5A8827074C1 /* PreferencesView.swift in Sources */,
