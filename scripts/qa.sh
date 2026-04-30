@@ -527,6 +527,31 @@ click_menu_item "QA" "Copy First Queued Submit URL"
 created_submit_url=$(pbpaste)
 assert_eq "QA create test capture submit URL" "https://www.reddit.com/r/SideProject/submit" "$created_submit_url"
 
+click_menu_item "QA" "Mark First Queued Capture Posted With URL"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted Capture Summary"
+posted_summary=$(pbpaste)
+assert_eq "QA posted summary with URL" "Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/" "$posted_summary"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted URL"
+posted_url=$(pbpaste)
+assert_eq "QA posted URL copied" "https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/" "$posted_url"
+
+sleep "$ACTION_WAIT"
+click_menu_item "QA" "Create Test Capture"
+click_menu_item "QA" "Mark First Queued Capture Posted"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted Capture Summary"
+posted_without_url_summary=$(pbpaste)
+assert_eq "QA posted summary without URL" "Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: <none>" "$posted_without_url_summary"
+
 click_menu_item "QA" "Delete Test Captures"
 
 # ─── 10. Restart persistence ──────────────────────────────────────

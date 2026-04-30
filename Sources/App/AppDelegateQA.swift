@@ -6,6 +6,8 @@ import SwiftData
     static let qaTestCaptureTitle = "QA Workflow Capture"
     static let qaTestCaptureText = "Created by RedditReminder automated QA."
     static let qaTestCaptureLink = "https://example.com/reddit-reminder-qa"
+    static let qaPostedURL =
+      "https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/"
 
     @discardableResult
     func qaCreateTestCapture() -> Bool {
@@ -94,12 +96,12 @@ import SwiftData
     }
 
     @discardableResult
-    func qaMarkFirstQueuedCapturePosted() -> Bool {
+    func qaMarkFirstQueuedCapturePosted(postedURL: String? = nil) -> Bool {
       guard let container = modelContainer,
         let capture = qaFirstQueuedCapture()
       else { return false }
 
-      capture.markAsPosted()
+      capture.markAsPosted(postedURL: postedURL)
       do {
         try container.mainContext.save()
         runRefreshCycle()
@@ -109,6 +111,39 @@ import SwiftData
         NSLog("RedditReminder: QA mark posted failed: \(error)")
         return false
       }
+    }
+
+    func qaMarkFirstQueuedCapturePostedWithURL() -> Bool {
+      qaMarkFirstQueuedCapturePosted(postedURL: Self.qaPostedURL)
+    }
+
+    @discardableResult
+    func qaCopyFirstPostedCaptureSummary(
+      to pasteboard: any PasteboardWriting = NSPasteboard.general
+    )
+      -> Bool
+    {
+      guard let capture = qaFirstPostedCapture() else { return false }
+      let title = capture.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let subreddit = capture.subreddits.first?.name ?? "No subreddit"
+      let postedURL = capture.postedURL?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let summary = [
+        "Title: \((title?.isEmpty == false) ? title! : "<none>")",
+        "Body: \(capture.text.trimmingCharacters(in: .whitespacesAndNewlines))",
+        "Subreddit: \(subreddit)",
+        "Posted URL: \((postedURL?.isEmpty == false) ? postedURL! : "<none>")",
+      ].joined(separator: "\n")
+      return RedditPostingActions.copyText(summary, to: pasteboard)
+    }
+
+    @discardableResult
+    func qaCopyFirstPostedURL(to pasteboard: any PasteboardWriting = NSPasteboard.general) -> Bool {
+      guard
+        let url = qaFirstPostedCapture()?.postedURL?.trimmingCharacters(
+          in: .whitespacesAndNewlines),
+        !url.isEmpty
+      else { return false }
+      return RedditPostingActions.copyText(url, to: pasteboard)
     }
 
     func qaFirstQueuedCapture() -> Capture? {
@@ -123,6 +158,22 @@ import SwiftData
           .first
       } catch {
         NSLog("RedditReminder: QA fetch first queued capture failed: \(error)")
+        return nil
+      }
+    }
+
+    func qaFirstPostedCapture() -> Capture? {
+      guard let container = modelContainer else { return nil }
+
+      do {
+        let captures = try container.mainContext.fetch(FetchDescriptor<Capture>())
+        return
+          captures
+          .filter { $0.status == .posted }
+          .sorted { ($0.postedAt ?? .distantPast) > ($1.postedAt ?? .distantPast) }
+          .first
+      } catch {
+        NSLog("RedditReminder: QA fetch first posted capture failed: \(error)")
         return nil
       }
     }

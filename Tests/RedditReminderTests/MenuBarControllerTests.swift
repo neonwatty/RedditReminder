@@ -204,6 +204,14 @@ struct MenuBarControllerTests {
       #expect(called == true)
     }
 
+    @Test func handleQAMarkFirstQueuedCapturePostedWithURLInvokesCallback() {
+      let controller = MenuBarController()
+      var called = false
+      controller.onQAMarkFirstQueuedCapturePostedWithURL = { called = true }
+      controller.perform(NSSelectorFromString("handleQAMarkFirstQueuedCapturePostedWithURL"))
+      #expect(called == true)
+    }
+
     @Test func handleQACreateTestCaptureInvokesCallback() {
       let controller = MenuBarController()
       var called = false
@@ -225,6 +233,22 @@ struct MenuBarControllerTests {
       var called = false
       controller.onQACopyFirstQueuedCaptureTitle = { called = true }
       controller.perform(NSSelectorFromString("handleQACopyFirstQueuedCaptureTitle"))
+      #expect(called == true)
+    }
+
+    @Test func handleQACopyFirstPostedCaptureSummaryInvokesCallback() {
+      let controller = MenuBarController()
+      var called = false
+      controller.onQACopyFirstPostedCaptureSummary = { called = true }
+      controller.perform(NSSelectorFromString("handleQACopyFirstPostedCaptureSummary"))
+      #expect(called == true)
+    }
+
+    @Test func handleQACopyFirstPostedURLInvokesCallback() {
+      let controller = MenuBarController()
+      var called = false
+      controller.onQACopyFirstPostedURL = { called = true }
+      controller.perform(NSSelectorFromString("handleQACopyFirstPostedURL"))
       #expect(called == true)
     }
   #endif

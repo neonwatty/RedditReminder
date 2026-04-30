@@ -6,6 +6,7 @@ struct CaptureCardView: View {
   static let openHandoffAccessibilityLabel = "Prepare post handoff"
   static let openSubmitAccessibilityLabel = "Open Reddit submit page"
   static let markPostedAccessibilityLabel = "Mark as posted"
+  static let deleteAccessibilityLabel = "Delete capture"
 
   let capture: Capture
   var urgency: UrgencyLevel = .none
@@ -57,6 +58,14 @@ struct CaptureCardView: View {
             systemName: "checkmark.circle",
             label: Self.markPostedAccessibilityLabel,
             action: onMarkPosted
+          )
+        }
+
+        if let onDelete {
+          actionButton(
+            systemName: "trash",
+            label: Self.deleteAccessibilityLabel,
+            action: onDelete
           )
         }
 
@@ -147,6 +156,7 @@ struct CaptureCardView: View {
     .buttonStyle(.plain)
     .help(label)
     .accessibilityLabel(label)
+    .accessibilityIdentifier("captureCard.\(label.identifierSuffix)")
   }
 
   private var urgencyDotColor: Color? {
@@ -165,5 +175,13 @@ struct CaptureCardView: View {
       parts.append("notes")
     }
     return parts.joined(separator: " · ")
+  }
+}
+
+extension String {
+  fileprivate var identifierSuffix: String {
+    lowercased()
+      .split { !$0.isLetter && !$0.isNumber }
+      .joined(separator: ".")
   }
 }

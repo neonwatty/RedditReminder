@@ -81,6 +81,16 @@ import UserNotifications
     #expect(fixture.unrelated.status == .posted)
   }
 
+  @Test @MainActor func appDelegateQAMarksFirstQueuedCapturePostedWithURL() throws {
+    let fixture = try makeCaptureFixture()
+    let delegate = makeNotificationActionDelegate()
+    delegate.modelContainer = fixture.container
+
+    #expect(delegate.qaMarkFirstQueuedCapturePostedWithURL())
+    #expect(fixture.unrelated.status == .posted)
+    #expect(fixture.unrelated.postedURL == AppDelegate.qaPostedURL)
+  }
+
   @Test @MainActor func appDelegateQACreatesAndDeletesTestCapture() throws {
     let fixture = try makeCaptureFixture()
     let delegate = makeNotificationActionDelegate()
@@ -111,6 +121,38 @@ import UserNotifications
 
     #expect(delegate.qaCopyFirstQueuedCaptureTitle(to: pasteboard))
     #expect(pasteboard.storedString == "Newest queued title")
+  }
+
+  @Test @MainActor func appDelegateQACopiesFirstPostedCaptureSummary() throws {
+    let fixture = try makeCaptureFixture()
+    let pasteboard = NotificationActionMockPasteboard()
+    let delegate = makeNotificationActionDelegate()
+    delegate.modelContainer = fixture.container
+    fixture.alreadyPosted.title = "Posted title"
+    fixture.alreadyPosted.postedURL = AppDelegate.qaPostedURL
+    try fixture.container.mainContext.save()
+
+    #expect(delegate.qaCopyFirstPostedCaptureSummary(to: pasteboard))
+    #expect(
+      pasteboard.storedString
+        == """
+        Title: Posted title
+        Body: Posted
+        Subreddit: r/Test
+        Posted URL: \(AppDelegate.qaPostedURL)
+        """)
+  }
+
+  @Test @MainActor func appDelegateQACopiesFirstPostedURL() throws {
+    let fixture = try makeCaptureFixture()
+    let pasteboard = NotificationActionMockPasteboard()
+    let delegate = makeNotificationActionDelegate()
+    delegate.modelContainer = fixture.container
+    fixture.alreadyPosted.postedURL = AppDelegate.qaPostedURL
+    try fixture.container.mainContext.save()
+
+    #expect(delegate.qaCopyFirstPostedURL(to: pasteboard))
+    #expect(pasteboard.storedString == AppDelegate.qaPostedURL)
   }
 #endif
 

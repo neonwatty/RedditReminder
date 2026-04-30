@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PostedListView: View {
+  static let openPostedLinkAccessibilityLabel = "Open posted link"
+
   let captures: [Capture]
   var onOpenPostedURL: ((Capture) -> Void)? = nil
   var onRestore: ((Capture) -> Void)? = nil
@@ -58,14 +60,16 @@ struct PostedListView: View {
       HStack(spacing: 8) {
         if let onOpenPostedURL, capture.postedURL != nil {
           Button(action: { onOpenPostedURL(capture) }) {
-            Image(systemName: "arrow.up.right.square")
+            Label(Self.openPostedLinkAccessibilityLabel, systemImage: "arrow.up.right.square")
+              .labelStyle(.iconOnly)
               .font(.system(size: 12, weight: .medium))
               .foregroundStyle(.secondary)
               .frame(width: 18, height: 18)
           }
           .buttonStyle(.plain)
-          .help("Open posted link")
-          .accessibilityLabel("Open posted link")
+          .help(Self.openPostedLinkAccessibilityLabel)
+          .accessibilityLabel(Self.openPostedLinkAccessibilityLabel)
+          .accessibilityIdentifier("postedList.openPostedLink")
         }
         Image(systemName: "checkmark.circle.fill")
           .font(.system(size: 12))

@@ -206,3 +206,56 @@ Crash changed: no
 
 - `make test` passed: 353 tests.
 - `./scripts/qa.sh` passed: 26 tests.
+
+## Workflow 4 - Mark Posted
+
+Status: In progress, with automation coverage added and passing.
+
+### Steps Exercised
+
+- [x] Marked a deterministic queued capture as posted with a saved Reddit URL through the debug QA menu.
+- [x] Confirmed the posted record summary includes title, body, subreddit, and saved URL.
+- [x] Copied the saved posted URL for verification.
+- [x] Marked another deterministic queued capture as posted with no URL.
+- [x] Confirmed posted history records the capture without showing a broken link value.
+- [ ] Complete a visual/manual pass through the popover Posted tab.
+- [ ] Open the saved Reddit URL from the posted-history UI.
+
+### Evidence
+
+Posted summary with URL:
+
+```text
+Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/
+```
+
+Posted summary without URL:
+
+```text
+Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: <none>
+```
+
+### Findings
+
+1. Posted-history workflow needed stable automation hooks.
+
+   Added debug QA menu actions for marking a deterministic capture posted with a URL, copying the newest posted summary, and copying the newest posted URL.
+
+2. Popover posted/queue controls needed stable identifiers.
+
+   Added accessibility identifiers for the Queue and Posted segmented controls so the posted-history view can be targeted in follow-up manual automation.
+
+3. Posted link and capture card actions needed stable labels/identifiers.
+
+   Posted-link opening now exposes a named icon-only button, and capture card actions expose identifiers. A visible delete action was also added to capture cards for Workflow 5.
+
+### Verification After Adjustments
+
+- `make test` passed: 359 tests.
+- `./scripts/qa.sh` passed: 29 tests.

@@ -24,9 +24,12 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     var onQACopyFirstQueuedCapture: (() -> Void)?
     var onQACopyFirstQueuedSubmitURL: (() -> Void)?
     var onQAMarkFirstQueuedCapturePosted: (() -> Void)?
+    var onQAMarkFirstQueuedCapturePostedWithURL: (() -> Void)?
     var onQACreateTestCapture: (() -> Void)?
     var onQADeleteTestCaptures: (() -> Void)?
     var onQACopyFirstQueuedCaptureTitle: (() -> Void)?
+    var onQACopyFirstPostedCaptureSummary: (() -> Void)?
+    var onQACopyFirstPostedURL: (() -> Void)?
   #endif
 
   func setup(popoverContent: some View) {
@@ -290,6 +293,30 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
       markPostedItem.target = self
       qaMenu.addItem(markPostedItem)
 
+      let markPostedWithURLItem = NSMenuItem(
+        title: "Mark First Queued Capture Posted With URL",
+        action: #selector(handleQAMarkFirstQueuedCapturePostedWithURL),
+        keyEquivalent: ""
+      )
+      markPostedWithURLItem.target = self
+      qaMenu.addItem(markPostedWithURLItem)
+
+      let copyPostedSummaryItem = NSMenuItem(
+        title: "Copy First Posted Capture Summary",
+        action: #selector(handleQACopyFirstPostedCaptureSummary),
+        keyEquivalent: ""
+      )
+      copyPostedSummaryItem.target = self
+      qaMenu.addItem(copyPostedSummaryItem)
+
+      let copyPostedURLItem = NSMenuItem(
+        title: "Copy First Posted URL",
+        action: #selector(handleQACopyFirstPostedURL),
+        keyEquivalent: ""
+      )
+      copyPostedURLItem.target = self
+      qaMenu.addItem(copyPostedURLItem)
+
       qaMenu.addItem(NSMenuItem.separator())
 
       let createTestCaptureItem = NSMenuItem(
@@ -335,6 +362,10 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
       onQAMarkFirstQueuedCapturePosted?()
     }
 
+    @objc private func handleQAMarkFirstQueuedCapturePostedWithURL() {
+      onQAMarkFirstQueuedCapturePostedWithURL?()
+    }
+
     @objc private func handleQACreateTestCapture() {
       onQACreateTestCapture?()
     }
@@ -345,6 +376,14 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
 
     @objc private func handleQACopyFirstQueuedCaptureTitle() {
       onQACopyFirstQueuedCaptureTitle?()
+    }
+
+    @objc private func handleQACopyFirstPostedCaptureSummary() {
+      onQACopyFirstPostedCaptureSummary?()
+    }
+
+    @objc private func handleQACopyFirstPostedURL() {
+      onQACopyFirstPostedURL?()
     }
   #endif
 }
