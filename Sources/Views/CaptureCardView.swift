@@ -103,10 +103,12 @@ struct CaptureCardView: View {
           .font(.system(size: 12, weight: .semibold))
           .foregroundStyle(.primary)
           .lineLimit(1)
-        Text(capture.text)
-          .font(.system(size: 11))
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
+        if !capture.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+          Text(capture.text)
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+        }
       } else {
         Text(capture.text)
           .font(.system(size: 12))
@@ -115,10 +117,11 @@ struct CaptureCardView: View {
       }
 
       HStack(spacing: 6) {
-        if let sub = capture.subreddits.first {
-          Text(sub.name)
+        if let subredditSummary {
+          Text(subredditSummary)
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(AppColors.redditOrange)
+            .lineLimit(1)
         }
 
         if !capture.links.isEmpty || !capture.mediaRefs.isEmpty || capture.notes != nil {
@@ -175,6 +178,10 @@ struct CaptureCardView: View {
       parts.append("notes")
     }
     return parts.joined(separator: " · ")
+  }
+
+  private var subredditSummary: String? {
+    CaptureHelpers.subredditSummary(for: capture.subreddits)
   }
 }
 

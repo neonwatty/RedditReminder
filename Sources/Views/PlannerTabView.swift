@@ -6,6 +6,7 @@ struct PlannerTabView: View {
   @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
 
   @State private var timingEngine = TimingEngine()
+  private let refreshTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
   private var activeEvents: [SubredditEvent] {
     PopoverTimingPresentation.activeEvents(from: allEvents)
@@ -37,6 +38,9 @@ struct PlannerTabView: View {
       refreshTiming()
     }
     .onChange(of: PopoverTimingPresentation.captureTimingSignature(from: captures)) {
+      refreshTiming()
+    }
+    .onReceive(refreshTimer) { _ in
       refreshTiming()
     }
   }

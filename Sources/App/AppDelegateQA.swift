@@ -6,6 +6,9 @@ import SwiftData
     static let qaTestCaptureTitle = "QA Workflow Capture"
     static let qaTestCaptureText = "Created by RedditReminder automated QA."
     static let qaTestCaptureLink = "https://example.com/reddit-reminder-qa"
+    static let qaTitleOnlyCaptureTitle = "QA Title Only Capture"
+    static let qaMultiSubredditCaptureTitle = "QA Multi Subreddit Capture"
+    static let qaMultiSubredditCaptureText = "Created to verify compact destination summaries."
     static let qaPostedURL =
       "https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/"
 
@@ -39,13 +42,70 @@ import SwiftData
     }
 
     @discardableResult
+    func qaCreateTitleOnlyTestCapture() -> Bool {
+      guard let container = modelContainer else { return false }
+      let context = container.mainContext
+
+      do {
+        guard let subreddit = try qaSubreddit(named: "r/SideProject", in: context) else {
+          return false
+        }
+        let capture = Capture(
+          title: Self.qaTitleOnlyCaptureTitle,
+          text: "",
+          subreddits: [subreddit]
+        )
+        context.insert(capture)
+        try context.save()
+        runRefreshCycle()
+        return true
+      } catch {
+        context.rollback()
+        NSLog("RedditReminder: QA create title-only test capture failed: \(error)")
+        return false
+      }
+    }
+
+    @discardableResult
+    func qaCreateMultiSubredditTestCapture() -> Bool {
+      guard let container = modelContainer else { return false }
+      let context = container.mainContext
+
+      do {
+        let subreddits = try qaSubreddits(named: ["r/SideProject", "r/SwiftUI"], in: context)
+        guard subreddits.count >= 2 else { return false }
+        let capture = Capture(
+          title: Self.qaMultiSubredditCaptureTitle,
+          text: Self.qaMultiSubredditCaptureText,
+          subreddits: subreddits
+        )
+        context.insert(capture)
+        try context.save()
+        runRefreshCycle()
+        return true
+      } catch {
+        context.rollback()
+        NSLog("RedditReminder: QA create multi-subreddit test capture failed: \(error)")
+        return false
+      }
+    }
+
+    @discardableResult
     func qaDeleteTestCaptures() -> Bool {
       guard let container = modelContainer else { return false }
       let context = container.mainContext
 
       do {
         let captures = try context.fetch(FetchDescriptor<Capture>())
-        let testCaptures = captures.filter { $0.title == Self.qaTestCaptureTitle }
+        let qaTitles = [
+          Self.qaTestCaptureTitle,
+          Self.qaTitleOnlyCaptureTitle,
+          Self.qaMultiSubredditCaptureTitle,
+        ]
+        let testCaptures = captures.filter { capture in
+          guard let title = capture.title else { return false }
+          return qaTitles.contains(title)
+        }
         guard !testCaptures.isEmpty else { return true }
 
         menuBarController.closePostHandoffWindow()
@@ -73,6 +133,14 @@ import SwiftData
         !title.isEmpty
       else { return false }
       return RedditPostingActions.copyText(title, to: pasteboard)
+    }
+
+    @discardableResult
+    func qaCopyFirstQueuedCaptureSummary(
+      to pasteboard: any PasteboardWriting = NSPasteboard.general
+    ) -> Bool {
+      guard let capture = qaFirstQueuedCapture() else { return false }
+      return RedditPostingActions.copyText(qaSummary(for: capture, includePostedURL: false), to: pasteboard)
     }
 
     @discardableResult
@@ -124,16 +192,7 @@ import SwiftData
       -> Bool
     {
       guard let capture = qaFirstPostedCapture() else { return false }
-      let title = capture.title?.trimmingCharacters(in: .whitespacesAndNewlines)
-      let subreddit = capture.subreddits.first?.name ?? "No subreddit"
-      let postedURL = capture.postedURL?.trimmingCharacters(in: .whitespacesAndNewlines)
-      let summary = [
-        "Title: \((title?.isEmpty == false) ? title! : "<none>")",
-        "Body: \(capture.text.trimmingCharacters(in: .whitespacesAndNewlines))",
-        "Subreddit: \(subreddit)",
-        "Posted URL: \((postedURL?.isEmpty == false) ? postedURL! : "<none>")",
-      ].joined(separator: "\n")
-      return RedditPostingActions.copyText(summary, to: pasteboard)
+      return RedditPostingActions.copyText(qaSummary(for: capture, includePostedURL: true), to: pasteboard)
     }
 
     @discardableResult
@@ -176,6 +235,35 @@ import SwiftData
         NSLog("RedditReminder: QA fetch first posted capture failed: \(error)")
         return nil
       }
+    }
+
+    private func qaSubreddit(named name: String, in context: ModelContext) throws -> Subreddit? {
+      let subreddits = try context.fetch(FetchDescriptor<Subreddit>())
+      return subreddits.first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
+        ?? subreddits.sorted { $0.sortOrder < $1.sortOrder }.first
+    }
+
+    private func qaSubreddits(named names: [String], in context: ModelContext) throws -> [Subreddit] {
+      let subreddits = try context.fetch(FetchDescriptor<Subreddit>())
+      return names.compactMap { name in
+        subreddits.first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
+      }
+    }
+
+    private func qaSummary(for capture: Capture, includePostedURL: Bool) -> String {
+      let title = capture.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+      let body = capture.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      let subreddit = CaptureHelpers.subredditSummary(for: capture.subreddits) ?? "No subreddit"
+      var lines = [
+        "Title: \((title?.isEmpty == false) ? title! : "<none>")",
+        "Body: \(body.isEmpty ? "<none>" : body)",
+        "Subreddit: \(subreddit)",
+      ]
+      if includePostedURL {
+        let postedURL = capture.postedURL?.trimmingCharacters(in: .whitespacesAndNewlines)
+        lines.append("Posted URL: \((postedURL?.isEmpty == false) ? postedURL! : "<none>")")
+      }
+      return lines.joined(separator: "\n")
     }
   }
 #endif

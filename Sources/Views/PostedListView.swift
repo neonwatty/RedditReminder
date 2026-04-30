@@ -2,6 +2,8 @@ import SwiftUI
 
 struct PostedListView: View {
   nonisolated static let openPostedLinkAccessibilityLabel = "Open posted link"
+  nonisolated static let restoreAccessibilityLabel = "Move posted capture back to queue"
+  nonisolated static let deleteAccessibilityLabel = "Delete posted capture"
 
   let captures: [Capture]
   var onOpenPostedURL: ((Capture) -> Void)? = nil
@@ -26,10 +28,12 @@ struct PostedListView: View {
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(.primary)
             .lineLimit(1)
-          Text(capture.text)
-            .font(.system(size: 11))
-            .foregroundStyle(.secondary)
-            .lineLimit(2)
+          if !capture.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            Text(capture.text)
+              .font(.system(size: 11))
+              .foregroundStyle(.secondary)
+              .lineLimit(2)
+          }
         } else {
           Text(capture.text)
             .font(.system(size: 12))
@@ -37,10 +41,11 @@ struct PostedListView: View {
             .lineLimit(2)
         }
         HStack(spacing: 6) {
-          if let sub = capture.subreddits.first {
-            Text(sub.name)
+          if let subredditSummary = CaptureHelpers.subredditSummary(for: capture.subreddits) {
+            Text(subredditSummary)
               .font(.system(size: 10, weight: .medium))
               .foregroundStyle(AppColors.redditOrange)
+              .lineLimit(1)
           }
           if let postedAt = capture.postedAt {
             Text("\u{00B7}").font(.system(size: 9)).foregroundStyle(.secondary)
@@ -59,17 +64,28 @@ struct PostedListView: View {
       Spacer(minLength: 0)
       HStack(spacing: 8) {
         if let onOpenPostedURL, capture.postedURL != nil {
-          Button(action: { onOpenPostedURL(capture) }) {
-            Label(Self.openPostedLinkAccessibilityLabel, systemImage: "arrow.up.right.square")
-              .labelStyle(.iconOnly)
-              .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(.secondary)
-              .frame(width: 18, height: 18)
-          }
-          .buttonStyle(.plain)
-          .help(Self.openPostedLinkAccessibilityLabel)
-          .accessibilityLabel(Self.openPostedLinkAccessibilityLabel)
-          .accessibilityIdentifier("postedList.openPostedLink")
+          actionButton(
+            systemName: "arrow.up.right.square",
+            label: Self.openPostedLinkAccessibilityLabel,
+            identifier: "postedList.openPostedLink",
+            action: { onOpenPostedURL(capture) }
+          )
+        }
+        if let onRestore {
+          actionButton(
+            systemName: "arrow.uturn.backward",
+            label: Self.restoreAccessibilityLabel,
+            identifier: "postedList.restore",
+            action: { onRestore(capture) }
+          )
+        }
+        if let onDelete {
+          actionButton(
+            systemName: "trash",
+            label: Self.deleteAccessibilityLabel,
+            identifier: "postedList.delete",
+            action: { onDelete(capture) }
+          )
         }
         Image(systemName: "checkmark.circle.fill")
           .font(.system(size: 12))
@@ -92,5 +108,25 @@ struct PostedListView: View {
         Button("Delete", role: .destructive) { onDelete(capture) }
       }
     }
+  }
+
+  private func actionButton(
+    systemName: String,
+    label: String,
+    identifier: String,
+    action: @escaping () -> Void
+  ) -> some View {
+    Button(action: action) {
+      Label(label, systemImage: systemName)
+        .labelStyle(.iconOnly)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(.secondary)
+        .frame(width: 18, height: 18)
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .help(label)
+    .accessibilityLabel(label)
+    .accessibilityIdentifier(identifier)
   }
 }

@@ -1,4 +1,4 @@
-.PHONY: build build-debug test install install-debug clean generate qa
+.PHONY: build build-debug test ui-test install install-debug clean generate qa
 
 APP_NAME := RedditReminder
 PROJ := $(APP_NAME).xcodeproj
@@ -26,13 +26,37 @@ build-debug: generate
 	xcodebuild build \
 	  -project $(PROJ) -scheme $(APP_NAME) \
 	  -configuration Debug -destination 'platform=macOS' \
-	  -derivedDataPath $(BUILD_DIR)
+	  -derivedDataPath $(BUILD_DIR) \
+	  CODE_SIGN_IDENTITY=- \
+	  CODE_SIGN_STYLE=Manual \
+	  DEVELOPMENT_TEAM= \
+	  ENABLE_DEBUG_DYLIB=NO \
+	  ENABLE_HARDENED_RUNTIME=NO \
+	  OTHER_CODE_SIGN_FLAGS=
 
 test: generate
 	xcodebuild test \
 	  -project $(PROJ) -scheme $(APP_NAME) \
 	  -destination 'platform=macOS' \
-	  -derivedDataPath $(BUILD_DIR)
+	  -derivedDataPath $(BUILD_DIR) \
+	  CODE_SIGN_IDENTITY=- \
+	  CODE_SIGN_STYLE=Manual \
+	  DEVELOPMENT_TEAM= \
+	  ENABLE_DEBUG_DYLIB=NO \
+	  ENABLE_HARDENED_RUNTIME=NO \
+	  OTHER_CODE_SIGN_FLAGS=
+
+ui-test: generate
+	xcodebuild test \
+	  -project $(PROJ) -scheme $(APP_NAME)UITests \
+	  -destination 'platform=macOS' \
+	  -derivedDataPath $(BUILD_DIR) \
+	  CODE_SIGN_IDENTITY=- \
+	  CODE_SIGN_STYLE=Manual \
+	  DEVELOPMENT_TEAM= \
+	  ENABLE_DEBUG_DYLIB=NO \
+	  ENABLE_HARDENED_RUNTIME=NO \
+	  OTHER_CODE_SIGN_FLAGS=
 
 install: build
 	$(call copy_app,Release)
