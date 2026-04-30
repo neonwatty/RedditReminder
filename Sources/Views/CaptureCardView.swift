@@ -18,6 +18,8 @@ struct CaptureCardView: View {
   var onMarkPosted: (() -> Void)? = nil
   var onDelete: (() -> Void)? = nil
 
+  @State private var isHovered: Bool = false
+
   var body: some View {
     HStack(alignment: .top, spacing: 10) {
       Button(action: { onTap?() }) {
@@ -28,45 +30,56 @@ struct CaptureCardView: View {
 
       Spacer(minLength: 0)
 
-      HStack(spacing: 8) {
-        if let onOpenHandoff {
-          actionButton(
-            systemName: "paperplane",
-            label: Self.openHandoffAccessibilityLabel,
-            action: onOpenHandoff
-          )
-        }
+      HStack(spacing: 6) {
+        if isHovered {
+          if let onOpenHandoff {
+            hoverActionButton(
+              systemName: "paperplane",
+              label: "Post",
+              accessibilityLabel: Self.openHandoffAccessibilityLabel,
+              action: onOpenHandoff
+            )
+          }
 
-        if let onCopyText {
-          actionButton(
-            systemName: "doc.on.doc",
-            label: Self.copyTextAccessibilityLabel,
-            action: onCopyText
-          )
-        }
+          if let onCopyText {
+            hoverActionButton(
+              systemName: "doc.on.doc",
+              label: "Copy",
+              accessibilityLabel: Self.copyTextAccessibilityLabel,
+              action: onCopyText
+            )
+          }
 
-        if let onOpenSubmit {
-          actionButton(
-            systemName: "arrow.up.right.square",
-            label: Self.openSubmitAccessibilityLabel,
-            action: onOpenSubmit
-          )
-        }
+          if let onMarkPosted {
+            hoverActionButton(
+              systemName: "checkmark.circle",
+              label: "Done",
+              accessibilityLabel: Self.markPostedAccessibilityLabel,
+              action: onMarkPosted
+            )
+          }
 
-        if let onMarkPosted {
-          actionButton(
-            systemName: "checkmark.circle",
-            label: Self.markPostedAccessibilityLabel,
-            action: onMarkPosted
-          )
-        }
-
-        if let onDelete {
-          actionButton(
-            systemName: "trash",
-            label: Self.deleteAccessibilityLabel,
-            action: onDelete
-          )
+          if let onDelete {
+            Button(action: onDelete) {
+              HStack(spacing: 3) {
+                Image(systemName: "trash")
+                  .font(.system(size: 10, weight: .medium))
+                Text("Delete")
+                  .font(.system(size: 10, weight: .medium))
+              }
+              .foregroundStyle(.red)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 3)
+              .background(.quaternary.opacity(0.3))
+              .clipShape(RoundedRectangle(cornerRadius: 4))
+              .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(Self.deleteAccessibilityLabel)
+            .accessibilityLabel(Self.deleteAccessibilityLabel)
+            .accessibilityIdentifier(
+              "captureCard.\(Self.deleteAccessibilityLabel.identifierSuffix)")
+          }
         }
 
         if let dotColor = urgencyDotColor {
@@ -78,9 +91,11 @@ struct CaptureCardView: View {
             .accessibilityLabel(UrgencyPresentation.accessibilityLabel(for: urgency))
         }
       }
+      .animation(.easeInOut(duration: 0.15), value: isHovered)
     }
     .padding(.vertical, 10)
     .padding(.horizontal, 16)
+    .onHover { hovering in isHovered = hovering }
     .contextMenu {
       if let onTap { Button("Edit") { onTap() } }
       if let onOpenHandoff { Button("Prepare Post") { onOpenHandoff() } }
@@ -145,21 +160,30 @@ struct CaptureCardView: View {
     }
   }
 
-  private func actionButton(systemName: String, label: String, action: @escaping () -> Void)
-    -> some View
-  {
+  private func hoverActionButton(
+    systemName: String,
+    label: String,
+    accessibilityLabel: String,
+    action: @escaping () -> Void
+  ) -> some View {
     Button(action: action) {
-      Label(label, systemImage: systemName)
-        .labelStyle(.iconOnly)
-        .font(.system(size: 12, weight: .medium))
-        .foregroundStyle(.secondary)
-        .frame(width: 18, height: 18)
-        .contentShape(Rectangle())
+      HStack(spacing: 3) {
+        Image(systemName: systemName)
+          .font(.system(size: 10, weight: .medium))
+        Text(label)
+          .font(.system(size: 10, weight: .medium))
+      }
+      .foregroundStyle(.secondary)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 3)
+      .background(.quaternary.opacity(0.3))
+      .clipShape(RoundedRectangle(cornerRadius: 4))
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .help(label)
-    .accessibilityLabel(label)
-    .accessibilityIdentifier("captureCard.\(label.identifierSuffix)")
+    .help(accessibilityLabel)
+    .accessibilityLabel(accessibilityLabel)
+    .accessibilityIdentifier("captureCard.\(accessibilityLabel.identifierSuffix)")
   }
 
   private var urgencyDotColor: Color? {
