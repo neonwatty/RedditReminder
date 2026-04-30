@@ -40,6 +40,8 @@ struct CaptureWindowView: View {
               .textFieldStyle(.plain)
               .padding(8)
               .inputFieldStyle()
+              .accessibilityLabel("Capture title")
+              .accessibilityIdentifier("captureWindow.title")
           }
 
           fieldSection("CAPTURE TEXT") {
@@ -56,6 +58,8 @@ struct CaptureWindowView: View {
                       .clipShape(RoundedRectangle(cornerRadius: 3))
                   }
                   .buttonStyle(.plain)
+                  .accessibilityLabel("Edit capture text")
+                  .accessibilityIdentifier("captureWindow.text.edit")
                   Button(action: { showPreview = true }) {
                     Text("Preview")
                       .font(.system(size: 9, weight: showPreview ? .semibold : .medium))
@@ -65,6 +69,8 @@ struct CaptureWindowView: View {
                       .clipShape(RoundedRectangle(cornerRadius: 3))
                   }
                   .buttonStyle(.plain)
+                  .accessibilityLabel("Preview capture text")
+                  .accessibilityIdentifier("captureWindow.text.preview")
                 }
               }
               if showPreview {
@@ -77,6 +83,8 @@ struct CaptureWindowView: View {
                   .scrollContentBackground(.hidden)
                   .padding(8)
                   .inputFieldStyle()
+                  .accessibilityLabel("Capture text")
+                  .accessibilityIdentifier("captureWindow.text")
               }
             }
           }
@@ -98,6 +106,8 @@ struct CaptureWindowView: View {
             .font(.system(size: 12))
             .padding(4)
             .inputFieldStyle()
+            .accessibilityLabel("Capture project")
+            .accessibilityIdentifier("captureWindow.project")
           }
 
           fieldSection("NOTES", optional: true) {
@@ -107,6 +117,8 @@ struct CaptureWindowView: View {
               .scrollContentBackground(.hidden)
               .padding(8)
               .inputFieldStyle()
+              .accessibilityLabel("Capture notes")
+              .accessibilityIdentifier("captureWindow.notes")
           }
 
           fieldSection("LINKS") {
@@ -147,6 +159,8 @@ struct CaptureWindowView: View {
         .font(.system(size: 11))
         .foregroundStyle(.secondary)
         .buttonStyle(.plain)
+        .accessibilityLabel("Cancel capture")
+        .accessibilityIdentifier("captureWindow.cancel")
 
       Button("Save", action: save)
         .font(.system(size: 11, weight: .semibold))
@@ -154,6 +168,8 @@ struct CaptureWindowView: View {
         .buttonStyle(.plain)
         .disabled(!canSave)
         .padding(.leading, 6)
+        .accessibilityLabel("Save capture")
+        .accessibilityIdentifier("captureWindow.save")
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 12)
