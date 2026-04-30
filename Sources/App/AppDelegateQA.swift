@@ -44,6 +44,11 @@ import SwiftData
       do {
         let captures = try context.fetch(FetchDescriptor<Capture>())
         let testCaptures = captures.filter { $0.title == Self.qaTestCaptureTitle }
+        guard !testCaptures.isEmpty else { return true }
+
+        menuBarController.closePostHandoffWindow()
+        menuBarController.dismissPopover()
+
         for capture in testCaptures {
           context.delete(capture)
         }

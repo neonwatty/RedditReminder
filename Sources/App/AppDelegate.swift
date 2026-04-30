@@ -109,6 +109,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
   }
 
+  func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+    false
+  }
+
   private func startRefreshLoop() {
     refreshTask?.cancel()
     refreshTask = Task {

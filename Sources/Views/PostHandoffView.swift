@@ -184,12 +184,15 @@ struct PostHandoffView: View {
       }
       .help(Self.copyAllAccessibilityLabel)
       .accessibilityLabel(Self.copyAllAccessibilityLabel)
+      .accessibilityIdentifier("postHandoff.copyAll")
 
       Spacer()
 
       Button(action: onMarkPosted) {
         Label("Mark Posted", systemImage: "checkmark.circle")
       }
+      .accessibilityLabel("Mark posted")
+      .accessibilityIdentifier("postHandoff.markPosted")
 
       Button(action: onOpenSubmit) {
         Label("Open Reddit", systemImage: "arrow.up.right.square")
@@ -197,6 +200,7 @@ struct PostHandoffView: View {
       .keyboardShortcut(.defaultAction)
       .help(Self.openSubmitAccessibilityLabel)
       .accessibilityLabel(Self.openSubmitAccessibilityLabel)
+      .accessibilityIdentifier("postHandoff.openSubmit")
     }
     .font(.system(size: 12, weight: .medium))
     .padding(.horizontal, 20)
@@ -300,7 +304,8 @@ struct PostHandoffView: View {
     -> some View
   {
     Button(action: action) {
-      Image(systemName: systemName)
+      Label(label, systemImage: systemName)
+        .labelStyle(.iconOnly)
         .font(.system(size: 11, weight: .medium))
         .foregroundStyle(.secondary)
         .frame(width: 22, height: 20)
@@ -309,6 +314,7 @@ struct PostHandoffView: View {
     .buttonStyle(.plain)
     .help(label)
     .accessibilityLabel(label)
+    .accessibilityIdentifier("postHandoff.\(label.identifierSuffix)")
   }
 
   private func runCopy(_ action: () -> Bool, successMessage: String) {
@@ -350,5 +356,13 @@ struct PostHandoffView: View {
     guard let subreddit = sortedSubreddits.first else { return "Choose a subreddit before posting" }
     if sortedSubreddits.count == 1 { return subreddit.name }
     return "\(subreddit.name) + \(sortedSubreddits.count - 1) more"
+  }
+}
+
+extension String {
+  fileprivate var identifierSuffix: String {
+    lowercased()
+      .split { !$0.isLetter && !$0.isNumber }
+      .joined(separator: ".")
   }
 }

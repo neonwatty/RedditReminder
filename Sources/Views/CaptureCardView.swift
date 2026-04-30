@@ -137,7 +137,8 @@ struct CaptureCardView: View {
     -> some View
   {
     Button(action: action) {
-      Image(systemName: systemName)
+      Label(label, systemImage: systemName)
+        .labelStyle(.iconOnly)
         .font(.system(size: 12, weight: .medium))
         .foregroundStyle(.secondary)
         .frame(width: 18, height: 18)

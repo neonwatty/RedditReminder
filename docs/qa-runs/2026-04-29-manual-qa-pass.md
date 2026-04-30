@@ -134,3 +134,75 @@ Status: Passed with debug QA coverage.
 ```text
 ALL 26 TESTS PASSED
 ```
+
+## Workflow 3 - Post Handoff
+
+Status: Passed after accessibility and lifecycle fixes.
+
+### Steps Exercised
+
+- [x] Created a deterministic queued capture through the debug QA menu.
+- [x] Opened the post handoff window from the capture card.
+- [x] Confirmed title, body, destination subreddit, link, and checklist content render correctly.
+- [x] Copied the title and verified clipboard content.
+- [x] Copied the body and verified clipboard content.
+- [x] Copied links and verified clipboard content.
+- [x] Copied all post content and verified formatting.
+- [x] Used the Reddit submit/open action.
+- [x] Confirmed the body plus link were copied and Reddit opened in the browser.
+
+### Evidence
+
+Deterministic capture:
+
+```text
+Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Link: https://example.com/reddit-reminder-qa
+```
+
+Copy All clipboard:
+
+```text
+QA Workflow Capture
+
+Created by RedditReminder automated QA.
+
+https://example.com/reddit-reminder-qa
+```
+
+Open Reddit action:
+
+```text
+Clipboard:
+Created by RedditReminder automated QA.
+
+https://example.com/reddit-reminder-qa
+
+Frontmost app: Google Chrome
+Crash changed: no
+```
+
+### Findings
+
+1. Post handoff buttons needed stable accessibility metadata.
+
+   Icon-only copy/open actions were visually clear but exposed weak names and no stable identifiers to automation. The handoff copy buttons now expose identifiers for title, body, links, Copy All, Mark Posted, and Open Reddit.
+
+2. Capture card action buttons needed accessible names.
+
+   The card-level icon actions now use labeled SwiftUI controls with icon-only styling, which keeps the current UI while improving assistive-tech and automation support.
+
+3. Debug deletion could invalidate visible capture models.
+
+   Deleting a visible QA capture while the popover or handoff window still referenced it could leave SwiftData-backed views reading a deleted model. The QA cleanup path now closes handoff UI and dismisses the popover before deleting deterministic captures.
+
+4. Closing the last handoff window could terminate the menu bar app.
+
+   The app now remains resident when the last normal window closes, matching expected menu bar app behavior.
+
+### Verification After Adjustments
+
+- `make test` passed: 353 tests.
+- `./scripts/qa.sh` passed: 26 tests.
