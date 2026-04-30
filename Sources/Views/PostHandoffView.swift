@@ -16,6 +16,8 @@ struct PostHandoffView: View {
   let onOpenSubmit: () -> Void
   let onMarkPosted: () -> Void
   let onClose: () -> Void
+  var onMarkSubredditPosted: ((UUID) -> Void)? = nil
+  var onMarkSubredditUnposted: ((UUID) -> Void)? = nil
 
   @State private var statusMessage: String?
 
@@ -108,15 +110,40 @@ struct PostHandoffView: View {
           .font(.system(size: 12))
           .foregroundStyle(.secondary)
       } else {
-        FlowLayout(spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
           ForEach(sortedSubreddits, id: \.id) { subreddit in
-            Text(subreddit.name)
-              .font(.system(size: 11, weight: .medium))
-              .foregroundStyle(AppColors.redditOrange)
-              .padding(.horizontal, 8)
-              .padding(.vertical, 4)
-              .background(AppColors.redditOrange.opacity(0.1))
-              .clipShape(RoundedRectangle(cornerRadius: 6))
+            let isPosted = capture.postedSubredditIDs.contains(subreddit.id)
+            HStack(spacing: 8) {
+              Text(subreddit.name)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(isPosted ? .secondary : AppColors.redditOrange)
+                .strikethrough(isPosted)
+
+              Spacer()
+
+              Button(action: {
+                if isPosted {
+                  onMarkSubredditUnposted?(subreddit.id)
+                } else {
+                  onMarkSubredditPosted?(subreddit.id)
+                }
+              }) {
+                HStack(spacing: 4) {
+                  Image(systemName: isPosted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 12))
+                  Text(isPosted ? "Posted" : "Not posted")
+                    .font(.system(size: 10, weight: .medium))
+                }
+                .foregroundStyle(isPosted ? Color(red: 0.13, green: 0.77, blue: 0.37) : .secondary)
+              }
+              .buttonStyle(.plain)
+              .accessibilityLabel(isPosted ? "Unmark \(subreddit.name) as posted" : "Mark \(subreddit.name) as posted")
+              .accessibilityIdentifier("postHandoff.subreddit.\(subreddit.name)")
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(isPosted ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.06) : AppColors.redditOrange.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
           }
         }
       }

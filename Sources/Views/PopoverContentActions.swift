@@ -55,7 +55,23 @@ extension PopoverContentView {
       onCopyAll: { copyPostHandoffText(for: capture) },
       onOpenSubmit: { openRedditSubmitPage(for: capture) },
       onMarkPosted: { markCaptureAsPosted(capture) },
-      onClose: { menuBarController.closePostHandoffWindow() }
+      onClose: { menuBarController.closePostHandoffWindow() },
+      onMarkSubredditPosted: { subredditId in
+        capture.markSubredditAsPosted(subredditId)
+        do { try modelContext.save() } catch {
+          NSLog("RedditReminder: mark subreddit posted failed: \(error)")
+          modelContext.rollback()
+        }
+        onAppStateChanged()
+      },
+      onMarkSubredditUnposted: { subredditId in
+        capture.markSubredditAsUnposted(subredditId)
+        do { try modelContext.save() } catch {
+          NSLog("RedditReminder: unmark subreddit posted failed: \(error)")
+          modelContext.rollback()
+        }
+        onAppStateChanged()
+      }
     )
     menuBarController.showPostHandoffWindow(title: handoffWindowTitle(for: capture), content: view)
   }
