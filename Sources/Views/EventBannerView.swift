@@ -81,7 +81,7 @@ struct EventBannerView: View {
     formatter.localizedString(for: date, relativeTo: referenceDate)
   }
 
-  static func readyCaptureText(count: Int) -> String? {
+  nonisolated static func readyCaptureText(count: Int) -> String? {
     guard count > 0 else { return nil }
     return "\(count) capture\(count == 1 ? "" : "s") ready"
   }

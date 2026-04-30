@@ -17,11 +17,11 @@ struct PopoverToastView: View {
 }
 
 struct PopoverHeaderView: View {
-  static let settingsButtonTitle = "Settings"
-  static let preferencesAccessibilityLabel = "Open preferences"
-  static let newCaptureAccessibilityLabel = "New capture"
-  static let queueToggleAccessibilityIdentifier = "popover.header.queue"
-  static let postedToggleAccessibilityIdentifier = "popover.header.posted"
+  nonisolated static let settingsButtonTitle = "Settings"
+  nonisolated static let preferencesAccessibilityLabel = "Open preferences"
+  nonisolated static let newCaptureAccessibilityLabel = "New capture"
+  nonisolated static let queueToggleAccessibilityIdentifier = "popover.header.queue"
+  nonisolated static let postedToggleAccessibilityIdentifier = "popover.header.posted"
 
   @Binding var showPosted: Bool
   let onOpenPreferences: () -> Void
