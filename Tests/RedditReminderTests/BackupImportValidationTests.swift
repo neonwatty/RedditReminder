@@ -14,6 +14,42 @@ import Testing
     }
 }
 
+@Test @MainActor func backupPreviewRejectsInvalidBackupWithoutClearingData() throws {
+    let container = try makeBackupContainer()
+    let context = ModelContext(container)
+    context.insert(Subreddit(name: "r/Existing"))
+    try context.save()
+
+    let missing = UUID()
+    let backup = AppBackup(
+        settings: BackupSettings(),
+        projects: [],
+        subreddits: [],
+        events: [
+            BackupSubredditEvent(
+                id: UUID(),
+                name: "Broken",
+                subredditId: missing,
+                rrule: nil,
+                oneOffDate: nil,
+                recurrenceHour: nil,
+                recurrenceMinute: nil,
+                recurrenceTimeZoneIdentifier: nil,
+                reminderLeadMinutes: 60,
+                isActive: true,
+                isGeneratedFromHeuristics: false,
+                generationKey: nil
+            )
+        ],
+        captures: []
+    )
+
+    #expect(throws: BackupError.missingRelationship(missing.uuidString)) {
+        _ = try BackupService().previewBackup(from: JSONEncoder().encode(backup))
+    }
+    #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 1)
+}
+
 @Test @MainActor func backupImportRejectsMissingRelationships() throws {
     let container = try makeBackupContainer()
     let context = ModelContext(container)

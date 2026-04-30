@@ -3,11 +3,14 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct BackupSectionView: View {
+    var onAppStateChanged: AppRefreshAction = {}
+
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: BackupDocument?
     @State private var isExporting = false
     @State private var isImporting = false
+    @State private var pendingImport: PendingBackupImport?
     @State private var statusMessage: String?
     @State private var errorMessage: String?
 
@@ -54,7 +57,19 @@ struct BackupSectionView: View {
             allowedContentTypes: [.json],
             allowsMultipleSelection: false
         ) { result in
-            importBackup(result)
+            previewImport(result)
+        }
+        .alert("Replace Current Data?", isPresented: pendingImportIsPresented, presenting: pendingImport) { pendingImport in
+            Button("Replace Data", role: .destructive) {
+                confirmImport(pendingImport)
+            }
+            Button("Cancel", role: .cancel) {
+                self.pendingImport = nil
+            }
+        } message: { pendingImport in
+            Text(
+                "This backup contains \(pendingImport.preview.importSummary). Importing it will replace the current app data."
+            )
         }
     }
 
@@ -66,11 +81,12 @@ struct BackupSectionView: View {
             statusMessage = nil
             errorMessage = nil
         } catch {
+            statusMessage = nil
             errorMessage = "Export failed: \(error.localizedDescription)"
         }
     }
 
-    private func importBackup(_ result: Result<[URL], Error>) {
+    private func previewImport(_ result: Result<[URL], Error>) {
         do {
             guard let url = try result.get().first else { return }
             let didAccess = url.startAccessingSecurityScopedResource()
@@ -78,12 +94,42 @@ struct BackupSectionView: View {
                 if didAccess { url.stopAccessingSecurityScopedResource() }
             }
             let data = try Data(contentsOf: url)
-            try backupService.importBackup(from: data, into: modelContext, mediaStore: mediaStore)
-            statusMessage = "Backup imported"
+            let preview = try backupService.previewBackup(from: data)
+            pendingImport = PendingBackupImport(data: data, preview: preview)
+            statusMessage = "Backup ready to import: \(preview.importSummary)"
             errorMessage = nil
         } catch {
+            pendingImport = nil
+            statusMessage = nil
             errorMessage = "Import failed: \(error.localizedDescription)"
         }
+    }
+
+    private func confirmImport(_ pendingImport: PendingBackupImport) {
+        do {
+            let result = try backupService.importBackup(
+                from: pendingImport.data,
+                into: modelContext,
+                mediaStore: mediaStore
+            )
+            self.pendingImport = nil
+            statusMessage = "Backup imported: \(result.preview.importSummary)"
+            errorMessage = nil
+            onAppStateChanged()
+        } catch {
+            self.pendingImport = nil
+            statusMessage = nil
+            errorMessage = "Import failed: \(error.localizedDescription)"
+        }
+    }
+
+    private var pendingImportIsPresented: Binding<Bool> {
+        Binding(
+            get: { pendingImport != nil },
+            set: { isPresented in
+                if !isPresented { pendingImport = nil }
+            }
+        )
     }
 
     private func handleExportResult(_ result: Result<URL, Error>) {
@@ -92,9 +138,16 @@ struct BackupSectionView: View {
             statusMessage = "Backup exported"
             errorMessage = nil
         case .failure(let error):
+            statusMessage = nil
             errorMessage = "Export failed: \(error.localizedDescription)"
         }
     }
+}
+
+private struct PendingBackupImport: Identifiable {
+    let id = UUID()
+    let data: Data
+    let preview: BackupPreview
 }
 
 struct BackupDocument: FileDocument {

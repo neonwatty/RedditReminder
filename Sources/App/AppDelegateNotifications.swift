@@ -56,6 +56,7 @@ extension AppDelegate {
             }
             try context.save()
             NSLog("RedditReminder: marked \(matching.count) captures as posted for \(name)")
+            runRefreshCycle()
         } catch {
             NSLog("RedditReminder: failed to mark captures as posted: \(error)")
         }

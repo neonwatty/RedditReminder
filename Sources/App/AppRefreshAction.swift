@@ -1,0 +1,1 @@
+typealias AppRefreshAction = @MainActor () -> Void

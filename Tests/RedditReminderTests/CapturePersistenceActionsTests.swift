@@ -35,7 +35,7 @@ private func makeCapturePersistenceContainer() throws -> ModelContainer {
         ),
         modelContext: context,
         mediaStore: mediaStore,
-        onCaptureChanged: { changeCount += 1 }
+        onAppStateChanged: { changeCount += 1 }
     )
 
     let captures = try context.fetch(FetchDescriptor<Capture>())
@@ -137,7 +137,7 @@ private func makeCapturePersistenceContainer() throws -> ModelContainer {
         capture,
         modelContext: context,
         mediaStore: mediaStore,
-        onCaptureChanged: { changeCount += 1 }
+        onAppStateChanged: { changeCount += 1 }
     )
 
     #expect(changeCount == 1)

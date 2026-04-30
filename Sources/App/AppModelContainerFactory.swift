@@ -10,6 +10,11 @@ enum AppModelContainerFactory {
         Schema(schemaTypes)
     }
 
+    static var appSupportDirectory: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("RedditReminder", isDirectory: true)
+    }
+
     static func makePersistentContainer() throws -> ModelContainer {
         try ModelContainer(for: schema)
     }
@@ -19,16 +24,16 @@ enum AppModelContainerFactory {
         return try ModelContainer(for: schema, configurations: configuration)
     }
 
-    static func makeContainer() -> ModelContainer {
+    static func makeContainer() throws -> ModelContainer {
+        try makeContainer(makePersistentContainer: makePersistentContainer)
+    }
+
+    static func makeContainer(makePersistentContainer: () throws -> ModelContainer) throws -> ModelContainer {
         do {
             return try makePersistentContainer()
         } catch {
             NSLog("RedditReminder: failed to create persistent ModelContainer: \(error)")
-            do {
-                return try makeInMemoryContainer()
-            } catch {
-                preconditionFailure("Failed to create fallback ModelContainer: \(error)")
-            }
+            throw error
         }
     }
 }

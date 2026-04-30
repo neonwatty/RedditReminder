@@ -80,6 +80,29 @@ assert_running() {
     fi
 }
 
+terminate_app() {
+    pkill -x "$APP_NAME" 2>/dev/null || true
+
+    local attempt
+    for attempt in $(seq 1 "$POLL_ATTEMPTS"); do
+        if ! pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep "$POLL_INTERVAL"
+    done
+
+    pkill -9 -x "$APP_NAME" 2>/dev/null || true
+    for attempt in $(seq 1 "$POLL_ATTEMPTS"); do
+        if ! pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep "$POLL_INTERVAL"
+    done
+
+    echo "$(red 'ABORT'): Could not terminate existing $APP_NAME process."
+    exit 1
+}
+
 # ─── CGWindowList helpers (Swift) ──────────────────────────────────
 # NSPopover windows are invisible to System Events because they live at
 # window layer 25 (kCGStatusWindowLevel). We use CGWindowListCopyWindowInfo
@@ -98,25 +121,28 @@ print(found ? "true" : "false")
 ' 2>/dev/null || echo "false"
 }
 
-# Find a named window owned by RedditReminder and return "width height onscreen"
+# Find a named app window via Accessibility and return "width height onscreen".
+# CGWindowList can report nil kCGWindowName values for SwiftUI windows on some hosts,
+# while Accessibility still exposes the real window title and size.
 named_window_info() {
     local title="$1"
-    swift -e "
-import CoreGraphics
-let wl = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
-for w in wl {
-    let owner = w[\"kCGWindowOwnerName\"] as? String ?? \"\"
-    let name = w[\"kCGWindowName\"] as? String ?? \"\"
-    if owner.contains(\"RedditReminder\") && name == \"$title\" {
-        let bounds = w[\"kCGWindowBounds\"] as? [String: Any] ?? [:]
-        let width = bounds[\"Width\"] as? Int ?? 0
-        let height = bounds[\"Height\"] as? Int ?? 0
-        let onscreen = w[\"kCGWindowIsOnscreen\"] as? Bool ?? false
-        print(\"\(width) \(height) \(onscreen)\")
-        break
-    }
-}
-" 2>/dev/null
+    osascript - "$APP_NAME" "$title" <<'APPLESCRIPT' 2>/dev/null
+on run argv
+    set appName to item 1 of argv
+    set targetTitle to item 2 of argv
+    tell application "System Events"
+        tell process appName
+            repeat with candidateWindow in windows
+                if title of candidateWindow is targetTitle then
+                    set windowSize to size of candidateWindow
+                    return (item 1 of windowSize as text) & " " & (item 2 of windowSize as text) & " true"
+                end if
+            end repeat
+        end tell
+    end tell
+    return ""
+end run
+APPLESCRIPT
 }
 
 named_window_exists() {
@@ -168,18 +194,23 @@ wait_for_named_window() {
 
 count_named_windows() {
     local title="$1"
-    swift -e "
-import CoreGraphics
-let wl = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
-var count = 0
-for w in wl {
-    let owner = w[\"kCGWindowOwnerName\"] as? String ?? \"\"
-    let name = w[\"kCGWindowName\"] as? String ?? \"\"
-    let onscreen = w[\"kCGWindowIsOnscreen\"] as? Bool ?? false
-    if owner.contains(\"RedditReminder\") && name == \"$title\" && onscreen { count += 1 }
-}
-print(count)
-" 2>/dev/null || echo "0"
+    osascript - "$APP_NAME" "$title" <<'APPLESCRIPT' 2>/dev/null || echo "0"
+on run argv
+    set appName to item 1 of argv
+    set targetTitle to item 2 of argv
+    set windowCount to 0
+    tell application "System Events"
+        tell process appName
+            repeat with candidateWindow in windows
+                if title of candidateWindow is targetTitle then
+                    set windowCount to windowCount + 1
+                end if
+            end repeat
+        end tell
+    end tell
+    return windowCount as text
+end run
+APPLESCRIPT
 }
 
 wait_for_named_window_count() {
@@ -235,15 +266,28 @@ set_popover_state() {
 click_menu_item() {
     local menu_name="$1"
     local item_name="$2"
-    if ! osascript -e "
+    local attempt
+
+    for attempt in $(seq 1 3); do
+        if osascript -e "
 tell application \"System Events\"
     tell process \"$APP_NAME\"
-        click menu item \"$item_name\" of menu \"$menu_name\" of menu bar 1
+        key code 53
+        set frontmost to true
+        perform action \"AXPress\" of menu bar item \"$menu_name\" of menu bar 1
+        delay 0.2
+        click menu item \"$item_name\" of menu \"$menu_name\" of menu bar item \"$menu_name\" of menu bar 1
     end tell
 end tell
 " >/dev/null 2>&1; then
-        echo "  $(red WARNING): click_menu_item '$menu_name' > '$item_name' failed" >&2
-    fi
+            sleep "$WINDOW_WAIT"
+            return
+        fi
+
+        sleep "$POLL_INTERVAL"
+    done
+
+    echo "  $(red WARNING): click_menu_item '$menu_name' > '$item_name' failed" >&2
     sleep "$WINDOW_WAIT"
 }
 
@@ -306,9 +350,8 @@ bold "RedditReminder QA"
 echo ""
 echo "─────────────────────────────────────────────────"
 
-# Kill any existing instance
-pkill -x "$APP_NAME" 2>/dev/null || true
-sleep 1
+# Kill any existing instance and wait for it to fully exit.
+terminate_app
 
 # Launch with --seed-qa to populate test fixtures (requires DEBUG build)
 echo "  Launching $APP_NAME with --seed-qa..."
@@ -367,7 +410,6 @@ echo ""
 bold "4. Preferences window"
 echo ""
 
-# macOS renames "Preferences…" to "Settings…" automatically
 click_menu_item "RedditReminder" "Settings…"
 exists=$(wait_for_named_window "RedditReminder Preferences" "true")
 assert_true "Settings menu opens Preferences window" "$exists"
@@ -453,14 +495,80 @@ assert_true "Popover renders with seeded data" "$vis"
 # Close popover
 set_popover_state "false" >/dev/null
 
-# ─── 9. Restart persistence ───────────────────────────────────────
+# ─── 9. Debug posting actions ─────────────────────────────────────
 
 echo ""
-bold "9. Restart persistence"
+bold "9. Debug posting actions"
 echo ""
 
-pkill -x "$APP_NAME" 2>/dev/null || true
-sleep 2
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture"
+copied_capture=$(pbpaste)
+assert_eq "QA copy first queued capture" "Quick thought: *menu bar apps* are underrated on macOS" "$copied_capture"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Submit URL"
+copied_submit_url=$(pbpaste)
+assert_eq "QA copy first queued submit URL" "https://www.reddit.com/r/SideProject/submit" "$copied_submit_url"
+
+click_menu_item "QA" "Mark First Queued Capture Posted"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture"
+copied_after_mark=$(pbpaste)
+assert_true "QA mark posted advances first queued capture" "$([ "$copied_after_mark" != "$copied_capture" ] && echo true || echo false)"
+
+click_menu_item "QA" "Create Test Capture"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture Title"
+created_title=$(pbpaste)
+assert_eq "QA create test capture title" "QA Workflow Capture" "$created_title"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Capture"
+created_capture=$(pbpaste)
+assert_eq "QA create test capture body" "Created by RedditReminder automated QA.
+
+https://example.com/reddit-reminder-qa" "$created_capture"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Queued Submit URL"
+created_submit_url=$(pbpaste)
+assert_eq "QA create test capture submit URL" "https://www.reddit.com/r/SideProject/submit" "$created_submit_url"
+
+click_menu_item "QA" "Mark First Queued Capture Posted With URL"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted Capture Summary"
+posted_summary=$(pbpaste)
+assert_eq "QA posted summary with URL" "Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/" "$posted_summary"
+
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted URL"
+posted_url=$(pbpaste)
+assert_eq "QA posted URL copied" "https://www.reddit.com/r/SideProject/comments/qa123/reddit_reminder_qa/" "$posted_url"
+
+sleep "$ACTION_WAIT"
+click_menu_item "QA" "Create Test Capture"
+click_menu_item "QA" "Mark First Queued Capture Posted"
+printf "sentinel" | pbcopy
+click_menu_item "QA" "Copy First Posted Capture Summary"
+posted_without_url_summary=$(pbpaste)
+assert_eq "QA posted summary without URL" "Title: QA Workflow Capture
+Body: Created by RedditReminder automated QA.
+Subreddit: r/SideProject
+Posted URL: <none>" "$posted_without_url_summary"
+
+click_menu_item "QA" "Delete Test Captures"
+
+# ─── 10. Restart persistence ──────────────────────────────────────
+
+echo ""
+bold "10. Restart persistence"
+echo ""
+
+terminate_app
 open "$APP_PATH"
 sleep $((LAUNCH_WAIT + 2))  # extra time for cold start
 
