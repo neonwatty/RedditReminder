@@ -265,13 +265,7 @@ extension PopoverContentView {
 
   private func postingChecklistItems(for capture: Capture) -> [String] {
     capture.subreddits.flatMap { subreddit in
-      cleanChecklistItems(subreddit.postingChecklist?.components(separatedBy: .newlines) ?? [])
+      PostingChecklistItems.cleaned(from: subreddit.postingChecklist)
     }
-  }
-
-  private func cleanChecklistItems(_ items: [String]) -> [String] {
-    items
-      .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-      .filter { !$0.isEmpty }
   }
 }

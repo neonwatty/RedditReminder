@@ -121,25 +121,28 @@ print(found ? "true" : "false")
 ' 2>/dev/null || echo "false"
 }
 
-# Find a named window owned by RedditReminder and return "width height onscreen"
+# Find a named app window via Accessibility and return "width height onscreen".
+# CGWindowList can report nil kCGWindowName values for SwiftUI windows on some hosts,
+# while Accessibility still exposes the real window title and size.
 named_window_info() {
     local title="$1"
-    swift -e "
-import CoreGraphics
-let wl = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
-for w in wl {
-    let owner = w[\"kCGWindowOwnerName\"] as? String ?? \"\"
-    let name = w[\"kCGWindowName\"] as? String ?? \"\"
-    if owner.contains(\"RedditReminder\") && name == \"$title\" {
-        let bounds = w[\"kCGWindowBounds\"] as? [String: Any] ?? [:]
-        let width = bounds[\"Width\"] as? Int ?? 0
-        let height = bounds[\"Height\"] as? Int ?? 0
-        let onscreen = w[\"kCGWindowIsOnscreen\"] as? Bool ?? false
-        print(\"\(width) \(height) \(onscreen)\")
-        break
-    }
-}
-" 2>/dev/null
+    osascript - "$APP_NAME" "$title" <<'APPLESCRIPT' 2>/dev/null
+on run argv
+    set appName to item 1 of argv
+    set targetTitle to item 2 of argv
+    tell application "System Events"
+        tell process appName
+            repeat with candidateWindow in windows
+                if title of candidateWindow is targetTitle then
+                    set windowSize to size of candidateWindow
+                    return (item 1 of windowSize as text) & " " & (item 2 of windowSize as text) & " true"
+                end if
+            end repeat
+        end tell
+    end tell
+    return ""
+end run
+APPLESCRIPT
 }
 
 named_window_exists() {
@@ -191,18 +194,23 @@ wait_for_named_window() {
 
 count_named_windows() {
     local title="$1"
-    swift -e "
-import CoreGraphics
-let wl = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
-var count = 0
-for w in wl {
-    let owner = w[\"kCGWindowOwnerName\"] as? String ?? \"\"
-    let name = w[\"kCGWindowName\"] as? String ?? \"\"
-    let onscreen = w[\"kCGWindowIsOnscreen\"] as? Bool ?? false
-    if owner.contains(\"RedditReminder\") && name == \"$title\" && onscreen { count += 1 }
-}
-print(count)
-" 2>/dev/null || echo "0"
+    osascript - "$APP_NAME" "$title" <<'APPLESCRIPT' 2>/dev/null || echo "0"
+on run argv
+    set appName to item 1 of argv
+    set targetTitle to item 2 of argv
+    set windowCount to 0
+    tell application "System Events"
+        tell process appName
+            repeat with candidateWindow in windows
+                if title of candidateWindow is targetTitle then
+                    set windowCount to windowCount + 1
+                end if
+            end repeat
+        end tell
+    end tell
+    return windowCount as text
+end run
+APPLESCRIPT
 }
 
 wait_for_named_window_count() {
