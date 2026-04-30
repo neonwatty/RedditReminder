@@ -146,6 +146,7 @@ struct BackupCapture: Codable, Equatable {
   var postedURL: String? = nil
   var projectId: UUID?
   var subredditIds: [UUID]
+  var postedSubredditIDs: [UUID]? = nil
 }
 
 struct BackupMediaFile: Codable, Equatable {

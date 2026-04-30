@@ -59,7 +59,8 @@ extension BackupCapture {
       postedAt: capture.postedAt,
       postedURL: capture.postedURL,
       projectId: capture.project?.id,
-      subredditIds: capture.subreddits.map(\.id)
+      subredditIds: capture.subreddits.map(\.id),
+      postedSubredditIDs: capture.postedSubredditIDs.isEmpty ? nil : capture.postedSubredditIDs
     )
   }
 }

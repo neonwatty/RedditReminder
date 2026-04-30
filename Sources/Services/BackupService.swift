@@ -163,6 +163,7 @@ struct BackupService {
       capture.createdAt = item.createdAt
       capture.postedAt = item.postedAt
       capture.postedURL = item.postedURL
+      capture.postedSubredditIDs = item.postedSubredditIDs ?? []
       context.insert(capture)
     }
   }
