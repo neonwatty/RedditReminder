@@ -43,4 +43,36 @@ enum SubredditPeakSelection {
     static func effectivePeakHours(override: [Int]?, peakInfo: PeakInfo?) -> [Int] {
         override ?? peakInfo?.peakHoursUtc ?? []
     }
+
+    static func localHourToUtc(_ localHour: Int, timeZone: TimeZone = .current, referenceDate: Date = Date()) -> Int {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let comps = cal.dateComponents([.year, .month, .day], from: referenceDate)
+        var localComps = comps
+        localComps.hour = localHour
+        localComps.minute = 0
+        guard let localDate = cal.date(from: localComps) else { return localHour }
+
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        return utcCal.component(.hour, from: localDate)
+    }
+
+    static func utcHourToLocal(_ utcHour: Int, timeZone: TimeZone = .current, referenceDate: Date = Date()) -> Int {
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        let comps = utcCal.dateComponents([.year, .month, .day], from: referenceDate)
+        var utcComps = comps
+        utcComps.hour = utcHour
+        utcComps.minute = 0
+        guard let utcDate = utcCal.date(from: utcComps) else { return utcHour }
+
+        var localCal = Calendar(identifier: .gregorian)
+        localCal.timeZone = timeZone
+        return localCal.component(.hour, from: utcDate)
+    }
+
+    static func utcHoursToLocal(_ utcHours: [Int], timeZone: TimeZone = .current, referenceDate: Date = Date()) -> [Int] {
+        utcHours.map { utcHourToLocal($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
+    }
 }

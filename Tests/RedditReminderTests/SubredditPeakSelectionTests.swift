@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import RedditReminder
 
 @Test func subredditPeakSelectionAddsAndRemovesDayOverrides() {
@@ -44,4 +45,41 @@ import Testing
     #expect(SubredditPeakSelection.allDays.count == SubredditPeakSelection.dayKeys.count)
     #expect(SubredditPeakSelection.dayKeys == ["mon", "tue", "wed", "thu", "fri", "sat", "sun"])
     #expect(SubredditPeakSelection.displayHours == SubredditPeakSelection.displayHours.sorted())
+}
+
+@Test func localHourToUtcConvertsCorrectly() {
+    // PDT is UTC-7
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    // In summer (PDT): local 9 AM = UTC 16
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    #expect(SubredditPeakSelection.localHourToUtc(9, timeZone: pdt, referenceDate: summer) == 16)
+    #expect(SubredditPeakSelection.localHourToUtc(0, timeZone: pdt, referenceDate: summer) == 7)
+    #expect(SubredditPeakSelection.localHourToUtc(20, timeZone: pdt, referenceDate: summer) == 3)
+}
+
+@Test func utcHourToLocalConvertsCorrectly() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    #expect(SubredditPeakSelection.utcHourToLocal(16, timeZone: pdt, referenceDate: summer) == 9)
+    #expect(SubredditPeakSelection.utcHourToLocal(7, timeZone: pdt, referenceDate: summer) == 0)
+    #expect(SubredditPeakSelection.utcHourToLocal(3, timeZone: pdt, referenceDate: summer) == 20)
+}
+
+@Test func timezoneConversionRoundTrips() {
+    let tokyo = TimeZone(identifier: "Asia/Tokyo")!
+    let ref = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    for hour in 0..<24 {
+        let utc = SubredditPeakSelection.localHourToUtc(hour, timeZone: tokyo, referenceDate: ref)
+        let back = SubredditPeakSelection.utcHourToLocal(utc, timeZone: tokyo, referenceDate: ref)
+        #expect(back == hour)
+    }
+}
+
+@Test func halfHourTimezoneConversion() {
+    // India is UTC+5:30 — rounds to nearest hour
+    let india = TimeZone(identifier: "Asia/Kolkata")!
+    let ref = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    // Local 9 AM IST = UTC 3:30 AM → rounds to UTC 3 (truncated by Calendar.component(.hour))
+    let utc = SubredditPeakSelection.localHourToUtc(9, timeZone: india, referenceDate: ref)
+    #expect(utc == 3 || utc == 4) // Either rounding direction is acceptable
 }
