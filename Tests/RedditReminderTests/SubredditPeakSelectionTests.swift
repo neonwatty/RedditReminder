@@ -83,3 +83,35 @@ import Foundation
     let utc = SubredditPeakSelection.localHourToUtc(9, timeZone: india, referenceDate: ref)
     #expect(utc == 3 || utc == 4) // Either rounding direction is acceptable
 }
+
+@Test func presetsDefineExpectedPatterns() {
+    let presets = SubredditPeakSelection.presets
+    #expect(presets.count == 4)
+    #expect(presets[0].label == "Weekday AM")
+    #expect(presets[0].days == ["mon", "tue", "wed", "thu", "fri"])
+    #expect(presets[0].localHours == [8, 9, 10, 11])
+
+    #expect(presets[1].label == "Weekday PM")
+    #expect(presets[1].days == ["mon", "tue", "wed", "thu", "fri"])
+    #expect(presets[1].localHours == [17, 18, 19, 20])
+
+    #expect(presets[2].label == "Weekend midday")
+    #expect(presets[2].days == ["sat", "sun"])
+    #expect(presets[2].localHours == [10, 11, 12, 13, 14])
+
+    #expect(presets[3].label == "Daily prime")
+    #expect(presets[3].days == ["mon", "tue", "wed", "thu", "fri", "sat", "sun"])
+    #expect(presets[3].localHours == [9, 10, 11, 12])
+}
+
+@Test func applyPresetConvertsToUtc() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    let preset = SubredditPeakSelection.presets[0] // Weekday AM: local 8-11
+
+    let result = SubredditPeakSelection.applyPreset(preset, timeZone: pdt, referenceDate: summer)
+
+    #expect(result.days == ["mon", "tue", "wed", "thu", "fri"])
+    // PDT is UTC-7: local 8=UTC15, 9=UTC16, 10=UTC17, 11=UTC18
+    #expect(result.utcHours == [15, 16, 17, 18])
+}

@@ -75,4 +75,27 @@ enum SubredditPeakSelection {
     static func utcHoursToLocal(_ utcHours: [Int], timeZone: TimeZone = .current, referenceDate: Date = Date()) -> [Int] {
         utcHours.map { utcHourToLocal($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
     }
+
+    struct PeakPreset {
+        let label: String
+        let days: [String]
+        let localHours: [Int]
+    }
+
+    struct AppliedPreset {
+        let days: [String]
+        let utcHours: [Int]
+    }
+
+    static let presets: [PeakPreset] = [
+        PeakPreset(label: "Weekday AM", days: ["mon", "tue", "wed", "thu", "fri"], localHours: [8, 9, 10, 11]),
+        PeakPreset(label: "Weekday PM", days: ["mon", "tue", "wed", "thu", "fri"], localHours: [17, 18, 19, 20]),
+        PeakPreset(label: "Weekend midday", days: ["sat", "sun"], localHours: [10, 11, 12, 13, 14]),
+        PeakPreset(label: "Daily prime", days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], localHours: [9, 10, 11, 12]),
+    ]
+
+    static func applyPreset(_ preset: PeakPreset, timeZone: TimeZone = .current, referenceDate: Date = Date()) -> AppliedPreset {
+        let utcHours = preset.localHours.map { localHourToUtc($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
+        return AppliedPreset(days: preset.days, utcHours: utcHours)
+    }
 }
