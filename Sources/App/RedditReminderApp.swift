@@ -50,7 +50,6 @@ struct RedditReminderApp: App {
           )
           .modelContainer(container)
           appDelegate.menuBarController.setup(popoverContent: popoverView)
-          appDelegate.wireMenuActions(container: container)
         }
     }
     .defaultSize(width: 1, height: 1)

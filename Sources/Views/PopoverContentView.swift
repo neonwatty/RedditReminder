@@ -52,8 +52,6 @@ struct PopoverContentView: View {
     .frame(width: 350).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
     .onAppear {
       refreshTiming()
-      menuBarController.onNewCapture = { [self] in openNewCapture() }
-      menuBarController.onOpenPreferences = { [self] in openPreferences() }
     }
     .onChange(of: captureTimingSignature) {
       refreshTiming()
