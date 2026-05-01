@@ -1,18 +1,51 @@
 import SwiftUI
 
-struct PopoverToastView: View {
+enum ToastStyle {
+  case success
+  case error
+}
+
+struct Toast: Equatable {
   let message: String
+  let style: ToastStyle
+}
+
+struct PopoverToastView: View {
+  let toast: Toast
 
   var body: some View {
-    Text(message)
-      .font(.system(size: 11, weight: .medium))
-      .foregroundStyle(.white)
-      .padding(.horizontal, 12)
-      .padding(.vertical, 6)
-      .background(AppColors.redditOrange.opacity(0.9))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
-      .padding(.top, 48)
-      .transition(.move(edge: .top).combined(with: .opacity))
+    HStack(spacing: 6) {
+      Image(systemName: iconName)
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(accentColor)
+      Text(toast.message)
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(.primary)
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 6)
+    .background(accentColor.opacity(0.12))
+    .overlay(
+      RoundedRectangle(cornerRadius: 8)
+        .stroke(accentColor.opacity(0.25), lineWidth: 1)
+    )
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .padding(.top, 48)
+    .transition(.move(edge: .top).combined(with: .opacity))
+  }
+
+  private var iconName: String {
+    switch toast.style {
+    case .success: "checkmark.circle.fill"
+    case .error: "xmark.circle.fill"
+    }
+  }
+
+  private var accentColor: Color {
+    switch toast.style {
+    case .success: Color(red: 0.13, green: 0.77, blue: 0.37)
+    case .error: Color(red: 0.94, green: 0.27, blue: 0.27)
+    }
   }
 }
 

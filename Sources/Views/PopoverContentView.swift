@@ -16,7 +16,7 @@ struct PopoverContentView: View {
   @State private var timingEngine = TimingEngine()
   @State private var filterSubredditId: UUID?
   @State private var searchText: String = ""
-  @State var toastMessage: String?
+  @State var toast: Toast?
   @State var toastTask: Task<Void, Never>?
   @State private var showPosted: Bool = false
 
@@ -44,8 +44,8 @@ struct PopoverContentView: View {
       footer
     }
     .overlay(alignment: .top) {
-      if let message = toastMessage {
-        PopoverToastView(message: message)
+      if let toast {
+        PopoverToastView(toast: toast)
       }
     }
     .background(AppColors.popoverBg)

@@ -8,7 +8,8 @@ enum PopoverTimingPresentation {
   static func captureTimingSignature(from captures: [Capture]) -> [String] {
     captures.map { capture in
       let subIds = capture.subreddits.map(\.id.uuidString).sorted().joined(separator: ",")
-      return "\(capture.id.uuidString):\(capture.status.rawValue):\(subIds)"
+      let postedIds = capture.postedSubredditIDs.map(\.uuidString).sorted().joined(separator: ",")
+      return "\(capture.id.uuidString):\(capture.status.rawValue):\(subIds):\(postedIds)"
     }
   }
 

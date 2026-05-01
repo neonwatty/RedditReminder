@@ -18,6 +18,7 @@ final class Capture {
   var createdAt: Date
   var postedAt: Date?
   var postedURL: String?
+  var postedSubredditIDs: [UUID] = []
 
   var project: Project?
   var subreddits: [Subreddit]
@@ -41,6 +42,7 @@ final class Capture {
     self.createdAt = Date()
     self.postedAt = nil
     self.postedURL = nil
+    self.postedSubredditIDs = []
     self.project = project
     self.subreddits = subreddits
   }
@@ -49,11 +51,30 @@ final class Capture {
     self.status = .posted
     self.postedAt = Date()
     self.postedURL = postedURL
+    self.postedSubredditIDs = subreddits.map(\.id)
   }
 
   func markAsQueued() {
     self.status = .queued
     self.postedAt = nil
     self.postedURL = nil
+    self.postedSubredditIDs = []
+  }
+
+  func markSubredditAsPosted(_ subredditId: UUID) {
+    guard !postedSubredditIDs.contains(subredditId) else { return }
+    postedSubredditIDs.append(subredditId)
+    if Set(postedSubredditIDs) == Set(subreddits.map(\.id)) {
+      status = .posted
+      postedAt = Date()
+    }
+  }
+
+  func markSubredditAsUnposted(_ subredditId: UUID) {
+    postedSubredditIDs.removeAll { $0 == subredditId }
+    if status == .posted {
+      status = .queued
+      postedAt = nil
+    }
   }
 }

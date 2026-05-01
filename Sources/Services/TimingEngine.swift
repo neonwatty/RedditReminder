@@ -66,7 +66,9 @@ final class TimingEngine {
     var queuedCountBySubredditId: [UUID: Int] = [:]
     for capture in captures where capture.status == .queued {
       for sub in capture.subreddits {
-        queuedCountBySubredditId[sub.id, default: 0] += 1
+        if !capture.postedSubredditIDs.contains(sub.id) {
+          queuedCountBySubredditId[sub.id, default: 0] += 1
+        }
       }
     }
 
