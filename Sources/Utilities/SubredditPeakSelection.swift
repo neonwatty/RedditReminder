@@ -98,4 +98,20 @@ enum SubredditPeakSelection {
         let utcHours = preset.localHours.map { localHourToUtc($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
         return AppliedPreset(days: preset.days, utcHours: utcHours)
     }
+
+    struct SuggestedDefaults {
+        let days: [String]
+        let localHours: [Int]
+        let utcHours: [Int]
+    }
+
+    static func suggestedDefaults(timeZone: TimeZone = .current, referenceDate: Date = Date()) -> SuggestedDefaults {
+        let preset = presets[0] // Weekday AM
+        let applied = applyPreset(preset, timeZone: timeZone, referenceDate: referenceDate)
+        return SuggestedDefaults(days: applied.days, localHours: preset.localHours, utcHours: applied.utcHours)
+    }
+
+    static func needsSuggestedDefaults(override: [String]?, peakInfo: PeakInfo?) -> Bool {
+        override == nil && peakInfo == nil
+    }
 }

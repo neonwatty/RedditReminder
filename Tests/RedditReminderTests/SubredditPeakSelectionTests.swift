@@ -115,3 +115,27 @@ import Foundation
     // PDT is UTC-7: local 8=UTC15, 9=UTC16, 10=UTC17, 11=UTC18
     #expect(result.utcHours == [15, 16, 17, 18])
 }
+
+@Test func suggestedDefaultsReturnsWeekdayAMPreset() {
+    let suggested = SubredditPeakSelection.suggestedDefaults(timeZone: .current)
+    #expect(suggested.days == ["mon", "tue", "wed", "thu", "fri"])
+    #expect(suggested.localHours == [8, 9, 10, 11])
+}
+
+@Test func suggestedDefaultsUtcMatchesPresetApplication() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+
+    let suggested = SubredditPeakSelection.suggestedDefaults(timeZone: pdt, referenceDate: summer)
+    let applied = SubredditPeakSelection.applyPreset(SubredditPeakSelection.presets[0], timeZone: pdt, referenceDate: summer)
+
+    #expect(suggested.utcHours == applied.utcHours)
+    #expect(suggested.days == applied.days)
+}
+
+@Test func needsSuggestedDefaultsReturnsTrueWhenBlank() {
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: nil, peakInfo: nil) == true)
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: ["mon"], peakInfo: nil) == false)
+    let info = PeakInfo(peakDays: ["tue"], peakHoursUtc: [14])
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: nil, peakInfo: info) == false)
+}
