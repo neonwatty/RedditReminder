@@ -134,8 +134,9 @@ import Foundation
 }
 
 @Test func needsSuggestedDefaultsReturnsTrueWhenBlank() {
-    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: nil, peakInfo: nil) == true)
-    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: ["mon"], peakInfo: nil) == false)
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(daysOverride: nil, hoursOverride: nil, peakInfo: nil) == true)
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(daysOverride: ["mon"], hoursOverride: nil, peakInfo: nil) == false)
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(daysOverride: nil, hoursOverride: [14], peakInfo: nil) == false)
     let info = PeakInfo(peakDays: ["tue"], peakHoursUtc: [14])
-    #expect(SubredditPeakSelection.needsSuggestedDefaults(override: nil, peakInfo: info) == false)
+    #expect(SubredditPeakSelection.needsSuggestedDefaults(daysOverride: nil, hoursOverride: nil, peakInfo: info) == false)
 }

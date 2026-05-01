@@ -3,7 +3,7 @@ import Foundation
 enum SubredditPeakSelection {
     static let allDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     static let dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-    static let displayHours = [0, 2, 4, 6, 8, 10, 12, 14, 15, 16, 17, 18, 20, 22]
+    static let displayHours = Array(0...23)
 
     static func toggledDay(_ day: String, in override: [String]?) -> [String]? {
         var days = override ?? []
@@ -73,7 +73,7 @@ enum SubredditPeakSelection {
     }
 
     static func utcHoursToLocal(_ utcHours: [Int], timeZone: TimeZone = .current, referenceDate: Date = Date()) -> [Int] {
-        utcHours.map { utcHourToLocal($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
+        Array(Set(utcHours.map { utcHourToLocal($0, timeZone: timeZone, referenceDate: referenceDate) })).sorted()
     }
 
     struct PeakPreset {
@@ -111,7 +111,7 @@ enum SubredditPeakSelection {
         return SuggestedDefaults(days: applied.days, localHours: preset.localHours, utcHours: applied.utcHours)
     }
 
-    static func needsSuggestedDefaults(override: [String]?, peakInfo: PeakInfo?) -> Bool {
-        override == nil && peakInfo == nil
+    static func needsSuggestedDefaults(daysOverride: [String]?, hoursOverride: [Int]?, peakInfo: PeakInfo?) -> Bool {
+        daysOverride == nil && hoursOverride == nil && peakInfo == nil
     }
 }

@@ -76,7 +76,7 @@ struct SubredditRow: View {
           peakDayChips
 
           HStack(spacing: 4) {
-            Text("PEAK HOURS (local — \(TimeZone.current.abbreviation() ?? "UTC"))")
+            Text("PEAK HOURS (local — \(TimeZone.current.abbreviation() ?? TimeZone.current.identifier))")
               .font(.system(size: 9, weight: .medium))
               .foregroundStyle(.secondary)
               .tracking(0.3)
@@ -169,6 +169,9 @@ struct SubredditRow: View {
       sub.peakHoursUtcOverride = suggested.utcHours
     } else {
       sub.peakDaysOverride = SubredditPeakSelection.toggledDay(day, in: sub.peakDaysOverride)
+      if sub.peakDaysOverride == nil {
+        sub.peakHoursUtcOverride = nil
+      }
     }
   }
 
@@ -273,7 +276,8 @@ struct SubredditRow: View {
 
   private var showsSuggested: Bool {
     SubredditPeakSelection.needsSuggestedDefaults(
-      override: sub.peakDaysOverride ?? (sub.peakHoursUtcOverride != nil ? [] : nil),
+      daysOverride: sub.peakDaysOverride,
+      hoursOverride: sub.peakHoursUtcOverride,
       peakInfo: peakInfo
     )
   }
