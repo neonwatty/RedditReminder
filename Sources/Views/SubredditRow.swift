@@ -55,16 +55,37 @@ struct SubredditRow: View {
         VStack(alignment: .leading, spacing: 10) {
           Divider()
 
-          Text("PEAK DAYS")
+          Text("PRESETS")
             .font(.system(size: 9, weight: .medium))
             .foregroundStyle(.secondary)
             .tracking(0.3)
+
+          presetChips
+
+          HStack(spacing: 4) {
+            Text("PEAK DAYS")
+              .font(.system(size: 9, weight: .medium))
+              .foregroundStyle(.secondary)
+              .tracking(0.3)
+            if showsSuggested {
+              Text("(suggested)")
+                .font(.system(size: 9))
+                .foregroundStyle(.tertiary)
+            }
+          }
           peakDayChips
 
-          Text("PEAK HOURS (UTC)")
-            .font(.system(size: 9, weight: .medium))
-            .foregroundStyle(.secondary)
-            .tracking(0.3)
+          HStack(spacing: 4) {
+            Text("PEAK HOURS (local — \(TimeZone.current.abbreviation() ?? "UTC"))")
+              .font(.system(size: 9, weight: .medium))
+              .foregroundStyle(.secondary)
+              .tracking(0.3)
+            if showsSuggested {
+              Text("(suggested)")
+                .font(.system(size: 9))
+                .foregroundStyle(.tertiary)
+            }
+          }
           peakHourChips
 
           Text("EVENT SOURCES")
@@ -126,7 +147,7 @@ struct SubredditRow: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(
-              isOn ? AppColors.redditOrange.opacity(hasOverride ? 0.12 : 0.06) : Color.clear
+              isOn ? AppColors.redditOrange.opacity(showsSuggested ? 0.04 : (hasOverride ? 0.12 : 0.06)) : Color.clear
             )
             .clipShape(RoundedRectangle(cornerRadius: 5))
             .overlay(
@@ -142,21 +163,28 @@ struct SubredditRow: View {
   }
 
   private func toggleDay(_ day: String) {
-    sub.peakDaysOverride = SubredditPeakSelection.toggledDay(day, in: sub.peakDaysOverride)
+    if showsSuggested {
+      let suggested = SubredditPeakSelection.suggestedDefaults()
+      sub.peakDaysOverride = SubredditPeakSelection.toggledDay(day, in: suggested.days)
+      sub.peakHoursUtcOverride = suggested.utcHours
+    } else {
+      sub.peakDaysOverride = SubredditPeakSelection.toggledDay(day, in: sub.peakDaysOverride)
+    }
   }
 
   private var peakHourChips: some View {
     let columns = [GridItem(.adaptive(minimum: 30), spacing: 3)]
     let hours = SubredditPeakSelection.displayHours
+    let localSelected = effectivePeakHoursLocal
     return LazyVGrid(columns: columns, spacing: 3) {
       ForEach(hours, id: \.self) { hour in
-        let isOn = effectivePeakHours.contains(hour)
-        Button(action: { toggleHour(hour) }) {
+        let isOn = localSelected.contains(hour)
+        Button(action: { toggleHourLocal(hour) }) {
           Text("\(hour)")
             .font(.system(size: 9, weight: .medium))
             .frame(minWidth: 24)
             .padding(.vertical, 3)
-            .background(isOn ? Color.green.opacity(hasOverride ? 0.12 : 0.06) : Color.clear)
+            .background(isOn ? Color.green.opacity(showsSuggested ? 0.04 : (hasOverride ? 0.12 : 0.06)) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(
               RoundedRectangle(cornerRadius: 4)
@@ -167,6 +195,33 @@ struct SubredditRow: View {
         .buttonStyle(.plain)
       }
     }
+  }
+
+  private var presetChips: some View {
+    HStack(spacing: 4) {
+      ForEach(SubredditPeakSelection.presets, id: \.label) { preset in
+        Button(action: { applyPreset(preset) }) {
+          Text(preset.label)
+            .font(.system(size: 9, weight: .medium))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(.quaternary.opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .overlay(
+              RoundedRectangle(cornerRadius: 5)
+                .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
+            )
+            .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+      }
+    }
+  }
+
+  private func applyPreset(_ preset: SubredditPeakSelection.PeakPreset) {
+    let applied = SubredditPeakSelection.applyPreset(preset)
+    sub.peakDaysOverride = applied.days
+    sub.peakHoursUtcOverride = applied.utcHours
   }
 
   private var eventSourceChips: some View {
@@ -191,9 +246,15 @@ struct SubredditRow: View {
       .foregroundStyle(count > 0 ? color : .secondary)
   }
 
-  private func toggleHour(_ hour: Int) {
-    sub.peakHoursUtcOverride = SubredditPeakSelection.toggledHour(
-      hour, in: sub.peakHoursUtcOverride)
+  private func toggleHourLocal(_ localHour: Int) {
+    let utcHour = SubredditPeakSelection.localHourToUtc(localHour)
+    if showsSuggested {
+      let suggested = SubredditPeakSelection.suggestedDefaults()
+      sub.peakDaysOverride = suggested.days
+      sub.peakHoursUtcOverride = SubredditPeakSelection.toggledHour(utcHour, in: suggested.utcHours)
+    } else {
+      sub.peakHoursUtcOverride = SubredditPeakSelection.toggledHour(utcHour, in: sub.peakHoursUtcOverride)
+    }
   }
 
   private var peakDaysSummary: String {
@@ -210,13 +271,33 @@ struct SubredditRow: View {
     SubredditPeakSelection.hasOverride(days: sub.peakDaysOverride, hours: sub.peakHoursUtcOverride)
   }
 
+  private var showsSuggested: Bool {
+    SubredditPeakSelection.needsSuggestedDefaults(
+      override: sub.peakDaysOverride ?? (sub.peakHoursUtcOverride != nil ? [] : nil),
+      peakInfo: peakInfo
+    )
+  }
+
   private var effectivePeakDays: [String] {
-    SubredditPeakSelection.effectivePeakDays(override: sub.peakDaysOverride, peakInfo: peakInfo)
+    if showsSuggested {
+      return SubredditPeakSelection.suggestedDefaults().days
+    }
+    return SubredditPeakSelection.effectivePeakDays(override: sub.peakDaysOverride, peakInfo: peakInfo)
   }
 
   private var effectivePeakHours: [Int] {
-    SubredditPeakSelection.effectivePeakHours(
+    if showsSuggested {
+      return SubredditPeakSelection.suggestedDefaults().utcHours
+    }
+    return SubredditPeakSelection.effectivePeakHours(
       override: sub.peakHoursUtcOverride, peakInfo: peakInfo)
+  }
+
+  private var effectivePeakHoursLocal: [Int] {
+    if showsSuggested {
+      return SubredditPeakSelection.suggestedDefaults().localHours
+    }
+    return SubredditPeakSelection.utcHoursToLocal(effectivePeakHours)
   }
 
   private var eventSourceSummary: EventSourceSummary {
