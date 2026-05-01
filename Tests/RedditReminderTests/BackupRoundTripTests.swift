@@ -133,7 +133,7 @@ import SwiftData
     #expect(rc1.postedSubredditIDs.isEmpty)
 
     let rc2 = restoredCaptures.first { $0.id == originalCaptureIds[1] }!
-    #expect(rc2.status == .queued)
+    #expect(rc2.status == .posted)
     #expect(rc2.postedSubredditIDs == [originalSubIds[0]])
 
     let rc3 = restoredCaptures.first { $0.id == originalCaptureIds[2] }!
