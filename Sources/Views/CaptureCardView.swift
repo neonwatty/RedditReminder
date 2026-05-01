@@ -35,7 +35,6 @@ struct CaptureCardView: View {
           if let onOpenHandoff {
             hoverActionButton(
               systemName: "paperplane",
-              label: "Post",
               accessibilityLabel: Self.openHandoffAccessibilityLabel,
               action: onOpenHandoff
             )
@@ -44,7 +43,6 @@ struct CaptureCardView: View {
           if let onCopyText {
             hoverActionButton(
               systemName: "doc.on.doc",
-              label: "Copy",
               accessibilityLabel: Self.copyTextAccessibilityLabel,
               action: onCopyText
             )
@@ -53,32 +51,18 @@ struct CaptureCardView: View {
           if let onMarkPosted {
             hoverActionButton(
               systemName: "checkmark.circle",
-              label: "Done",
               accessibilityLabel: Self.markPostedAccessibilityLabel,
               action: onMarkPosted
             )
           }
 
           if let onDelete {
-            Button(action: onDelete) {
-              HStack(spacing: 3) {
-                Image(systemName: "trash")
-                  .font(.system(size: 10, weight: .medium))
-                Text("Delete")
-                  .font(.system(size: 10, weight: .medium))
-              }
-              .foregroundStyle(.red)
-              .padding(.horizontal, 6)
-              .padding(.vertical, 3)
-              .background(.quaternary.opacity(0.3))
-              .clipShape(RoundedRectangle(cornerRadius: 4))
-              .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(Self.deleteAccessibilityLabel)
-            .accessibilityLabel(Self.deleteAccessibilityLabel)
-            .accessibilityIdentifier(
-              "captureCard.\(Self.deleteAccessibilityLabel.identifierSuffix)")
+            hoverActionButton(
+              systemName: "trash",
+              accessibilityLabel: Self.deleteAccessibilityLabel,
+              foregroundStyle: .red,
+              action: onDelete
+            )
           }
         }
 
@@ -162,20 +146,15 @@ struct CaptureCardView: View {
 
   private func hoverActionButton(
     systemName: String,
-    label: String,
     accessibilityLabel: String,
+    foregroundStyle: Color = .secondary,
     action: @escaping () -> Void
   ) -> some View {
     Button(action: action) {
-      HStack(spacing: 3) {
-        Image(systemName: systemName)
-          .font(.system(size: 10, weight: .medium))
-        Text(label)
-          .font(.system(size: 10, weight: .medium))
-      }
-      .foregroundStyle(.secondary)
-      .padding(.horizontal, 6)
-      .padding(.vertical, 3)
+      Image(systemName: systemName)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(foregroundStyle)
+        .frame(width: 26, height: 26)
       .background(.quaternary.opacity(0.3))
       .clipShape(RoundedRectangle(cornerRadius: 4))
       .contentShape(Rectangle())

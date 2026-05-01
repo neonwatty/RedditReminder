@@ -11,10 +11,10 @@ import SwiftData
 
     QAFixtures.seed(context: context, defaults: defaults)
 
-    #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 4)
-    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 3)
-    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 8)
-    #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 3)
+    #expect(try context.fetchCount(FetchDescriptor<Subreddit>()) == 3)
+    #expect(try context.fetchCount(FetchDescriptor<Project>()) == 2)
+    #expect(try context.fetchCount(FetchDescriptor<Capture>()) == 4)
+    #expect(try context.fetchCount(FetchDescriptor<SubredditEvent>()) == 2)
     #expect(defaults.string(forKey: SettingsKey.defaultProjectId) != nil)
 }
 
