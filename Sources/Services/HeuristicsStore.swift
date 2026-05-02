@@ -123,7 +123,9 @@ final class HeuristicsStore {
   }
 
   private func loadBundled(from bundle: Bundle) {
-    guard let url = bundle.url(forResource: "peak-times", withExtension: "json") else {
+    guard let url = bundle.url(forResource: "peak-times", withExtension: "json")
+      ?? Self.fallbackPeakTimesURL()
+    else {
       if logsMissingResource {
         NSLog("RedditReminder: peak-times.json not found in bundle")
       }
@@ -150,6 +152,19 @@ final class HeuristicsStore {
         bundled[sub] = PeakInfo(peakDays: days, peakHoursUtc: hours)
       }
     }
+  }
+
+  private static func fallbackPeakTimesURL() -> URL? {
+    let fileManager = FileManager.default
+    let currentDirectory = URL(fileURLWithPath: fileManager.currentDirectoryPath, isDirectory: true)
+    let executableDirectory = URL(fileURLWithPath: CommandLine.arguments.first ?? "")
+      .deletingLastPathComponent()
+    let candidates = [
+      currentDirectory.appendingPathComponent("Resources/peak-times.json"),
+      executableDirectory.appendingPathComponent("Resources/peak-times.json"),
+      executableDirectory.appendingPathComponent("RedditReminderResources/peak-times.json"),
+    ]
+    return candidates.first { fileManager.fileExists(atPath: $0.path) }
   }
 
   private struct GeneratedEventSpec {

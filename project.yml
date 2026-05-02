@@ -20,6 +20,30 @@ settings:
     SWIFT_STRICT_CONCURRENCY: targeted
 
 targets:
+  RedditReminderCLI:
+    type: tool
+    platform: macOS
+    sources:
+      - path: CLI/Sources
+      - path: Sources/Models/Capture.swift
+      - path: Sources/Models/CaptureFormResult.swift
+      - path: Sources/Models/Project.swift
+      - path: Sources/Models/Subreddit.swift
+      - path: Sources/Models/SubredditEvent.swift
+      - path: Sources/Services/HeuristicsStore.swift
+      - path: Sources/Services/TimingEngine.swift
+      - path: Sources/Utilities/Constants.swift
+      - path: Sources/Utilities/ProjectPersistenceActions.swift
+      - path: Sources/Utilities/RRuleHelper.swift
+      - path: Sources/Utilities/SubredditPeakSelection.swift
+      - path: Resources/peak-times.json
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: redditreminder
+        PRODUCT_MODULE_NAME: RedditReminderCLI
+        PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminderCLI
+
   RedditReminder:
     type: application
     platform: macOS
@@ -67,6 +91,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminderUITests
 
 schemes:
+  RedditReminderCLI:
+    build:
+      targets:
+        RedditReminderCLI: all
+
   RedditReminder:
     build:
       targets:
