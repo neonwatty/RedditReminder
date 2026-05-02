@@ -54,11 +54,65 @@ peak_set="$(run_json peaks set SideProject --days mon,wed --hours 9,10)"
 assert_contains "peak set ok" "$peak_set" '"ok":true'
 assert_contains "peak set source" "$peak_set" '"source":"override"'
 
+generated_events="$(run_json events list --generated)"
+assert_contains "generated events list" "$generated_events" '"isGeneratedFromHeuristics":true'
+generated_event_id="$(printf '%s\n' "$generated_events" | perl -0ne 'print $1 if /"id":"([^"]+)"/')"
+if [[ -z "$generated_event_id" || "$generated_event_id" == "$generated_events" ]]; then
+  echo "FAIL: could not parse generated event id" >&2
+  echo "$generated_events" >&2
+  exit 1
+fi
+if run_json events update "$generated_event_id" --name "Should fail" >/tmp/redditreminder-cli-generated-update.out 2>/tmp/redditreminder-cli-generated-update.err; then
+  echo "FAIL: generated event update unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "generated update rejected" "$(cat /tmp/redditreminder-cli-generated-update.err)" "Generated peak events cannot be updated or deleted directly"
+if run_json events delete "$generated_event_id" >/tmp/redditreminder-cli-generated-delete.out 2>/tmp/redditreminder-cli-generated-delete.err; then
+  echo "FAIL: generated event delete unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "generated delete rejected" "$(cat /tmp/redditreminder-cli-generated-delete.err)" "Generated peak events cannot be updated or deleted directly"
+rm -f /tmp/redditreminder-cli-generated-update.out /tmp/redditreminder-cli-generated-update.err
+rm -f /tmp/redditreminder-cli-generated-delete.out /tmp/redditreminder-cli-generated-delete.err
+
 peak_get="$(run_json peaks get SideProject)"
 assert_contains "peak get" "$peak_get" '"source":"override"'
 
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
+
+event_created="$(run_json events create --subreddit SideProject --name "Manual launch window" --date "2026-05-02T20:00:00Z" --lead-minutes 30)"
+assert_contains "event create ok" "$event_created" '"ok":true'
+assert_contains "event create name" "$event_created" '"name":"Manual launch window"'
+assert_contains "event create date" "$event_created" '"oneOffDate":"2026-05-02T20:00:00Z"'
+assert_contains "event create lead" "$event_created" '"reminderLeadMinutes":30'
+event_id="$(printf '%s\n' "$event_created" | perl -0ne 'print $1 if /"id":"([^"]+)"/')"
+if [[ -z "$event_id" || "$event_id" == "$event_created" ]]; then
+  echo "FAIL: could not parse event id" >&2
+  echo "$event_created" >&2
+  exit 1
+fi
+
+event_search="$(run_json events search --query launch --manual --active)"
+assert_contains "event search" "$event_search" '"name":"Manual launch window"'
+
+event_updated="$(run_json events update "$event_id" --name "Updated launch window" --date "2026-05-02T21:00:00Z" --lead-minutes 45)"
+assert_contains "event update ok" "$event_updated" '"ok":true'
+assert_contains "event update name" "$event_updated" '"name":"Updated launch window"'
+assert_contains "event update date" "$event_updated" '"oneOffDate":"2026-05-02T21:00:00Z"'
+assert_contains "event update lead" "$event_updated" '"reminderLeadMinutes":45'
+
+event_deactivated="$(run_json events update "$event_id" --deactivate)"
+assert_contains "event deactivate ok" "$event_deactivated" '"ok":true'
+assert_contains "event deactivate active false" "$event_deactivated" '"isActive":false'
+
+event_activated="$(run_json events update "$event_id" --activate)"
+assert_contains "event activate ok" "$event_activated" '"ok":true'
+assert_contains "event activate active true" "$event_activated" '"isActive":true'
+
+event_deleted="$(run_json events delete "$event_id")"
+assert_contains "event delete ok" "$event_deleted" '"ok":true'
+assert_contains "event delete id" "$event_deleted" "\"id\":\"$event_id\""
 
 IMAGE="$TMP_DIR/pixel.png"
 sips -s format png /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out "$IMAGE" >/dev/null

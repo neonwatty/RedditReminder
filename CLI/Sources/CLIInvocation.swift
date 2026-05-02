@@ -29,6 +29,10 @@ enum CLICommand {
   case captureDelete(id: String)
   case captureMarkPosted(id: String, url: String?)
   case captureMarkQueued(id: String)
+  case eventsList(EventListInput)
+  case eventCreate(EventCreateInput)
+  case eventUpdate(EventUpdateInput)
+  case eventDelete(id: String)
   case projectsList(query: String?)
   case projectCreate(name: String)
   case subredditsList(query: String?)
@@ -55,6 +59,16 @@ enum CLICommand {
       self = .captureMarkPosted(id: id, url: parser.consumeOptionalValue(for: "--url"))
     case ("captures", "mark-queued"):
       self = .captureMarkQueued(id: try parser.consumeRequiredArgument(label: "capture id"))
+    case ("events", "list"):
+      self = .eventsList(try parser.consumeEventListInput(queryRequired: false))
+    case ("events", "search"):
+      self = .eventsList(try parser.consumeEventListInput(queryRequired: true))
+    case ("events", "create"):
+      self = .eventCreate(try parser.consumeEventCreateInput())
+    case ("events", "update"):
+      self = .eventUpdate(try parser.consumeEventUpdateInput())
+    case ("events", "delete"):
+      self = .eventDelete(id: try parser.consumeRequiredArgument(label: "event id"))
     case ("projects", "list"):
       self = .projectsList(query: parser.consumeOptionalValue(for: "--query"))
     case ("projects", "search"):
@@ -86,7 +100,7 @@ enum CLICommand {
 }
 
 struct CLIArgumentParser {
-  private var arguments: [String]
+  var arguments: [String]
 
   init(_ arguments: [String]) {
     self.arguments = arguments
@@ -189,101 +203,6 @@ struct CLIArgumentParser {
       return hour
     }
     return Array(Set(hours)).sorted()
-  }
-
-  mutating func consumeCaptureCreateInput() throws -> CaptureCreateInput {
-    let title = consumeOptionalValue(for: "--title")
-    let textFlag = consumeOptionalValue(for: "--text")
-    let notes = consumeOptionalValue(for: "--notes")
-    let project = consumeOptionalValue(for: "--project")
-    let due = consumeOptionalValue(for: "--due")
-    let links =
-      consumeRepeatedValues(for: "--link") + splitCSV(consumeOptionalValue(for: "--links"))
-    let subreddits =
-      consumeRepeatedValues(for: "--subreddit")
-      + splitCSV(consumeOptionalValue(for: "--subreddits"))
-    let mediaPaths =
-      consumeRepeatedValues(for: "--media") + splitCSV(consumeOptionalValue(for: "--media-paths"))
-    if let unexpected = arguments.first(where: { $0.hasPrefix("--") }) {
-      throw CLIError.usage("Unexpected capture create option: \(unexpected)")
-    }
-    let trailingText = arguments.joined(separator: " ").trimmingCharacters(
-      in: .whitespacesAndNewlines)
-    arguments.removeAll()
-
-    let input = CaptureCreateInput(
-      title: normalizedOptional(title),
-      text: (textFlag ?? trailingText).trimmingCharacters(in: .whitespacesAndNewlines),
-      notes: normalizedOptional(notes),
-      links: links,
-      project: normalizedOptional(project),
-      subreddits: subreddits,
-      mediaPaths: mediaPaths,
-      due: normalizedOptional(due)
-    )
-    guard input.title != nil || !input.text.isEmpty else {
-      throw CLIError.usage("Capture create requires --text, --title, or trailing text.")
-    }
-    return input
-  }
-
-  mutating func consumeCaptureUpdateInput() throws -> CaptureUpdateInput {
-    let id = try consumeRequiredArgument(label: "capture id")
-    let title = consumeOptionalValue(for: "--title")
-    let text = consumeOptionalValue(for: "--text")
-    let notes = consumeOptionalValue(for: "--notes")
-    let project = consumeOptionalValue(for: "--project")
-    let links =
-      consumeRepeatedValues(for: "--link") + splitCSV(consumeOptionalValue(for: "--links"))
-    let subreddits =
-      consumeRepeatedValues(for: "--subreddit")
-      + splitCSV(consumeOptionalValue(for: "--subreddits"))
-    let mediaPaths =
-      consumeRepeatedValues(for: "--media")
-      + splitCSV(consumeOptionalValue(for: "--media-paths"))
-    let removedMediaRefs =
-      consumeRepeatedValues(for: "--remove-media")
-      + splitCSV(consumeOptionalValue(for: "--remove-media-refs"))
-
-    let input = CaptureUpdateInput(
-      id: id,
-      title: normalizedOptional(title),
-      clearTitle: consumeFlag("--clear-title"),
-      text: normalizedOptional(text),
-      notes: normalizedOptional(notes),
-      clearNotes: consumeFlag("--clear-notes"),
-      links: links.isEmpty ? nil : links,
-      clearLinks: consumeFlag("--clear-links"),
-      project: normalizedOptional(project),
-      clearProject: consumeFlag("--clear-project"),
-      subreddits: subreddits.isEmpty ? nil : subreddits,
-      clearSubreddits: consumeFlag("--clear-subreddits"),
-      mediaPaths: mediaPaths,
-      removedMediaRefs: removedMediaRefs,
-      clearMedia: consumeFlag("--clear-media")
-    )
-    guard input.hasChanges else {
-      throw CLIError.usage("Capture update requires at least one field flag.")
-    }
-    return input
-  }
-
-  private func splitCSV(_ value: String?) -> [String] {
-    value?
-      .split(separator: ",")
-      .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-      .filter { !$0.isEmpty } ?? []
-  }
-
-  private func normalizedOptional(_ value: String?) -> String? {
-    let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    return trimmed.isEmpty ? nil : trimmed
-  }
-
-  private mutating func consumeFlag(_ flag: String) -> Bool {
-    guard let index = arguments.firstIndex(of: flag) else { return false }
-    arguments.remove(at: index)
-    return true
   }
 
   func rejectRemaining() throws {

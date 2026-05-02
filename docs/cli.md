@@ -81,6 +81,23 @@ redditreminder captures delete CAPTURE_ID --json
 There is no separate due-date field on captures today. `--due` maps to the app's
 posting-window model by creating `SubredditEvent` rows for the selected subreddit(s).
 
+## Events
+
+```sh
+redditreminder events list --json
+redditreminder events search --query "launch" --json
+redditreminder events list --subreddit SideProject --manual --active --from 2026-05-02T00:00:00Z --to 2026-05-03T00:00:00Z --json
+redditreminder events create --subreddit SideProject --name "Launch window" --date 2026-05-02T18:00:00Z --lead-minutes 30 --json
+redditreminder events update EVENT_ID --name "Updated window" --date 2026-05-02T19:00:00Z --lead-minutes 45 --json
+redditreminder events update EVENT_ID --deactivate --json
+redditreminder events update EVENT_ID --activate --json
+redditreminder events delete EVENT_ID --json
+```
+
+Generated peak-time events are read-only through `events update/delete`. Change
+those through `peaks set` or `peaks reset` so generated windows stay in sync with
+the subreddit peak-time configuration.
+
 ## Projects
 
 ```sh

@@ -37,6 +37,14 @@ final class CLIRunner {
         id: id, url: url)
     case .captureMarkQueued(let id):
       return try CLICaptureLifecycle(options: options, context: context).markQueued(id: id)
+    case .eventsList(let input):
+      return try CLIEventManager(options: options, context: context).list(input: input)
+    case .eventCreate(let input):
+      return try CLIEventManager(options: options, context: context).create(input: input)
+    case .eventUpdate(let input):
+      return try CLIEventManager(options: options, context: context).update(input: input)
+    case .eventDelete(let id):
+      return try CLIEventManager(options: options, context: context).delete(id: id)
     case .projectsList(let query):
       return .success(data: .projects(fetchProjects(matching: query).map(ProjectDTO.init)))
     case .projectCreate(let name):
