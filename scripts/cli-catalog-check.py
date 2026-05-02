@@ -21,22 +21,30 @@ def parser_routes(repo_root):
     return {f"{domain}.{command}" for domain, command in matches}
 
 
-def command_catalog(cli):
+def cli_json(cli, arguments):
     with tempfile.TemporaryDirectory() as tmpdir:
         store = str(Path(tmpdir) / "redditreminder-cli.store")
         result = subprocess.run(
-            [cli, "--json", "--store", store, "commands", "list"],
+            [cli, "--json", "--store", store, *arguments],
             check=False,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
     if result.returncode != 0:
-        fail(f"commands list failed: {result.stderr.strip()}")
+        fail(f"{' '.join(arguments)} failed: {result.stderr.strip()}")
     payload = json.loads(result.stdout)
     if not payload.get("ok"):
-        fail("commands list returned ok=false")
-    return payload["data"]
+        fail(f"{' '.join(arguments)} returned ok=false")
+    return payload
+
+
+def command_catalog(cli):
+    return cli_json(cli, ["commands", "list"])["data"]
+
+
+def recipe_catalog(cli):
+    return cli_json(cli, ["recipes", "list"])["data"]
 
 
 def validate_catalog(cli, catalog):
@@ -67,6 +75,27 @@ def validate_catalog(cli, catalog):
             fail(f"commands show returned wrong id for {command_id}")
 
 
+def validate_recipes(cli, recipes, command_ids):
+    ids = [recipe["id"] for recipe in recipes]
+    duplicates = sorted({recipe_id for recipe_id in ids if ids.count(recipe_id) > 1})
+    if duplicates:
+        fail(f"duplicate recipe ids: {', '.join(duplicates)}")
+
+    for recipe in recipes:
+        recipe_id = recipe["id"]
+        for field in ("summary", "goal", "inputs", "steps", "examples", "relatedCommands"):
+            if not recipe.get(field):
+                fail(f"{recipe_id} missing {field}")
+        shown = cli_json(cli, ["recipes", "show", recipe_id])
+        if shown.get("data", {}).get("id") != recipe_id:
+            fail(f"recipes show returned wrong id for {recipe_id}")
+        related = set(recipe["relatedCommands"])
+        step_commands = {step["commandId"] for step in recipe["steps"]}
+        unknown = sorted((related | step_commands) - command_ids)
+        if unknown:
+            fail(f"{recipe_id} references unknown commands: {', '.join(unknown)}")
+
+
 def main():
     if len(sys.argv) != 2:
         fail("usage: cli-catalog-check.py PATH_TO_REDDITREMINDER_CLI")
@@ -77,6 +106,8 @@ def main():
     catalog = command_catalog(cli)
     validate_catalog(cli, catalog)
     catalog_ids = {command["id"] for command in catalog}
+    recipes = recipe_catalog(cli)
+    validate_recipes(cli, recipes, catalog_ids)
 
     missing = sorted(routes - catalog_ids)
     extra = sorted(catalog_ids - routes)
@@ -88,7 +119,7 @@ def main():
             details.append(f"catalog ids without parser routes: {', '.join(extra)}")
         fail("; ".join(details))
 
-    print(f"CLI command catalog covers {len(routes)} parser routes")
+    print(f"CLI command catalog covers {len(routes)} parser routes and {len(recipes)} recipes")
 
 
 if __name__ == "__main__":

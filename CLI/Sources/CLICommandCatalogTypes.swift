@@ -29,3 +29,26 @@ struct CommandOutputDTO: Encodable {
   let data: String
   let summary: String
 }
+
+struct RecipeReferenceDTO: Encodable {
+  let id: String
+  let summary: String
+  let goal: String
+  let inputs: [RecipeInputDTO]
+  let steps: [RecipeStepDTO]
+  let examples: [String]
+  let relatedCommands: [String]
+}
+
+struct RecipeInputDTO: Encodable {
+  let name: String
+  let required: Bool
+  let summary: String
+}
+
+struct RecipeStepDTO: Encodable {
+  let order: Int
+  let commandId: String
+  let purpose: String
+  let example: String
+}

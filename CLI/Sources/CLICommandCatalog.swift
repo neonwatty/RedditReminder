@@ -52,6 +52,19 @@ enum CLICommandCatalog {
       examples: ["redditreminder --json commands show captures.create"],
       output: output("commandReference", "One command reference object.")
     ),
+    command(
+      "recipes.list", "recipes", "list",
+      "Return agent workflow recipes.",
+      examples: ["redditreminder --json recipes list"],
+      output: output("recipeReferences", "Array of recipe reference objects.")
+    ),
+    command(
+      "recipes.show", "recipes", "show",
+      "Return one agent workflow recipe.",
+      positionals: [arg("id", "Recipe id, for example posting.create-with-media.")],
+      examples: ["redditreminder --json recipes show posting.create-with-media"],
+      output: output("recipeReference", "One recipe reference object.")
+    ),
   ]
 
   static func command(

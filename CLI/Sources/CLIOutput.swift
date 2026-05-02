@@ -78,6 +78,10 @@ enum CLIPrinter {
       return commands.map { "\($0.id) - \($0.summary)" }.joined(separator: "\n")
     case .commandReference(let command):
       return "\(command.id) - \(command.summary)"
+    case .recipeReferences(let recipes):
+      return recipes.map { "\($0.id) - \($0.summary)" }.joined(separator: "\n")
+    case .recipeReference(let recipe):
+      return "\(recipe.id) - \(recipe.summary)"
     case .dryRun(let message): return message
     }
   }
@@ -117,7 +121,7 @@ enum CLIHelp {
   static let root = """
     Usage: redditreminder [--json] [--pretty] [--dry-run] [--store PATH] <domain> <command>
 
-    Domains: captures, events, projects, subreddits, peaks, search, context, commands
+    Domains: captures, events, projects, subreddits, peaks, search, context, commands, recipes
     """
 
   static func domain(_ domain: String) -> String {
@@ -132,6 +136,7 @@ enum CLIHelp {
     case "search": return "Usage: redditreminder search all --query TEXT [--limit N]"
     case "context": return "Usage: redditreminder context show [--limit N]"
     case "commands": return "Usage: redditreminder commands list|show"
+    case "recipes": return "Usage: redditreminder recipes list|show"
     default: return root
     }
   }
