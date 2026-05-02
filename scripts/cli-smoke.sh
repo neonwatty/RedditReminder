@@ -4,14 +4,25 @@ set -euo pipefail
 CLI="${1:-build/Build/Products/Debug/redditreminder}"
 TMP_DIR="$(mktemp -d)"
 STORE="$TMP_DIR/redditreminder-cli.store"
+VERIFY_PORT="$((RANDOM + 20000))"
+VERIFY_BASE_URL="http://127.0.0.1:$VERIFY_PORT"
+VERIFY_SERVER_PID=""
 
 cleanup() {
+  if [[ -n "$VERIFY_SERVER_PID" ]]; then
+    kill "$VERIFY_SERVER_PID" 2>/dev/null || true
+    wait "$VERIFY_SERVER_PID" 2>/dev/null || true
+  fi
   rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
 
 run_json() {
   "$CLI" --json --store "$STORE" "$@"
+}
+
+run_json_with_verify_base() {
+  REDDITREMINDER_VERIFY_BASE_URL="$VERIFY_BASE_URL" "$CLI" --json --store "$STORE" "$@"
 }
 
 assert_contains() {
@@ -26,6 +37,21 @@ assert_contains() {
   fi
 }
 
+mkdir -p "$TMP_DIR/mock/r/SideProject" "$TMP_DIR/mock/r/MissingSub"
+printf '{"data":{"display_name_prefixed":"r/SideProject","title":"Side Project","subscribers":12345,"over18":false}}' \
+  >"$TMP_DIR/mock/r/SideProject/about.json"
+(
+  cd "$TMP_DIR/mock"
+  python3 -m http.server "$VERIFY_PORT" --bind 127.0.0.1 >/dev/null 2>&1
+) &
+VERIFY_SERVER_PID="$!"
+for _ in {1..20}; do
+  if curl -fsS "$VERIFY_BASE_URL/r/SideProject/about.json" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.1
+done
+
 projects_empty="$(run_json projects list)"
 assert_contains "empty projects list" "$projects_empty" '"ok":true'
 
@@ -33,9 +59,21 @@ project_created="$(run_json projects create "Launch Ideas")"
 assert_contains "project create ok" "$project_created" '"ok":true'
 assert_contains "project create name" "$project_created" '"name":"Launch Ideas"'
 
-subreddit_created="$(run_json subreddits add SideProject)"
+subreddit_verified="$(run_json_with_verify_base subreddits verify SideProject)"
+assert_contains "subreddit verify ok" "$subreddit_verified" '"ok":true'
+assert_contains "subreddit verify exists" "$subreddit_verified" '"exists":true'
+assert_contains "subreddit verify title" "$subreddit_verified" '"title":"Side Project"'
+
+subreddit_created="$(run_json_with_verify_base subreddits add --verify SideProject)"
 assert_contains "subreddit add ok" "$subreddit_created" '"ok":true'
 assert_contains "subreddit normalized" "$subreddit_created" '"name":"r/SideProject"'
+
+if run_json_with_verify_base subreddits add --verify MissingSub >/tmp/redditreminder-cli-missing-sub.out 2>/tmp/redditreminder-cli-missing-sub.err; then
+  echo "FAIL: missing subreddit add unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "missing subreddit rejected" "$(cat /tmp/redditreminder-cli-missing-sub.err)" "could not be verified"
+rm -f /tmp/redditreminder-cli-missing-sub.out /tmp/redditreminder-cli-missing-sub.err
 
 if run_json subreddits add sideproject >/tmp/redditreminder-cli-duplicate.out 2>/tmp/redditreminder-cli-duplicate.err; then
   echo "FAIL: duplicate subreddit add unexpectedly succeeded" >&2

@@ -11,6 +11,7 @@ enum CLIResponseData: Encodable {
   case project(ProjectDTO)
   case subreddits([SubredditDTO])
   case subreddit(SubredditDTO)
+  case subredditVerification(SubredditVerificationDTO)
   case peakPresets([PeakPresetDTO])
   case peakInfo(PeakInfoDTO)
   case dryRun(String)
@@ -28,6 +29,7 @@ enum CLIResponseData: Encodable {
     case .project(let value): try container.encode(value)
     case .subreddits(let value): try container.encode(value)
     case .subreddit(let value): try container.encode(value)
+    case .subredditVerification(let value): try container.encode(value)
     case .peakPresets(let value): try container.encode(value)
     case .peakInfo(let value): try container.encode(value)
     case .dryRun(let value): try container.encode(["message": value])
@@ -172,6 +174,16 @@ struct SubredditRefDTO: Encodable {
     id = subreddit.id.uuidString
     name = subreddit.name
   }
+}
+
+struct SubredditVerificationDTO: Encodable {
+  let name: String
+  let exists: Bool
+  let reachable: Bool
+  let statusCode: Int?
+  let title: String?
+  let subscribers: Int?
+  let over18: Bool?
 }
 
 struct PeakPresetDTO: Encodable {

@@ -36,7 +36,8 @@ enum CLICommand {
   case projectsList(query: String?)
   case projectCreate(name: String)
   case subredditsList(query: String?)
-  case subredditAdd(name: String)
+  case subredditAdd(name: String, verify: Bool)
+  case subredditVerify(name: String)
   case peaksPresets
   case peaksGet(subreddit: String)
   case peaksSet(subreddit: String, days: [String], hours: [Int], timeZone: String?)
@@ -80,7 +81,12 @@ enum CLICommand {
     case ("subreddits", "search"):
       self = .subredditsList(query: try parser.consumeRequiredValue(for: "--query"))
     case ("subreddits", "add"):
-      self = .subredditAdd(name: try parser.consumeTrailingName(label: "subreddit name"))
+      let verify = parser.consumeFlag("--verify")
+      self = .subredditAdd(
+        name: try parser.consumeTrailingName(label: "subreddit name"),
+        verify: verify)
+    case ("subreddits", "verify"):
+      self = .subredditVerify(name: try parser.consumeTrailingName(label: "subreddit name"))
     case ("peaks", "presets"):
       self = .peaksPresets
     case ("peaks", "get"):

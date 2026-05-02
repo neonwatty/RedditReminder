@@ -7,7 +7,7 @@ struct RedditReminderCLI {
       let arguments = Array(CommandLine.arguments.dropFirst())
       let invocation = try CLIInvocation(arguments: arguments)
       let runner = try CLIRunner(options: invocation.options)
-      let response = try runner.run(command: invocation.command)
+      let response = try await runner.run(command: invocation.command)
       CLIPrinter.print(response, options: invocation.options)
     } catch let error as CLIError {
       CLIPrinter.printError(error)

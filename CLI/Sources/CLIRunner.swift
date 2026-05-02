@@ -22,7 +22,7 @@ final class CLIRunner {
     heuristicsStore = HeuristicsStore()
   }
 
-  func run(command: CLICommand) throws -> CLIResponse {
+  func run(command: CLICommand) async throws -> CLIResponse {
     switch command {
     case .capturesList(let query):
       return .success(data: .captures(fetchCaptures(matching: query).map(CaptureDTO.init)))
@@ -54,8 +54,10 @@ final class CLIRunner {
         SubredditDTO($0, peakInfo: heuristicsStore.peakInfo(for: $0))
       }
       return .success(data: .subreddits(subreddits))
-    case .subredditAdd(let name):
-      return try addSubreddit(name: name)
+    case .subredditAdd(let name, let verify):
+      return try await addSubreddit(name: name, verify: verify)
+    case .subredditVerify(let name):
+      return try await verifySubreddit(name: name)
     case .peaksPresets:
       return .success(data: .peakPresets(SubredditPeakSelection.presets.map(PeakPresetDTO.init)))
     case .peaksGet(let subreddit):
@@ -122,16 +124,18 @@ final class CLIRunner {
     return .success(data: .project(ProjectDTO(project)))
   }
 
-  private func addSubreddit(name input: String) throws -> CLIResponse {
+  private func addSubreddit(name input: String, verify: Bool) async throws -> CLIResponse {
     let subreddits = fetchSubreddits(matching: nil)
-    let normalized = SubredditName.normalize(input)
-    guard case .success(let name) = normalized else {
-      if case .failure(let error) = normalized { throw CLIError.validation(error.message) }
-      throw CLIError.validation(SubredditName.ValidationError.empty.message)
-    }
+    let name = try normalizedSubredditName(input)
     guard !subreddits.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
     else {
       throw CLIError.validation(SubredditName.ValidationError.duplicate.message)
+    }
+    if verify {
+      let verification = try await SubredditVerifier().verify(name: name)
+      guard verification.exists else {
+        throw CLIError.validation("Subreddit could not be verified on Reddit: \(name)")
+      }
     }
     if options.dryRun {
       return .success(data: .dryRun("Would add subreddit \(name)."))
@@ -147,6 +151,21 @@ final class CLIRunner {
     )
     return .success(
       data: .subreddit(SubredditDTO(subreddit, peakInfo: heuristicsStore.peakInfo(for: subreddit))))
+  }
+
+  private func verifySubreddit(name input: String) async throws -> CLIResponse {
+    let name = try normalizedSubredditName(input)
+    let verification = try await SubredditVerifier().verify(name: name)
+    return .success(data: .subredditVerification(verification.dto))
+  }
+
+  private func normalizedSubredditName(_ input: String) throws -> String {
+    let normalized = SubredditName.normalize(input)
+    guard case .success(let name) = normalized else {
+      if case .failure(let error) = normalized { throw CLIError.validation(error.message) }
+      throw CLIError.validation(SubredditName.ValidationError.empty.message)
+    }
+    return name
   }
 
   private func peakInfo(for input: String) throws -> CLIResponse {

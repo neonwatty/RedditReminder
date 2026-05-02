@@ -112,12 +112,16 @@ redditreminder --dry-run projects create "Launch Ideas" --json
 ```sh
 redditreminder subreddits list --json
 redditreminder subreddits search --query "swift" --json
+redditreminder subreddits verify SideProject --json
 redditreminder subreddits add SideProject --json
+redditreminder subreddits add --verify SideProject --json
 redditreminder subreddits add https://www.reddit.com/r/SwiftUI/comments/abc --json
 ```
 
 Subreddit names are normalized the same way as the app UI. Duplicate names are
-rejected case-insensitively.
+rejected case-insensitively. `subreddits verify` checks Reddit before saving
+anything. `subreddits add --verify` performs that same check and only saves the
+subreddit when Reddit returns a valid `/about.json` response.
 
 ## Peak Times
 

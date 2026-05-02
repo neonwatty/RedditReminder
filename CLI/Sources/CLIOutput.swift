@@ -58,6 +58,10 @@ enum CLIPrinter {
     case .subreddits(let subreddits):
       return subreddits.map { "\($0.id) \($0.name)" }.joined(separator: "\n")
     case .subreddit(let subreddit): return "Added subreddit \(subreddit.name) (\(subreddit.id))"
+    case .subredditVerification(let verification):
+      return verification.exists
+        ? "Verified \(verification.name)"
+        : "Subreddit not found: \(verification.name)"
     case .peakPresets(let presets):
       return presets.map {
         "\($0.label): \($0.days.joined(separator: ",")) @ \($0.localHours.map(String.init).joined(separator: ","))"
@@ -114,7 +118,7 @@ enum CLIHelp {
         "Usage: redditreminder captures list|search|create|update|delete|mark-posted|mark-queued"
     case "events": return "Usage: redditreminder events list|search|create|update|delete"
     case "projects": return "Usage: redditreminder projects list|search|create"
-    case "subreddits": return "Usage: redditreminder subreddits list|search|add"
+    case "subreddits": return "Usage: redditreminder subreddits list|search|add|verify"
     case "peaks": return "Usage: redditreminder peaks presets|get|set|reset"
     default: return root
     }
