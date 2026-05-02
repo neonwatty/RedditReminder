@@ -50,6 +50,8 @@ enum CLICommand {
   case contextShow(ContextInput)
   case commandsList
   case commandsShow(id: String)
+  case recipesList
+  case recipesShow(id: String)
 
   init(domain: String, action: String, parser: inout CLIArgumentParser) throws {
     switch (domain, action) {
@@ -123,6 +125,10 @@ enum CLICommand {
       self = .commandsList
     case ("commands", "show"):
       self = .commandsShow(id: try parser.consumeRequiredArgument(label: "command id"))
+    case ("recipes", "list"):
+      self = .recipesList
+    case ("recipes", "show"):
+      self = .recipesShow(id: try parser.consumeRequiredArgument(label: "recipe id"))
     default:
       throw CLIError.usage(CLIHelp.domain(domain))
     }

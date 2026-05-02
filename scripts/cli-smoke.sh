@@ -167,6 +167,17 @@ assert_contains "commands show id" "$commands_show" '"id":"captures.create"'
 assert_contains "commands show media flag" "$commands_show" '"name":"--media"'
 assert_contains "commands show output kind" "$commands_show" '"data":"captureCreated"'
 
+recipes_list="$(run_json recipes list)"
+assert_contains "recipes list ok" "$recipes_list" '"ok":true'
+assert_contains "recipes list create media" "$recipes_list" '"id":"posting.create-with-media"'
+assert_contains "recipes list steps" "$recipes_list" '"steps":'
+
+recipes_show="$(run_json recipes show posting.create-with-media)"
+assert_contains "recipes show ok" "$recipes_show" '"ok":true'
+assert_contains "recipes show id" "$recipes_show" '"id":"posting.create-with-media"'
+assert_contains "recipes show capture command" "$recipes_show" '"commandId":"captures.create"'
+assert_contains "recipes show related commands" "$recipes_show" '"relatedCommands":'
+
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
 

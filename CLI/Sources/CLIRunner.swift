@@ -79,6 +79,10 @@ final class CLIRunner {
       return CLICommandCatalog.list()
     case .commandsShow(let id):
       return try CLICommandCatalog.show(id: id)
+    case .recipesList:
+      return CLIRecipeCatalog.list()
+    case .recipesShow(let id):
+      return try CLIRecipeCatalog.show(id: id)
     }
   }
 
