@@ -95,6 +95,11 @@ def validate_recipes(cli, recipes, command_ids):
         if unknown:
             fail(f"{recipe_id} references unknown commands: {', '.join(unknown)}")
 
+    search = cli_json(cli, ["recipes", "search", "--query", "media"])
+    search_ids = {recipe["id"] for recipe in search["data"]}
+    if "posting.create-with-media" not in search_ids:
+        fail("recipes search did not return posting.create-with-media for media")
+
 
 def main():
     if len(sys.argv) != 2:

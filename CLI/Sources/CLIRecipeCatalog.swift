@@ -5,12 +5,32 @@ enum CLIRecipeCatalog {
     .success(data: .recipeReferences(recipes))
   }
 
+  static func search(query: String) -> CLIResponse {
+    .success(
+      data: .recipeReferences(
+        CLIFilter.items(recipes, query: query, searchableText: searchableText)))
+  }
+
   static func show(id input: String) throws -> CLIResponse {
     let normalized = input.lowercased()
     guard let recipe = recipes.first(where: { $0.id == normalized }) else {
       throw CLIError.notFound("Recipe not found: \(input)")
     }
     return .success(data: .recipeReference(recipe))
+  }
+
+  private static func searchableText(for recipe: RecipeReferenceDTO) -> String {
+    (
+      [
+        recipe.id,
+        recipe.summary,
+        recipe.goal,
+        recipe.examples.joined(separator: " "),
+        recipe.relatedCommands.joined(separator: " "),
+      ]
+      + recipe.inputs.map { "\($0.name) \($0.summary)" }
+      + recipe.steps.map { "\($0.commandId) \($0.purpose) \($0.example)" }
+    ).joined(separator: " ")
   }
 
   static let recipes: [RecipeReferenceDTO] = [

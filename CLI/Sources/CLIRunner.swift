@@ -81,6 +81,8 @@ final class CLIRunner {
       return try CLICommandCatalog.show(id: id)
     case .recipesList:
       return CLIRecipeCatalog.list()
+    case .recipesSearch(let query):
+      return CLIRecipeCatalog.search(query: query)
     case .recipesShow(let id):
       return try CLIRecipeCatalog.show(id: id)
     }
