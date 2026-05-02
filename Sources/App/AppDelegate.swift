@@ -1,5 +1,6 @@
 import AppKit
 import SwiftData
+import SwiftUI
 @preconcurrency import UserNotifications
 
 @MainActor
@@ -92,6 +93,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    bootstrapApplication()
+
     if AppRuntime.shouldRegisterGlobalShortcut() {
       registerGlobalShortcut()
       shortcutObserver = NotificationCenter.default.addObserver(
@@ -113,6 +116,56 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     startRefreshLoop()
 
     NSLog("RedditReminder: launched, refresh loop started")
+  }
+
+  private func bootstrapApplication() {
+    let container: ModelContainer
+    do {
+      container = try AppModelContainerFactory.makeContainer()
+    } catch {
+      presentStoreUnavailableAlert(error: error)
+      return
+    }
+
+    wireMenuActions(container: container)
+    #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("--seed-qa") {
+        QAFixtures.seed(context: container.mainContext)
+      } else {
+        DefaultSubreddits.seedIfEmpty(context: container.mainContext)
+      }
+    #else
+      DefaultSubreddits.seedIfEmpty(context: container.mainContext)
+    #endif
+    runRefreshCycle()
+
+    let popoverView = PopoverContentView(
+      menuBarController: menuBarController,
+      notificationService: notificationService,
+      heuristicsStore: heuristicsStore,
+      onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
+    )
+    .modelContainer(container)
+    menuBarController.setup(popoverContent: popoverView)
+  }
+
+  private func presentStoreUnavailableAlert(error: Error) {
+    let alert = NSAlert()
+    alert.alertStyle = .critical
+    alert.messageText = "RedditReminder cannot open its data store"
+    alert.informativeText = """
+      The app did not start with temporary storage because that could make new captures disappear when you quit.
+
+      \(error.localizedDescription)
+      """
+    alert.addButton(withTitle: "Reveal Data Folder")
+    alert.addButton(withTitle: "Quit")
+    if alert.runModal() == .alertFirstButtonReturn {
+      let directory = AppModelContainerFactory.appSupportDirectory
+      try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      NSWorkspace.shared.activateFileViewerSelecting([directory])
+    }
+    NSApp.terminate(nil)
   }
 
   func applicationDidBecomeActive(_ notification: Notification) {
