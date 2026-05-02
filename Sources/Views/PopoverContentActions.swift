@@ -3,77 +3,20 @@ import SwiftUI
 
 extension PopoverContentView {
   func openNewCapture() {
-    openCaptureWindow(mode: .create)
+    route = .captureCreate
+    showPosted = false
   }
 
   func openCaptureForEditing(_ capture: Capture) {
-    openCaptureWindow(mode: .edit(capture))
-  }
-
-  func openCaptureWindow(mode: CaptureWindowView.Mode) {
-    let (title, successMsg): (String, String) =
-      switch mode {
-      case .create: ("New Capture", "Draft saved")
-      case .edit: ("Edit Capture", "Draft updated")
-      }
-    let formView = CaptureWindowView(
-      mode: mode,
-      onSave: { result in
-        let ok: Bool =
-          switch mode {
-          case .create: saveCapture(result)
-          case .edit(let capture): updateCapture(capture, with: result)
-          }
-        if ok {
-          menuBarController.closeCaptureWindow()
-          showToastAfterReopen(successMsg)
-        }
-        return ok
-      },
-      onCancel: { menuBarController.closeCaptureWindow() }
-    ).modelContainer(modelContext.container)
-    menuBarController.showCaptureWindow(title: title, content: formView)
+    route = .captureEdit(capture)
   }
 
   func openPreferences() {
-    let prefsView = PreferencesView(
-      notificationService: notificationService,
-      heuristicsStore: heuristicsStore,
-      onAppStateChanged: onAppStateChanged
-    )
-    .modelContainer(modelContext.container)
-    menuBarController.showPreferencesWindow(content: prefsView)
+    route = .preferences
   }
 
   func openPostHandoff(for capture: Capture) {
-    let view = PostHandoffView(
-      capture: capture,
-      checklistItems: postingChecklistItems(for: capture),
-      onCopyTitle: { copyPostTitle(for: capture) },
-      onCopyBody: { copyPostBody(for: capture) },
-      onCopyLinks: { copyPostLinks(for: capture) },
-      onCopyAll: { copyPostHandoffText(for: capture) },
-      onOpenSubmit: { openRedditSubmitPage(for: capture) },
-      onMarkPosted: { markCaptureAsPosted(capture) },
-      onClose: { menuBarController.closePostHandoffWindow() },
-      onMarkSubredditPosted: { subredditId in
-        capture.markSubredditAsPosted(subredditId)
-        do { try modelContext.save() } catch {
-          NSLog("RedditReminder: mark subreddit posted failed: \(error)")
-          modelContext.rollback()
-        }
-        onAppStateChanged()
-      },
-      onMarkSubredditUnposted: { subredditId in
-        capture.markSubredditAsUnposted(subredditId)
-        do { try modelContext.save() } catch {
-          NSLog("RedditReminder: unmark subreddit posted failed: \(error)")
-          modelContext.rollback()
-        }
-        onAppStateChanged()
-      }
-    )
-    menuBarController.showPostHandoffWindow(title: handoffWindowTitle(for: capture), content: view)
+    route = .postHandoff(capture)
   }
 
   @discardableResult
@@ -274,12 +217,7 @@ extension PopoverContentView {
     return alert.runModal() == .alertFirstButtonReturn
   }
 
-  private func handoffWindowTitle(for capture: Capture) -> String {
-    let title = RedditPostingActions.titleText(for: capture)
-    return title.isEmpty ? "Post Handoff" : "Post Handoff: \(title)"
-  }
-
-  private func postingChecklistItems(for capture: Capture) -> [String] {
+  func postingChecklistItems(for capture: Capture) -> [String] {
     capture.subreddits.flatMap { subreddit in
       PostingChecklistItems.cleaned(from: subreddit.postingChecklist)
     }

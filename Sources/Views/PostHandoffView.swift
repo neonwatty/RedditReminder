@@ -41,7 +41,7 @@ struct PostHandoffView: View {
       }
       footer
     }
-    .frame(width: 560, height: 620)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(AppColors.popoverBg)
   }
 

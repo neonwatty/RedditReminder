@@ -62,7 +62,7 @@ struct PreferencesView: View {
         )
       }
     }
-    .frame(width: 500, height: 440)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
 

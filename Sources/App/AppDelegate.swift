@@ -270,44 +270,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func wireMenuActions(container: ModelContainer) {
     modelContainer = container
     menuBarController.onNewCapture = { [weak self] in
-      self?.showNewCaptureWindow(container: container)
+      self?.menuBarController.requestNewCapture()
     }
     menuBarController.onOpenPreferences = { [weak self] in
-      self?.showPreferencesWindow(container: container)
+      self?.menuBarController.requestPreferences()
     }
-  }
-
-  private func showNewCaptureWindow(container: ModelContainer) {
-    let formView = CaptureWindowView(
-      mode: .create,
-      onSave: { [weak self] result in
-        guard let self else { return false }
-        let ok = CapturePersistenceActions.saveCapture(
-          result,
-          modelContext: container.mainContext,
-          mediaStore: mediaStore,
-          onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
-        )
-        if ok {
-          menuBarController.closeCaptureWindow()
-          menuBarController.openPopover()
-        }
-        return ok
-      },
-      onCancel: { [weak self] in self?.menuBarController.closeCaptureWindow() }
-    )
-    .modelContainer(container)
-    menuBarController.showCaptureWindow(title: "New Capture", content: formView)
-  }
-
-  private func showPreferencesWindow(container: ModelContainer) {
-    let prefsView = PreferencesView(
-      notificationService: notificationService,
-      heuristicsStore: heuristicsStore,
-      onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
-    )
-    .modelContainer(container)
-    menuBarController.showPreferencesWindow(content: prefsView)
   }
 
   private var defaultLeadTimeMinutes: Int {

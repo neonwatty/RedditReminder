@@ -3,18 +3,17 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
+final class MenuBarController: NSObject, NSPopoverDelegate {
   static let settingsMenuItemTitle = "Settings…"
 
   var badgeCount: Int = 0
   var isUrgent: Bool = false
   var isPopoverVisible: Bool = false
+  var newCaptureRequestCount: Int = 0
+  var preferencesRequestCount: Int = 0
 
   private var statusItem: NSStatusItem?
   private var popover: NSPopover?
-  private var captureWindow: NSWindow?
-  private var preferencesWindow: NSWindow?
-  private var postHandoffWindow: NSWindow?
 
   /// Called from PopoverContentView to open new capture; wired to ⌘N.
   var onNewCapture: (() -> Void)?
@@ -47,7 +46,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     }
 
     let pop = NSPopover()
-    pop.contentSize = NSSize(width: 350, height: 480)
+    pop.contentSize = NSSize(width: 460, height: 620)
     pop.behavior = .transient
     pop.animates = true
     pop.contentViewController = NSHostingController(rootView: popoverContent)
@@ -81,95 +80,14 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     isPopoverVisible = true
   }
 
-  func showCaptureWindow(title: String = "New Capture", content: some View) {
-    // Always recreate window content so edit-after-edit shows fresh data
-    if let existing = captureWindow {
-      existing.title = title
-      existing.contentView = NSHostingView(rootView: content)
-      existing.makeKeyAndOrderFront(nil)
-      dismissPopover()
-      return
-    }
-
-    let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 420, height: 540),
-      styleMask: [.titled, .closable],
-      backing: .buffered,
-      defer: false
-    )
-    window.title = title
-    window.center()
-    window.contentView = NSHostingView(rootView: content)
-    window.isReleasedWhenClosed = false
-    window.delegate = self
-    window.makeKeyAndOrderFront(nil)
-
-    dismissPopover()
-    self.captureWindow = window
+  func requestNewCapture() {
+    newCaptureRequestCount += 1
+    openPopover()
   }
 
-  func closeCaptureWindow() {
-    captureWindow?.close()
-    captureWindow = nil
-  }
-
-  func showPostHandoffWindow(title: String = "Post Handoff", content: some View) {
-    if let existing = postHandoffWindow {
-      existing.title = title
-      existing.contentView = NSHostingView(rootView: content)
-      existing.makeKeyAndOrderFront(nil)
-      dismissPopover()
-      return
-    }
-
-    let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 560, height: 620),
-      styleMask: [.titled, .closable, .miniaturizable],
-      backing: .buffered,
-      defer: false
-    )
-    window.title = title
-    window.center()
-    window.contentView = NSHostingView(rootView: content)
-    window.isReleasedWhenClosed = false
-    window.delegate = self
-    window.makeKeyAndOrderFront(nil)
-
-    dismissPopover()
-    self.postHandoffWindow = window
-  }
-
-  func closePostHandoffWindow() {
-    postHandoffWindow?.close()
-    postHandoffWindow = nil
-  }
-
-  func showPreferencesWindow(content: some View) {
-    if let existing = preferencesWindow {
-      existing.makeKeyAndOrderFront(nil)
-      return
-    }
-
-    let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 500, height: 440),
-      styleMask: [.titled, .closable, .miniaturizable],
-      backing: .buffered,
-      defer: false
-    )
-    window.title = "RedditReminder Preferences"
-    window.center()
-    window.contentView = NSHostingView(rootView: content)
-    window.isReleasedWhenClosed = false
-    window.delegate = self
-    window.makeKeyAndOrderFront(nil)
-
-    dismissPopover()
-    self.preferencesWindow = window
-  }
-
-  func closePreferencesWindow() {
-    preferencesWindow?.close()
-    preferencesWindow = nil
+  func requestPreferences() {
+    preferencesRequestCount += 1
+    openPopover()
   }
 
   func dismissPopover() {
@@ -211,21 +129,6 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
   nonisolated func popoverDidClose(_ notification: Notification) {
     Task { @MainActor in
       self.isPopoverVisible = false
-    }
-  }
-
-  // MARK: - NSWindowDelegate
-
-  nonisolated func windowWillClose(_ notification: Notification) {
-    let window = notification.object as? NSWindow
-    Task { @MainActor in
-      if window === self.captureWindow {
-        self.captureWindow = nil
-      } else if window === self.preferencesWindow {
-        self.preferencesWindow = nil
-      } else if window === self.postHandoffWindow {
-        self.postHandoffWindow = nil
-      }
     }
   }
 

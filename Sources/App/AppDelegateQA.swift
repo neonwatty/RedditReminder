@@ -108,7 +108,6 @@ import SwiftData
         }
         guard !testCaptures.isEmpty else { return true }
 
-        menuBarController.closePostHandoffWindow()
         menuBarController.dismissPopover()
 
         for capture in testCaptures {
