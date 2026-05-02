@@ -156,6 +156,17 @@ assert_contains "context counts" "$context_snapshot" '"counts":'
 assert_contains "context subreddits" "$context_snapshot" '"subreddits":['
 assert_contains "context peak presets" "$context_snapshot" '"peakPresets":['
 
+commands_list="$(run_json commands list)"
+assert_contains "commands list ok" "$commands_list" '"ok":true'
+assert_contains "commands list captures create" "$commands_list" '"id":"captures.create"'
+assert_contains "commands list output" "$commands_list" '"output":'
+
+commands_show="$(run_json commands show captures.create)"
+assert_contains "commands show ok" "$commands_show" '"ok":true'
+assert_contains "commands show id" "$commands_show" '"id":"captures.create"'
+assert_contains "commands show media flag" "$commands_show" '"name":"--media"'
+assert_contains "commands show output kind" "$commands_show" '"data":"captureCreated"'
+
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
 

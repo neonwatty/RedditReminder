@@ -16,6 +16,8 @@ enum CLIResponseData: Encodable {
   case peakInfo(PeakInfoDTO)
   case searchResults([SearchResultDTO])
   case context(ContextDTO)
+  case commandReferences([CommandReferenceDTO])
+  case commandReference(CommandReferenceDTO)
   case dryRun(String)
 
   func encode(to encoder: Encoder) throws {
@@ -36,6 +38,8 @@ enum CLIResponseData: Encodable {
     case .peakInfo(let value): try container.encode(value)
     case .searchResults(let value): try container.encode(value)
     case .context(let value): try container.encode(value)
+    case .commandReferences(let value): try container.encode(value)
+    case .commandReference(let value): try container.encode(value)
     case .dryRun(let value): try container.encode(["message": value])
     }
   }
