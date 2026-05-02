@@ -4,14 +4,25 @@ set -euo pipefail
 CLI="${1:-build/Build/Products/Debug/redditreminder}"
 TMP_DIR="$(mktemp -d)"
 STORE="$TMP_DIR/redditreminder-cli.store"
+VERIFY_PORT="$((RANDOM + 20000))"
+VERIFY_BASE_URL="http://127.0.0.1:$VERIFY_PORT"
+VERIFY_SERVER_PID=""
 
 cleanup() {
+  if [[ -n "$VERIFY_SERVER_PID" ]]; then
+    kill "$VERIFY_SERVER_PID" 2>/dev/null || true
+    wait "$VERIFY_SERVER_PID" 2>/dev/null || true
+  fi
   rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
 
 run_json() {
   "$CLI" --json --store "$STORE" "$@"
+}
+
+run_json_with_verify_base() {
+  REDDITREMINDER_VERIFY_BASE_URL="$VERIFY_BASE_URL" "$CLI" --json --store "$STORE" "$@"
 }
 
 assert_contains() {
@@ -26,6 +37,21 @@ assert_contains() {
   fi
 }
 
+mkdir -p "$TMP_DIR/mock/r/SideProject" "$TMP_DIR/mock/r/MissingSub"
+printf '{"data":{"display_name_prefixed":"r/SideProject","title":"Side Project","subscribers":12345,"over18":false}}' \
+  >"$TMP_DIR/mock/r/SideProject/about.json"
+(
+  cd "$TMP_DIR/mock"
+  python3 -m http.server "$VERIFY_PORT" --bind 127.0.0.1 >/dev/null 2>&1
+) &
+VERIFY_SERVER_PID="$!"
+for _ in {1..20}; do
+  if curl -fsS "$VERIFY_BASE_URL/r/SideProject/about.json" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.1
+done
+
 projects_empty="$(run_json projects list)"
 assert_contains "empty projects list" "$projects_empty" '"ok":true'
 
@@ -33,9 +59,21 @@ project_created="$(run_json projects create "Launch Ideas")"
 assert_contains "project create ok" "$project_created" '"ok":true'
 assert_contains "project create name" "$project_created" '"name":"Launch Ideas"'
 
-subreddit_created="$(run_json subreddits add SideProject)"
+subreddit_verified="$(run_json_with_verify_base subreddits verify SideProject)"
+assert_contains "subreddit verify ok" "$subreddit_verified" '"ok":true'
+assert_contains "subreddit verify exists" "$subreddit_verified" '"exists":true'
+assert_contains "subreddit verify title" "$subreddit_verified" '"title":"Side Project"'
+
+subreddit_created="$(run_json_with_verify_base subreddits add --verify SideProject)"
 assert_contains "subreddit add ok" "$subreddit_created" '"ok":true'
 assert_contains "subreddit normalized" "$subreddit_created" '"name":"r/SideProject"'
+
+if run_json_with_verify_base subreddits add --verify MissingSub >/tmp/redditreminder-cli-missing-sub.out 2>/tmp/redditreminder-cli-missing-sub.err; then
+  echo "FAIL: missing subreddit add unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "missing subreddit rejected" "$(cat /tmp/redditreminder-cli-missing-sub.err)" "could not be verified"
+rm -f /tmp/redditreminder-cli-missing-sub.out /tmp/redditreminder-cli-missing-sub.err
 
 if run_json subreddits add sideproject >/tmp/redditreminder-cli-duplicate.out 2>/tmp/redditreminder-cli-duplicate.err; then
   echo "FAIL: duplicate subreddit add unexpectedly succeeded" >&2
@@ -54,11 +92,65 @@ peak_set="$(run_json peaks set SideProject --days mon,wed --hours 9,10)"
 assert_contains "peak set ok" "$peak_set" '"ok":true'
 assert_contains "peak set source" "$peak_set" '"source":"override"'
 
+generated_events="$(run_json events list --generated)"
+assert_contains "generated events list" "$generated_events" '"isGeneratedFromHeuristics":true'
+generated_event_id="$(printf '%s\n' "$generated_events" | perl -0ne 'print $1 if /"id":"([^"]+)"/')"
+if [[ -z "$generated_event_id" || "$generated_event_id" == "$generated_events" ]]; then
+  echo "FAIL: could not parse generated event id" >&2
+  echo "$generated_events" >&2
+  exit 1
+fi
+if run_json events update "$generated_event_id" --name "Should fail" >/tmp/redditreminder-cli-generated-update.out 2>/tmp/redditreminder-cli-generated-update.err; then
+  echo "FAIL: generated event update unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "generated update rejected" "$(cat /tmp/redditreminder-cli-generated-update.err)" "Generated peak events cannot be updated or deleted directly"
+if run_json events delete "$generated_event_id" >/tmp/redditreminder-cli-generated-delete.out 2>/tmp/redditreminder-cli-generated-delete.err; then
+  echo "FAIL: generated event delete unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "generated delete rejected" "$(cat /tmp/redditreminder-cli-generated-delete.err)" "Generated peak events cannot be updated or deleted directly"
+rm -f /tmp/redditreminder-cli-generated-update.out /tmp/redditreminder-cli-generated-update.err
+rm -f /tmp/redditreminder-cli-generated-delete.out /tmp/redditreminder-cli-generated-delete.err
+
 peak_get="$(run_json peaks get SideProject)"
 assert_contains "peak get" "$peak_get" '"source":"override"'
 
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
+
+event_created="$(run_json events create --subreddit SideProject --name "Manual launch window" --date "2026-05-02T20:00:00Z" --lead-minutes 30)"
+assert_contains "event create ok" "$event_created" '"ok":true'
+assert_contains "event create name" "$event_created" '"name":"Manual launch window"'
+assert_contains "event create date" "$event_created" '"oneOffDate":"2026-05-02T20:00:00Z"'
+assert_contains "event create lead" "$event_created" '"reminderLeadMinutes":30'
+event_id="$(printf '%s\n' "$event_created" | perl -0ne 'print $1 if /"id":"([^"]+)"/')"
+if [[ -z "$event_id" || "$event_id" == "$event_created" ]]; then
+  echo "FAIL: could not parse event id" >&2
+  echo "$event_created" >&2
+  exit 1
+fi
+
+event_search="$(run_json events search --query launch --manual --active)"
+assert_contains "event search" "$event_search" '"name":"Manual launch window"'
+
+event_updated="$(run_json events update "$event_id" --name "Updated launch window" --date "2026-05-02T21:00:00Z" --lead-minutes 45)"
+assert_contains "event update ok" "$event_updated" '"ok":true'
+assert_contains "event update name" "$event_updated" '"name":"Updated launch window"'
+assert_contains "event update date" "$event_updated" '"oneOffDate":"2026-05-02T21:00:00Z"'
+assert_contains "event update lead" "$event_updated" '"reminderLeadMinutes":45'
+
+event_deactivated="$(run_json events update "$event_id" --deactivate)"
+assert_contains "event deactivate ok" "$event_deactivated" '"ok":true'
+assert_contains "event deactivate active false" "$event_deactivated" '"isActive":false'
+
+event_activated="$(run_json events update "$event_id" --activate)"
+assert_contains "event activate ok" "$event_activated" '"ok":true'
+assert_contains "event activate active true" "$event_activated" '"isActive":true'
+
+event_deleted="$(run_json events delete "$event_id")"
+assert_contains "event delete ok" "$event_deleted" '"ok":true'
+assert_contains "event delete id" "$event_deleted" "\"id\":\"$event_id\""
 
 IMAGE="$TMP_DIR/pixel.png"
 sips -s format png /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out "$IMAGE" >/dev/null
