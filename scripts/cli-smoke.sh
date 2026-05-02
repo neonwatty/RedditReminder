@@ -146,6 +146,16 @@ rm -f /tmp/redditreminder-cli-generated-delete.out /tmp/redditreminder-cli-gener
 peak_get="$(run_json peaks get SideProject)"
 assert_contains "peak get" "$peak_get" '"source":"override"'
 
+global_search="$(run_json search all --query "Launch" --limit 10)"
+assert_contains "global search ok" "$global_search" '"ok":true'
+assert_contains "global search project" "$global_search" '"kind":"project"'
+
+context_snapshot="$(run_json context show --limit 5)"
+assert_contains "context ok" "$context_snapshot" '"ok":true'
+assert_contains "context counts" "$context_snapshot" '"counts":'
+assert_contains "context subreddits" "$context_snapshot" '"subreddits":['
+assert_contains "context peak presets" "$context_snapshot" '"peakPresets":['
+
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
 

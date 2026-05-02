@@ -40,4 +40,12 @@ extension CLIArgumentParser {
     }
     return number
   }
+
+  mutating func consumeLimit(default defaultValue: Int = 20) throws -> Int {
+    guard let value = consumeOptionalValue(for: "--limit") else { return defaultValue }
+    guard let limit = Int(value), limit > 0 else {
+      throw CLIError.usage("--limit must be a positive integer.")
+    }
+    return limit
+  }
 }

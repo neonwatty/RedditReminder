@@ -44,4 +44,15 @@ extension CLIArgumentParser {
     }
     return input
   }
+
+  mutating func consumeSearchInput() throws -> SearchInput {
+    let query = try consumeRequiredValue(for: "--query")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !query.isEmpty else { throw CLIError.usage("Missing value for --query.") }
+    return SearchInput(query: query, limit: try consumeLimit())
+  }
+
+  mutating func consumeContextInput() throws -> ContextInput {
+    ContextInput(limit: try consumeLimit())
+  }
 }

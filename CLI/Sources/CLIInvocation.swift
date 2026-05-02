@@ -46,6 +46,8 @@ enum CLICommand {
   case peaksGet(subreddit: String)
   case peaksSet(subreddit: String, days: [String], hours: [Int], timeZone: String?)
   case peaksReset(subreddit: String)
+  case searchAll(SearchInput)
+  case contextShow(ContextInput)
 
   init(domain: String, action: String, parser: inout CLIArgumentParser) throws {
     switch (domain, action) {
@@ -111,6 +113,10 @@ enum CLICommand {
       self = .peaksSet(subreddit: subreddit, days: days, hours: hours, timeZone: timeZone)
     case ("peaks", "reset"):
       self = .peaksReset(subreddit: try parser.consumeSubredditArgument())
+    case ("search", "all"):
+      self = .searchAll(try parser.consumeSearchInput())
+    case ("context", "show"):
+      self = .contextShow(try parser.consumeContextInput())
     default:
       throw CLIError.usage(CLIHelp.domain(domain))
     }

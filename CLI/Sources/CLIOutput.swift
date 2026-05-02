@@ -69,6 +69,11 @@ enum CLIPrinter {
     case .peakInfo(let info):
       return
         "\(info.subreddit.name): \(info.peak.days.joined(separator: ",")) @ local \(info.peak.hoursLocal.map(String.init).joined(separator: ","))"
+    case .searchResults(let results):
+      return results.map { "\($0.kind) \($0.id) \($0.title)" }.joined(separator: "\n")
+    case .context(let context):
+      return
+        "Context: \(context.counts.capturesQueued) queued captures, \(context.counts.subreddits) subreddits, \(context.counts.eventsActive) active events"
     case .dryRun(let message): return message
     }
   }
@@ -108,7 +113,7 @@ enum CLIHelp {
   static let root = """
     Usage: redditreminder [--json] [--pretty] [--dry-run] [--store PATH] <domain> <command>
 
-    Domains: captures, events, projects, subreddits, peaks
+    Domains: captures, events, projects, subreddits, peaks, search, context
     """
 
   static func domain(_ domain: String) -> String {
@@ -120,6 +125,8 @@ enum CLIHelp {
     case "projects": return "Usage: redditreminder projects list|search|create|update|delete"
     case "subreddits": return "Usage: redditreminder subreddits list|search|add|update|delete|verify"
     case "peaks": return "Usage: redditreminder peaks presets|get|set|reset"
+    case "search": return "Usage: redditreminder search all --query TEXT [--limit N]"
+    case "context": return "Usage: redditreminder context show [--limit N]"
     default: return root
     }
   }
