@@ -54,7 +54,7 @@ enum CLIPrinter {
       return "\(event.id) \(event.name)"
     case .projects(let projects):
       return projects.map { "\($0.id) \($0.name)" }.joined(separator: "\n")
-    case .project(let project): return "Created project \(project.name) (\(project.id))"
+    case .project(let project): return "Project \(project.name) (\(project.id))"
     case .subreddits(let subreddits):
       return subreddits.map { "\($0.id) \($0.name)" }.joined(separator: "\n")
     case .subreddit(let subreddit): return "Added subreddit \(subreddit.name) (\(subreddit.id))"
@@ -117,8 +117,8 @@ enum CLIHelp {
       return
         "Usage: redditreminder captures list|search|create|update|delete|mark-posted|mark-queued"
     case "events": return "Usage: redditreminder events list|search|create|update|delete"
-    case "projects": return "Usage: redditreminder projects list|search|create"
-    case "subreddits": return "Usage: redditreminder subreddits list|search|add|verify"
+    case "projects": return "Usage: redditreminder projects list|search|create|update|delete"
+    case "subreddits": return "Usage: redditreminder subreddits list|search|add|update|delete|verify"
     case "peaks": return "Usage: redditreminder peaks presets|get|set|reset"
     default: return root
     }

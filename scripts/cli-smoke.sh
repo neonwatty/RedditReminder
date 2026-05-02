@@ -59,6 +59,22 @@ project_created="$(run_json projects create "Launch Ideas")"
 assert_contains "project create ok" "$project_created" '"ok":true'
 assert_contains "project create name" "$project_created" '"name":"Launch Ideas"'
 
+scratch_project_created="$(run_json projects create "Scratch Project")"
+assert_contains "scratch project create" "$scratch_project_created" '"name":"Scratch Project"'
+
+scratch_project_updated="$(run_json projects update "Scratch Project" --name "Scratch Plan" --description "Temporary config" --color "#FF4500" --archive)"
+assert_contains "project update ok" "$scratch_project_updated" '"ok":true'
+assert_contains "project update name" "$scratch_project_updated" '"name":"Scratch Plan"'
+assert_contains "project update description" "$scratch_project_updated" '"description":"Temporary config"'
+assert_contains "project update color" "$scratch_project_updated" '"color":"#FF4500"'
+assert_contains "project update archive" "$scratch_project_updated" '"archived":true'
+
+scratch_project_unarchived="$(run_json projects update "Scratch Plan" --unarchive --clear-description --clear-color)"
+assert_contains "project unarchive" "$scratch_project_unarchived" '"archived":false'
+
+scratch_project_deleted="$(run_json projects delete "Scratch Plan")"
+assert_contains "project delete ok" "$scratch_project_deleted" '"ok":true'
+
 subreddit_verified="$(run_json_with_verify_base subreddits verify SideProject)"
 assert_contains "subreddit verify ok" "$subreddit_verified" '"ok":true'
 assert_contains "subreddit verify exists" "$subreddit_verified" '"exists":true'
@@ -74,6 +90,20 @@ if run_json_with_verify_base subreddits add --verify MissingSub >/tmp/redditremi
 fi
 assert_contains "missing subreddit rejected" "$(cat /tmp/redditreminder-cli-missing-sub.err)" "could not be verified"
 rm -f /tmp/redditreminder-cli-missing-sub.out /tmp/redditreminder-cli-missing-sub.err
+
+scratch_subreddit_created="$(run_json subreddits add TempSub)"
+assert_contains "scratch subreddit create" "$scratch_subreddit_created" '"name":"r/TempSub"'
+
+scratch_subreddit_updated="$(run_json subreddits update TempSub --name TempRenamed --checklist "Read rules before posting")"
+assert_contains "subreddit update ok" "$scratch_subreddit_updated" '"ok":true'
+assert_contains "subreddit update name" "$scratch_subreddit_updated" '"name":"r/TempRenamed"'
+assert_contains "subreddit update checklist" "$scratch_subreddit_updated" '"postingChecklist":"Read rules before posting"'
+
+scratch_subreddit_cleared="$(run_json subreddits update TempRenamed --clear-checklist)"
+assert_contains "subreddit clear checklist ok" "$scratch_subreddit_cleared" '"ok":true'
+
+scratch_subreddit_deleted="$(run_json subreddits delete TempRenamed)"
+assert_contains "subreddit delete ok" "$scratch_subreddit_deleted" '"ok":true'
 
 if run_json subreddits add sideproject >/tmp/redditreminder-cli-duplicate.out 2>/tmp/redditreminder-cli-duplicate.err; then
   echo "FAIL: duplicate subreddit add unexpectedly succeeded" >&2

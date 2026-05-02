@@ -46,18 +46,23 @@ final class CLIRunner {
     case .eventDelete(let id):
       return try CLIEventManager(options: options, context: context).delete(id: id)
     case .projectsList(let query):
-      return .success(data: .projects(fetchProjects(matching: query).map(ProjectDTO.init)))
+      return CLIProjectManager(options: options, context: context).list(query: query)
     case .projectCreate(let name):
-      return try createProject(name: name)
+      return try CLIProjectManager(options: options, context: context).create(name: name)
+    case .projectUpdate(let input):
+      return try CLIProjectManager(options: options, context: context).update(input: input)
+    case .projectDelete(let id):
+      return try CLIProjectManager(options: options, context: context).delete(id: id)
     case .subredditsList(let query):
-      let subreddits = fetchSubreddits(matching: query).map {
-        SubredditDTO($0, peakInfo: heuristicsStore.peakInfo(for: $0))
-      }
-      return .success(data: .subreddits(subreddits))
+      return subredditManager.list(query: query)
     case .subredditAdd(let name, let verify):
-      return try await addSubreddit(name: name, verify: verify)
+      return try await subredditManager.add(name: name, verify: verify)
+    case .subredditUpdate(let input):
+      return try subredditManager.update(input: input)
+    case .subredditDelete(let id):
+      return try subredditManager.delete(id: id)
     case .subredditVerify(let name):
-      return try await verifySubreddit(name: name)
+      return try await subredditManager.verify(name: name)
     case .peaksPresets:
       return .success(data: .peakPresets(SubredditPeakSelection.presets.map(PeakPresetDTO.init)))
     case .peaksGet(let subreddit):
@@ -73,7 +78,7 @@ final class CLIRunner {
     let descriptor = FetchDescriptor<Capture>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
     )
     let captures = (try? context.fetch(descriptor)) ?? []
-    return filter(captures, query: query) { capture in
+    return CLIFilter.items(captures, query: query) { capture in
       [
         capture.id.uuidString,
         capture.title ?? "",
@@ -85,91 +90,8 @@ final class CLIRunner {
     }
   }
 
-  private func fetchProjects(matching query: String?) -> [Project] {
-    let descriptor = FetchDescriptor<Project>(sortBy: [SortDescriptor(\.name)])
-    return filter((try? context.fetch(descriptor)) ?? [], query: query) { project in
-      [project.id.uuidString, project.name, project.projectDescription ?? ""].joined(separator: " ")
-    }
-  }
-
-  private func fetchSubreddits(matching query: String?) -> [Subreddit] {
-    let descriptor = FetchDescriptor<Subreddit>(sortBy: [SortDescriptor(\.sortOrder)])
-    return filter((try? context.fetch(descriptor)) ?? [], query: query) { subreddit in
-      [subreddit.id.uuidString, subreddit.name, subreddit.postingChecklist ?? ""].joined(
-        separator: " ")
-    }
-  }
-
-  private func filter<T>(_ items: [T], query: String?, searchableText: (T) -> String) -> [T] {
-    guard let normalized = query?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-      !normalized.isEmpty
-    else { return items }
-    return items.filter { searchableText($0).lowercased().contains(normalized) }
-  }
-
-  private func createProject(name: String) throws -> CLIResponse {
-    let projects = fetchProjects(matching: nil)
-    guard let trimmed = ProjectPersistenceActions.normalizedName(name) else {
-      throw CLIError.validation("Project name cannot be empty.")
-    }
-    guard ProjectPersistenceActions.isNameAvailable(trimmed, projects: projects) else {
-      throw CLIError.validation("Project already exists: \(trimmed)")
-    }
-    if options.dryRun {
-      return .success(data: .dryRun("Would create project \(trimmed)."))
-    }
-    let project = Project(name: trimmed)
-    context.insert(project)
-    try context.save()
-    return .success(data: .project(ProjectDTO(project)))
-  }
-
-  private func addSubreddit(name input: String, verify: Bool) async throws -> CLIResponse {
-    let subreddits = fetchSubreddits(matching: nil)
-    let name = try normalizedSubredditName(input)
-    guard !subreddits.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-    else {
-      throw CLIError.validation(SubredditName.ValidationError.duplicate.message)
-    }
-    if verify {
-      let verification = try await SubredditVerifier().verify(name: name)
-      guard verification.exists else {
-        throw CLIError.validation("Subreddit could not be verified on Reddit: \(name)")
-      }
-    }
-    if options.dryRun {
-      return .success(data: .dryRun("Would add subreddit \(name)."))
-    }
-    let nextOrder = (subreddits.map(\.sortOrder).max() ?? -1) + 1
-    let subreddit = Subreddit(name: name, sortOrder: nextOrder)
-    context.insert(subreddit)
-    try context.save()
-    try heuristicsStore.syncGeneratedEvents(
-      for: subreddit,
-      context: context,
-      defaultLeadTimeMinutes: defaultLeadTimeMinutes
-    )
-    return .success(
-      data: .subreddit(SubredditDTO(subreddit, peakInfo: heuristicsStore.peakInfo(for: subreddit))))
-  }
-
-  private func verifySubreddit(name input: String) async throws -> CLIResponse {
-    let name = try normalizedSubredditName(input)
-    let verification = try await SubredditVerifier().verify(name: name)
-    return .success(data: .subredditVerification(verification.dto))
-  }
-
-  private func normalizedSubredditName(_ input: String) throws -> String {
-    let normalized = SubredditName.normalize(input)
-    guard case .success(let name) = normalized else {
-      if case .failure(let error) = normalized { throw CLIError.validation(error.message) }
-      throw CLIError.validation(SubredditName.ValidationError.empty.message)
-    }
-    return name
-  }
-
   private func peakInfo(for input: String) throws -> CLIResponse {
-    let subreddit = try findSubreddit(input)
+    let subreddit = try subredditManager.findSubreddit(input)
     return .success(
       data: .peakInfo(
         PeakInfoDTO(subreddit: subreddit, peakInfo: heuristicsStore.peakInfo(for: subreddit))))
@@ -181,7 +103,7 @@ final class CLIRunner {
     hours: [Int],
     timeZone identifier: String?
   ) throws -> CLIResponse {
-    let subreddit = try findSubreddit(input)
+    let subreddit = try subredditManager.findSubreddit(input)
     let validDays = Set(SubredditPeakSelection.dayKeys)
     guard !days.isEmpty, days.allSatisfy({ validDays.contains($0) }) else {
       throw CLIError.validation("Days must use mon,tue,wed,thu,fri,sat,sun.")
@@ -215,7 +137,7 @@ final class CLIRunner {
   }
 
   private func resetPeakInfo(for input: String) throws -> CLIResponse {
-    let subreddit = try findSubreddit(input)
+    let subreddit = try subredditManager.findSubreddit(input)
     if options.dryRun {
       return .success(data: .dryRun("Would reset peak overrides for \(subreddit.name)."))
     }
@@ -232,19 +154,12 @@ final class CLIRunner {
         PeakInfoDTO(subreddit: subreddit, peakInfo: heuristicsStore.peakInfo(for: subreddit))))
   }
 
-  private func findSubreddit(_ input: String) throws -> Subreddit {
-    let normalized = SubredditName.normalizedName(input) ?? input
-    let subreddits = fetchSubreddits(matching: nil)
-    if let subreddit = subreddits.first(where: {
-      $0.id.uuidString == input || $0.name.caseInsensitiveCompare(normalized) == .orderedSame
-    }) {
-      return subreddit
-    }
-    throw CLIError.notFound("Subreddit not found: \(input)")
-  }
-
   private var defaultLeadTimeMinutes: Int {
     UserDefaults.standard.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
+  }
+
+  private var subredditManager: CLISubredditManager {
+    CLISubredditManager(options: options, context: context, heuristicsStore: heuristicsStore)
   }
 }
 

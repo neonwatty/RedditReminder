@@ -104,8 +104,15 @@ the subreddit peak-time configuration.
 redditreminder projects list --json
 redditreminder projects search --query "launch" --json
 redditreminder projects create "Launch Ideas" --json
+redditreminder projects update "Launch Ideas" --name "Launch Plan" --description "Release checklist" --color "#FF4500" --json
+redditreminder projects update "Launch Plan" --archive --json
+redditreminder projects update "Launch Plan" --unarchive --clear-description --clear-color --json
+redditreminder projects delete "Launch Plan" --json
 redditreminder --dry-run projects create "Launch Ideas" --json
 ```
+
+Project delete uses the app's current model behavior and cascades captures assigned
+to that project.
 
 ## Subreddits
 
@@ -115,6 +122,9 @@ redditreminder subreddits search --query "swift" --json
 redditreminder subreddits verify SideProject --json
 redditreminder subreddits add SideProject --json
 redditreminder subreddits add --verify SideProject --json
+redditreminder subreddits update SideProject --name SideProjects --checklist "Read rules before posting" --json
+redditreminder subreddits update SideProjects --clear-checklist --json
+redditreminder subreddits delete SideProjects --json
 redditreminder subreddits add https://www.reddit.com/r/SwiftUI/comments/abc --json
 ```
 
@@ -122,6 +132,9 @@ Subreddit names are normalized the same way as the app UI. Duplicate names are
 rejected case-insensitively. `subreddits verify` checks Reddit before saving
 anything. `subreddits add --verify` performs that same check and only saves the
 subreddit when Reddit returns a valid `/about.json` response.
+
+Subreddit delete cascades subreddit events and cancels their pending notifications,
+but it does not delete captures.
 
 ## Peak Times
 
