@@ -62,6 +62,7 @@ test: generate
 
 cli-test: build-cli
 	./scripts/cli-smoke.sh "$(BUILD_DIR)/Build/Products/Debug/$(CLI_NAME)"
+	./scripts/cli-catalog-check.py "$(BUILD_DIR)/Build/Products/Debug/$(CLI_NAME)"
 
 ui-test: generate
 	xcodebuild test \
