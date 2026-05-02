@@ -51,6 +51,7 @@ enum CLICommand {
   case commandsList
   case commandsShow(id: String)
   case recipesList
+  case recipesSearch(query: String)
   case recipesShow(id: String)
 
   init(domain: String, action: String, parser: inout CLIArgumentParser) throws {
@@ -127,6 +128,8 @@ enum CLICommand {
       self = .commandsShow(id: try parser.consumeRequiredArgument(label: "command id"))
     case ("recipes", "list"):
       self = .recipesList
+    case ("recipes", "search"):
+      self = .recipesSearch(query: try parser.consumeRequiredValue(for: "--query"))
     case ("recipes", "show"):
       self = .recipesShow(id: try parser.consumeRequiredArgument(label: "recipe id"))
     default:

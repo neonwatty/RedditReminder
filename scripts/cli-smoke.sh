@@ -37,6 +37,18 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local label="$1"
+  local haystack="$2"
+  local needle="$3"
+  if [[ "$haystack" == *"$needle"* ]]; then
+    echo "FAIL: $label" >&2
+    echo "Expected output not to contain: $needle" >&2
+    echo "$haystack" >&2
+    exit 1
+  fi
+}
+
 mkdir -p "$TMP_DIR/mock/r/SideProject" "$TMP_DIR/mock/r/MissingSub"
 printf '{"data":{"display_name_prefixed":"r/SideProject","title":"Side Project","subscribers":12345,"over18":false}}' \
   >"$TMP_DIR/mock/r/SideProject/about.json"
@@ -171,6 +183,11 @@ recipes_list="$(run_json recipes list)"
 assert_contains "recipes list ok" "$recipes_list" '"ok":true'
 assert_contains "recipes list create media" "$recipes_list" '"id":"posting.create-with-media"'
 assert_contains "recipes list steps" "$recipes_list" '"steps":'
+
+recipes_search="$(run_json recipes search --query media)"
+assert_contains "recipes search ok" "$recipes_search" '"ok":true'
+assert_contains "recipes search create media" "$recipes_search" '"id":"posting.create-with-media"'
+assert_not_contains "recipes search excludes peak recipe" "$recipes_search" '"id":"subreddit.configure-peak-times"'
 
 recipes_show="$(run_json recipes show posting.create-with-media)"
 assert_contains "recipes show ok" "$recipes_show" '"ok":true'

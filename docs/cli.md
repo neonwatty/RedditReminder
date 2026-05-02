@@ -47,6 +47,7 @@ redditreminder search all --query "weekday" --limit 10 --json
 redditreminder commands list --json
 redditreminder commands show captures.create --json
 redditreminder recipes list --json
+redditreminder recipes search --query "media" --json
 redditreminder recipes show posting.create-with-media --json
 ```
 
@@ -56,8 +57,9 @@ subreddits with peak summaries, queued captures, active events, and peak presets
 agents can inspect the widget state without guessing which domain to query first.
 `commands list` and `commands show` return structured command metadata for agents:
 command ids, positionals, flags, examples, and output data shapes.
-`recipes list` and `recipes show` return higher-level agent workflows: expected
-inputs, ordered command steps, example invocations, and related command ids.
+`recipes list`, `recipes search`, and `recipes show` return higher-level agent
+workflows: expected inputs, ordered command steps, example invocations, and
+related command ids.
 
 ## Captures
 

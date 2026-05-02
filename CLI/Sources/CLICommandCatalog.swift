@@ -59,6 +59,13 @@ enum CLICommandCatalog {
       output: output("recipeReferences", "Array of recipe reference objects.")
     ),
     command(
+      "recipes.search", "recipes", "search",
+      "Search agent workflow recipes by intent text.",
+      flags: [flag("--query", "TEXT", "Search text.", required: true)],
+      examples: ["redditreminder --json recipes search --query media"],
+      output: output("recipeReferences", "Array of matching recipe reference objects.")
+    ),
+    command(
       "recipes.show", "recipes", "show",
       "Return one agent workflow recipe.",
       positionals: [arg("id", "Recipe id, for example posting.create-with-media.")],

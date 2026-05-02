@@ -136,7 +136,7 @@ enum CLIHelp {
     case "search": return "Usage: redditreminder search all --query TEXT [--limit N]"
     case "context": return "Usage: redditreminder context show [--limit N]"
     case "commands": return "Usage: redditreminder commands list|show"
-    case "recipes": return "Usage: redditreminder recipes list|show"
+    case "recipes": return "Usage: redditreminder recipes list|search|show"
     default: return root
     }
   }
