@@ -14,7 +14,7 @@ final class RedditReminderSmokeUITests: XCTestCase {
         app = nil
     }
 
-    func testKeyboardCommandsOpenPrimaryWindows() throws {
+    func testKeyboardCommandsOpenPopoverScreens() throws {
         app.launch()
         XCTAssertTrue(
             app.wait(for: .runningForeground, timeout: 5)
@@ -23,9 +23,9 @@ final class RedditReminderSmokeUITests: XCTestCase {
 
         app.activate()
         app.typeKey("n", modifierFlags: .command)
-        XCTAssertTrue(app.windows["New Capture"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.textFields["captureWindow.title"].waitForExistence(timeout: 3))
 
         app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.windows["RedditReminder Preferences"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["preferences.tab.Channels"].waitForExistence(timeout: 3))
     }
 }

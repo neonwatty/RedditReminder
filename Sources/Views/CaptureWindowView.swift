@@ -144,7 +144,7 @@ struct CaptureWindowView: View {
         .padding(16)
       }
     }
-    .frame(width: 420, height: 540)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .onAppear { populateFromMode() }
   }
 

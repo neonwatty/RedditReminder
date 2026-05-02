@@ -1,5 +1,6 @@
 import AppKit
 import SwiftData
+import SwiftUI
 @preconcurrency import UserNotifications
 
 @MainActor
@@ -19,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   private var refreshTask: Task<Void, Never>?
   private var shortcutObserver: NSObjectProtocol?
   var activeShortcutConfig: KeyboardShortcutConfig?
+  private var keepAliveWindow: NSWindow?
 
   override convenience init() {
     self.init(
@@ -92,6 +94,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    ProcessInfo.processInfo.disableAutomaticTermination(
+      "Keep RedditReminder menu bar app running"
+    )
+    setupKeepAliveWindow()
+    bootstrapApplication()
+
     if AppRuntime.shouldRegisterGlobalShortcut() {
       registerGlobalShortcut()
       shortcutObserver = NotificationCenter.default.addObserver(
@@ -115,6 +123,72 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     NSLog("RedditReminder: launched, refresh loop started")
   }
 
+  private func bootstrapApplication() {
+    let container: ModelContainer
+    do {
+      container = try AppModelContainerFactory.makeContainer()
+    } catch {
+      presentStoreUnavailableAlert(error: error)
+      return
+    }
+
+    wireMenuActions(container: container)
+    #if DEBUG
+      if ProcessInfo.processInfo.arguments.contains("--seed-qa") {
+        QAFixtures.seed(context: container.mainContext)
+      }
+    #endif
+    runRefreshCycle()
+
+    let popoverView = PopoverContentView(
+      menuBarController: menuBarController,
+      notificationService: notificationService,
+      heuristicsStore: heuristicsStore,
+      onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
+    )
+    .modelContainer(container)
+    menuBarController.setup(popoverContent: popoverView)
+  }
+
+  private func setupKeepAliveWindow() {
+    guard keepAliveWindow == nil else { return }
+
+    let window = NSWindow(
+      contentRect: NSRect(x: -10_000, y: -10_000, width: 1, height: 1),
+      styleMask: [.borderless],
+      backing: .buffered,
+      defer: false
+    )
+    window.contentView = NSView(frame: NSRect(x: 0, y: 0, width: 1, height: 1))
+    window.backgroundColor = .clear
+    window.alphaValue = 0.01
+    window.ignoresMouseEvents = true
+    window.isOpaque = false
+    window.isReleasedWhenClosed = false
+    window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+    window.orderFront(nil)
+    keepAliveWindow = window
+  }
+
+  private func presentStoreUnavailableAlert(error: Error) {
+    let alert = NSAlert()
+    alert.alertStyle = .critical
+    alert.messageText = "RedditReminder cannot open its data store"
+    alert.informativeText = """
+      The app did not start with temporary storage because that could make new captures disappear when you quit.
+
+      \(error.localizedDescription)
+      """
+    alert.addButton(withTitle: "Reveal Data Folder")
+    alert.addButton(withTitle: "Quit")
+    if alert.runModal() == .alertFirstButtonReturn {
+      let directory = AppModelContainerFactory.appSupportDirectory
+      try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      NSWorkspace.shared.activateFileViewerSelecting([directory])
+    }
+    NSApp.terminate(nil)
+  }
+
   func applicationDidBecomeActive(_ notification: Notification) {
     menuBarController.installMenuShortcuts()
   }
@@ -122,6 +196,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func applicationWillTerminate(_ notification: Notification) {
     globalShortcut.unregister()
     refreshTask?.cancel()
+    keepAliveWindow?.close()
+    keepAliveWindow = nil
+    ProcessInfo.processInfo.enableAutomaticTermination(
+      "Keep RedditReminder menu bar app running"
+    )
     if let shortcutObserver {
       NotificationCenter.default.removeObserver(shortcutObserver)
     }
@@ -191,44 +270,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func wireMenuActions(container: ModelContainer) {
     modelContainer = container
     menuBarController.onNewCapture = { [weak self] in
-      self?.showNewCaptureWindow(container: container)
+      self?.menuBarController.requestNewCapture()
     }
     menuBarController.onOpenPreferences = { [weak self] in
-      self?.showPreferencesWindow(container: container)
+      self?.menuBarController.requestPreferences()
     }
-  }
-
-  private func showNewCaptureWindow(container: ModelContainer) {
-    let formView = CaptureWindowView(
-      mode: .create,
-      onSave: { [weak self] result in
-        guard let self else { return false }
-        let ok = CapturePersistenceActions.saveCapture(
-          result,
-          modelContext: container.mainContext,
-          mediaStore: mediaStore,
-          onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
-        )
-        if ok {
-          menuBarController.closeCaptureWindow()
-          menuBarController.openPopover()
-        }
-        return ok
-      },
-      onCancel: { [weak self] in self?.menuBarController.closeCaptureWindow() }
-    )
-    .modelContainer(container)
-    menuBarController.showCaptureWindow(title: "New Capture", content: formView)
-  }
-
-  private func showPreferencesWindow(container: ModelContainer) {
-    let prefsView = PreferencesView(
-      notificationService: notificationService,
-      heuristicsStore: heuristicsStore,
-      onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
-    )
-    .modelContainer(container)
-    menuBarController.showPreferencesWindow(content: prefsView)
   }
 
   private var defaultLeadTimeMinutes: Int {

@@ -14,7 +14,7 @@ final class RedditReminderWorkflowUITests: XCTestCase {
         app = nil
     }
 
-    func testCreateCaptureWindowAppears() throws {
+    func testCreateCapturePopoverAppears() throws {
         app.launch()
         XCTAssertTrue(
             app.wait(for: .runningForeground, timeout: 5)
@@ -24,16 +24,13 @@ final class RedditReminderWorkflowUITests: XCTestCase {
         app.activate()
         app.typeKey("n", modifierFlags: .command)
 
-        let captureWindow = app.windows["New Capture"]
-        XCTAssertTrue(captureWindow.waitForExistence(timeout: 3))
+        let titleField = app.textFields["captureWindow.title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
 
-        let titleField = captureWindow.textFields["captureWindow.title"]
-        XCTAssertTrue(titleField.exists)
-
-        let saveButton = captureWindow.buttons["captureWindow.save"]
+        let saveButton = app.buttons["captureWindow.save"]
         XCTAssertTrue(saveButton.exists)
 
-        let cancelButton = captureWindow.buttons["captureWindow.cancel"]
+        let cancelButton = app.buttons["captureWindow.cancel"]
         XCTAssertTrue(cancelButton.exists)
     }
 
@@ -47,13 +44,10 @@ final class RedditReminderWorkflowUITests: XCTestCase {
         app.activate()
         app.typeKey(",", modifierFlags: .command)
 
-        let prefsWindow = app.windows["RedditReminder Preferences"]
-        XCTAssertTrue(prefsWindow.waitForExistence(timeout: 3))
-
         let tabs = ["Channels", "Planner", "Projects", "General", "Backup", "Notifications"]
         for tab in tabs {
-            let tabButton = prefsWindow.buttons["preferences.tab.\(tab)"]
-            XCTAssertTrue(tabButton.waitForExistence(timeout: 2), "Tab '\(tab)' should exist")
+            let tabButton = app.buttons["preferences.tab.\(tab)"]
+            XCTAssertTrue(tabButton.waitForExistence(timeout: 3), "Tab '\(tab)' should exist")
             tabButton.click()
             // Brief pause for tab content to load
             Thread.sleep(forTimeInterval: 0.3)

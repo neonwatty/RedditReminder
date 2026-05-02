@@ -381,100 +381,82 @@ assert_true "AXPress status item → popover opens" "$vis"
 vis=$(set_popover_state "false")
 assert_false "AXPress again → popover closes" "$vis"
 
-# ─── 3. New Capture window (File > New Capture) ───────────────────
+# ─── 3. New Capture popover route (File > New Capture) ────────────
 
 echo ""
-bold "3. New Capture window"
+bold "3. New Capture popover route"
 echo ""
 
-# Open popover first (triggers PopoverContentView.onAppear which wires up callbacks)
-set_popover_state "true" >/dev/null
-sleep 1  # extra time for SwiftUI onAppear to wire callbacks
-
+set_popover_state "false" >/dev/null
 click_menu_item "File" "New Capture"
-exists=$(wait_for_named_window "New Capture" "true")
-assert_true "File > New Capture opens window" "$exists"
+vis=$(wait_for_popover "true")
+assert_true "File > New Capture opens popover" "$vis"
+exists=$(wait_for_named_window "New Capture" "false")
+assert_false "File > New Capture does not open a window" "$exists"
 
-if [ "$exists" = "true" ]; then
-    w=$(named_window_width "New Capture")
-    assert_eq "Capture window width" "420" "$w"
-
-    close_window "New Capture"
-    exists_after=$(wait_for_named_window "New Capture" "false")
-    assert_false "Close button dismisses Capture window" "$exists_after"
-fi
-
-# ─── 4. Preferences window ────────────────────────────────────────
+# ─── 4. Settings popover route ────────────────────────────────────
 
 echo ""
-bold "4. Preferences window"
+bold "4. Settings popover route"
 echo ""
 
+set_popover_state "false" >/dev/null
 click_menu_item "RedditReminder" "Settings…"
-exists=$(wait_for_named_window "RedditReminder Preferences" "true")
-assert_true "Settings menu opens Preferences window" "$exists"
+vis=$(wait_for_popover "true")
+assert_true "Settings menu opens popover" "$vis"
+exists=$(wait_for_named_window "RedditReminder Preferences" "false")
+assert_false "Settings menu does not open Preferences window" "$exists"
 
-if [ "$exists" = "true" ]; then
-    w=$(named_window_width "RedditReminder Preferences")
-    assert_eq "Preferences window width" "500" "$w"
-
-    close_window "RedditReminder Preferences"
-    exists_after=$(wait_for_named_window "RedditReminder Preferences" "false")
-    assert_false "Close button dismisses Preferences window" "$exists_after"
-fi
-
-# ─── 5. Popover dismisses when windows open ───────────────────────
+# ─── 5. Popover stays as the only workflow surface ────────────────
 
 echo ""
-bold "5. Popover auto-dismiss"
+bold "5. Single-surface workflow"
 echo ""
 
-# Open popover
 vis=$(set_popover_state "true")
-assert_true "Popover is open before New Capture" "$vis"
-
-# Open capture window — popover should dismiss
-click_menu_item "File" "New Capture"
-vis=$(wait_for_popover "false")
-assert_false "Popover dismissed when Capture opens" "$vis"
-
-close_window "New Capture"
-
-# ─── 6. Capture window reuse ──────────────────────────────────────
-
-echo ""
-bold "6. Capture window reuse"
-echo ""
-
-# Open, close, open again
-click_menu_item "File" "New Capture"
-exists1=$(wait_for_named_window "New Capture" "true")
-assert_true "First New Capture window opens" "$exists1"
-
-close_window "New Capture"
+assert_true "Popover opens before route changes" "$vis"
 
 click_menu_item "File" "New Capture"
-exists2=$(wait_for_named_window "New Capture" "true")
-assert_true "Second New Capture opens after close" "$exists2"
+vis=$(wait_for_popover "true")
+assert_true "Popover remains visible for New Capture" "$vis"
+exists=$(wait_for_named_window "New Capture" "false")
+assert_false "No Capture window appears from route change" "$exists"
 
-close_window "New Capture"
-
-# ─── 7. Preferences window reuse ──────────────────────────────────
+# ─── 6. New Capture route reuse ───────────────────────────────────
 
 echo ""
-bold "7. Preferences window reuse"
+bold "6. New Capture route reuse"
 echo ""
 
+set_popover_state "false" >/dev/null
+click_menu_item "File" "New Capture"
+vis1=$(wait_for_popover "true")
+assert_true "First New Capture route opens popover" "$vis1"
+
+set_popover_state "false" >/dev/null
+click_menu_item "File" "New Capture"
+vis2=$(wait_for_popover "true")
+assert_true "Second New Capture route opens after close" "$vis2"
+count=$(wait_for_named_window_count "New Capture" "0")
+assert_eq "No New Capture windows created" "0" "$count"
+
+# ─── 7. Settings route reuse ──────────────────────────────────────
+
+echo ""
+bold "7. Settings route reuse"
+echo ""
+
+set_popover_state "false" >/dev/null
 click_menu_item "RedditReminder" "Settings…"
-exists=$(wait_for_named_window "RedditReminder Preferences" "true")
-assert_true "First Preferences window opens" "$exists"
+vis=$(wait_for_popover "true")
+assert_true "First Settings route opens popover" "$vis"
 
-# Open again — should reuse, not duplicate
+set_popover_state "false" >/dev/null
 click_menu_item "RedditReminder" "Settings…"
-count=$(wait_for_named_window_count "RedditReminder Preferences" "1")
-assert_eq "Only one Preferences window (reuse)" "1" "$count"
-
-close_window "RedditReminder Preferences"
+vis=$(wait_for_popover "true")
+assert_true "Second Settings route opens after close" "$vis"
+count=$(wait_for_named_window_count "RedditReminder Preferences" "0")
+assert_eq "No Preferences windows created" "0" "$count"
 
 # ─── 8. QA fixtures ───────────────────────────────────────────────
 
@@ -605,11 +587,13 @@ assert_running "App restarts after kill"
 vis=$(set_popover_state "true")
 assert_true "Popover opens after restart" "$vis"
 
-# Verify menu shortcuts still work after restart
+# Verify menu actions still work after restart
+set_popover_state "false" >/dev/null
 click_menu_item "File" "New Capture"
-exists=$(wait_for_named_window "New Capture" "true")
-assert_true "New Capture works after restart" "$exists"
-close_window "New Capture"
+vis=$(wait_for_popover "true")
+assert_true "New Capture route works after restart" "$vis"
+exists=$(wait_for_named_window "New Capture" "false")
+assert_false "No New Capture window after restart" "$exists"
 
 # Close popover
 set_popover_state "false" >/dev/null

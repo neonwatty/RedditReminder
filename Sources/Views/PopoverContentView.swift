@@ -1,6 +1,14 @@
 import SwiftData
 import SwiftUI
 
+enum PopoverRoute {
+  case root
+  case captureCreate
+  case captureEdit(Capture)
+  case preferences
+  case postHandoff(Capture)
+}
+
 struct PopoverContentView: View {
   let menuBarController: MenuBarController
   let notificationService: NotificationService
@@ -18,7 +26,10 @@ struct PopoverContentView: View {
   @State private var searchText: String = ""
   @State var toast: Toast?
   @State var toastTask: Task<Void, Never>?
-  @State private var showPosted: Bool = false
+  @State var showPosted: Bool = false
+  @State var route: PopoverRoute = .root
+  @State var handledNewCaptureRequestCount: Int = 0
+  @State var handledPreferencesRequestCount: Int = 0
 
   private var activeEvents: [SubredditEvent] {
     PopoverTimingPresentation.activeEvents(from: allEvents)
@@ -38,10 +49,28 @@ struct PopoverContentView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      header
-      if !captures.isEmpty { searchBar }
-      if showPosted { postedContent } else { queuedContent }
-      footer
+      switch route {
+      case .root:
+        header
+        if !captures.isEmpty { searchBar }
+        if showPosted { postedContent } else { queuedContent }
+        footer
+      case .captureCreate:
+        captureForm(mode: .create)
+      case .captureEdit(let capture):
+        captureForm(mode: .edit(capture))
+      case .preferences:
+        detailScreen(title: "Settings", systemName: "gearshape") {
+          PreferencesView(
+            notificationService: notificationService,
+            heuristicsStore: heuristicsStore,
+            onAppStateChanged: onAppStateChanged
+          )
+          .modelContainer(modelContext.container)
+        }
+      case .postHandoff(let capture):
+        postHandoff(capture)
+      }
     }
     .overlay(alignment: .top) {
       if let toast {
@@ -49,9 +78,16 @@ struct PopoverContentView: View {
       }
     }
     .background(AppColors.popoverBg)
-    .frame(width: 350).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
+    .frame(width: 460).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
     .onAppear {
+      handlePendingMenuRequests()
       refreshTiming()
+    }
+    .onChange(of: menuBarController.newCaptureRequestCount) {
+      handleNewCaptureRequest()
+    }
+    .onChange(of: menuBarController.preferencesRequestCount) {
+      handlePreferencesRequest()
     }
     .onChange(of: captureTimingSignature) {
       refreshTiming()
