@@ -156,6 +156,7 @@
 		BA3588948937708CD83AFEBC /* CLIOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14A6B7A047D5672F9159659 /* CLIOutput.swift */; };
 		BA3B263D9D03FA844568F913 /* EventSourceSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B11556A9191FFF70BA98B /* EventSourceSummaryTests.swift */; };
 		BEE74F03864389AD3A108EFE /* BackupSettingsPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */; };
+		BFFFDEA5E6BAD356DC03006F /* CLIDiscoveryTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D057AC06C4DF9C7404C609 /* CLIDiscoveryTypes.swift */; };
 		C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA51CEB234C228C79959816 /* OnboardingEmptyView.swift */; };
 		CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAFC3BF96ACD4F01D08367F /* MarkdownPreviewView.swift */; };
 		CCE3B3D5EE4B39D55222CA19 /* ResourcePackagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A9BB4582DA895A6C18C321 /* ResourcePackagingTests.swift */; };
@@ -167,6 +168,7 @@
 		DA2B270CDFA18C60E33E913B /* KeyboardShortcutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */; };
 		DF5BC4B40F68E4D77656AD97 /* ShortcutRecorderInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BECD53B7CA29C3F004D13EBB /* ShortcutRecorderInputTests.swift */; };
 		DF685B7594B2CB10A5A81F3B /* PopoverChromeViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5570C2EF1DD747B43C6F4ED /* PopoverChromeViewTests.swift */; };
+		E39C6204803369529EE71FA8 /* CLIDiscoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F3C79809C4BF0DD2B05AF6 /* CLIDiscoveryManager.swift */; };
 		E3F5BC123C653EDC86231434 /* CaptureHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8667BBC305F7B1E7A92856AC /* CaptureHelpers.swift */; };
 		E651BBE6C6C84CA44281F9B7 /* CLIArgumentParserHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2755BD3961DE8EA13B8A1E /* CLIArgumentParserHelpers.swift */; };
 		E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */; };
@@ -235,6 +237,7 @@
 		275F5DE20B1832CEA53FF535 /* SettingsOptionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOptionsTests.swift; sourceTree = "<group>"; };
 		288C13F7511FB37215593E12 /* CaptureMediaSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureMediaSelection.swift; sourceTree = "<group>"; };
 		28906380DECDA56AD0DDE325 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		28D057AC06C4DF9C7404C609 /* CLIDiscoveryTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIDiscoveryTypes.swift; sourceTree = "<group>"; };
 		2DCEE0DEE2D8B351D6357E71 /* BackupMediaPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupMediaPayloads.swift; sourceTree = "<group>"; };
 		303FB325A99764563E4FB2AC /* PostHandoffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHandoffView.swift; sourceTree = "<group>"; };
 		317B217ED06D209DAFACA344 /* RedditReminderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RedditReminderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -294,6 +297,7 @@
 		736DAA72999AF48AFC9A849C /* CLICaptureLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICaptureLifecycle.swift; sourceTree = "<group>"; };
 		75B43770F07184CA5B9115AD /* SubredditPersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditPersistenceActionsTests.swift; sourceTree = "<group>"; };
 		75FA87973FC3B43FDB7B37F8 /* PostingChecklistItemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostingChecklistItemsTests.swift; sourceTree = "<group>"; };
+		77F3C79809C4BF0DD2B05AF6 /* CLIDiscoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIDiscoveryManager.swift; sourceTree = "<group>"; };
 		787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedditReminderApp.swift; sourceTree = "<group>"; };
 		793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutConfig.swift; sourceTree = "<group>"; };
 		7D9810B901F7241E88A6D898 /* SubredditInputValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditInputValidation.swift; sourceTree = "<group>"; };
@@ -527,6 +531,8 @@
 				8E2755BD3961DE8EA13B8A1E /* CLIArgumentParserHelpers.swift */,
 				B1C71FB925E32942AFE42575 /* CLICaptureCreator.swift */,
 				736DAA72999AF48AFC9A849C /* CLICaptureLifecycle.swift */,
+				77F3C79809C4BF0DD2B05AF6 /* CLIDiscoveryManager.swift */,
+				28D057AC06C4DF9C7404C609 /* CLIDiscoveryTypes.swift */,
 				3B81CF275655D5E1ECD5EC37 /* CLIDTOs.swift */,
 				9C593329647C7A7C82103B02 /* CLIEventManager.swift */,
 				C9AC123670C416604F87973B /* CLIEventTypes.swift */,
@@ -827,6 +833,8 @@
 				D70537E281AB16807DE1E2FA /* CLICaptureCreator.swift in Sources */,
 				1690FE987E73EE0BB803779E /* CLICaptureLifecycle.swift in Sources */,
 				8BDBD62791F99A373564D5B3 /* CLIDTOs.swift in Sources */,
+				E39C6204803369529EE71FA8 /* CLIDiscoveryManager.swift in Sources */,
+				BFFFDEA5E6BAD356DC03006F /* CLIDiscoveryTypes.swift in Sources */,
 				1A4FD7E60A3E022FD9BB3B69 /* CLIEventManager.swift in Sources */,
 				954EDB76CEE86E41F6C30BE5 /* CLIEventTypes.swift in Sources */,
 				9455C1014FD9C64F0B68D3F7 /* CLIFilter.swift in Sources */,

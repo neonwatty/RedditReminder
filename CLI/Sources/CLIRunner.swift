@@ -71,6 +71,10 @@ final class CLIRunner {
       return try setPeakInfo(for: subreddit, days: days, hours: hours, timeZone: timeZone)
     case .peaksReset(let subreddit):
       return try resetPeakInfo(for: subreddit)
+    case .searchAll(let input):
+      return discoveryManager.search(input: input)
+    case .contextShow(let input):
+      return discoveryManager.showContext(input: input)
     }
   }
 
@@ -160,6 +164,10 @@ final class CLIRunner {
 
   private var subredditManager: CLISubredditManager {
     CLISubredditManager(options: options, context: context, heuristicsStore: heuristicsStore)
+  }
+
+  private var discoveryManager: CLIDiscoveryManager {
+    CLIDiscoveryManager(context: context, heuristicsStore: heuristicsStore)
   }
 }
 
