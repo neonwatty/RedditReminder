@@ -75,6 +75,10 @@ final class CLIRunner {
       return discoveryManager.search(input: input)
     case .contextShow(let input):
       return discoveryManager.showContext(input: input)
+    case .commandsList:
+      return CLICommandCatalog.list()
+    case .commandsShow(let id):
+      return try CLICommandCatalog.show(id: id)
     }
   }
 

@@ -48,6 +48,8 @@ enum CLICommand {
   case peaksReset(subreddit: String)
   case searchAll(SearchInput)
   case contextShow(ContextInput)
+  case commandsList
+  case commandsShow(id: String)
 
   init(domain: String, action: String, parser: inout CLIArgumentParser) throws {
     switch (domain, action) {
@@ -117,6 +119,10 @@ enum CLICommand {
       self = .searchAll(try parser.consumeSearchInput())
     case ("context", "show"):
       self = .contextShow(try parser.consumeContextInput())
+    case ("commands", "list"):
+      self = .commandsList
+    case ("commands", "show"):
+      self = .commandsShow(id: try parser.consumeRequiredArgument(label: "command id"))
     default:
       throw CLIError.usage(CLIHelp.domain(domain))
     }

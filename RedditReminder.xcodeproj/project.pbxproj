@@ -26,6 +26,7 @@
 		1228389EE01C83EF49C3DEC8 /* AppRefreshAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979105135C8B3C67FC080326 /* AppRefreshAction.swift */; };
 		12B7E4C8F9AB781325FFC21F /* ProjectPersistenceActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD560BCF0F23A397D3EF341 /* ProjectPersistenceActions.swift */; };
 		130E73ADD3C89D99930823B0 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90876C6D9E2430D963222BFB /* ShortcutRecorderView.swift */; };
+		13E7899C74330A230D4C5B35 /* CLICommandCatalogTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C6DAB7D790FE62A62D947F /* CLICommandCatalogTypes.swift */; };
 		1623A15BD009688470DBFF26 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050BB3D18ECE13E70E7CED42 /* NotificationService.swift */; };
 		1690FE987E73EE0BB803779E /* CLICaptureLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736DAA72999AF48AFC9A849C /* CLICaptureLifecycle.swift */; };
 		17050D203FEDB10BDE6F431A /* QAFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = B338E8D9C979B250564A392E /* QAFixtures.swift */; };
@@ -93,6 +94,7 @@
 		5B69D9E7F11752087138A0C6 /* RedditPostingActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15B419BD1AF2CF70DEC1509B /* RedditPostingActions.swift */; };
 		5B9E3F47EA4B9D3D5028C11A /* NotificationsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */; };
 		5C0D0E781F591772712EFB08 /* SubredditRowHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DFF61A85A98656AA6B6499C /* SubredditRowHelpers.swift */; };
+		5C7C1DE86B921C9BEC82DED5 /* CLICommandCatalogConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0562480A128BF2812DB8536B /* CLICommandCatalogConfig.swift */; };
 		5CA152F3AF2710572F6500B9 /* AppDelegateSchedulingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF8CF5E2ADCE8C17BC17231 /* AppDelegateSchedulingTests.swift */; };
 		5E9E214B7FD7706B64F703BA /* PlannerTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3788B79517572C51854172CC /* PlannerTabView.swift */; };
 		5EC386BDC953ADC9C0C7FC1A /* Subreddit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA306067C4690F4D1CDAC2D /* Subreddit.swift */; };
@@ -102,6 +104,7 @@
 		62761A56A55BD30D9D7FC87E /* PostingChecklistItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23399264919E264763449E07 /* PostingChecklistItems.swift */; };
 		632082721D97EB58E0370F81 /* CaptureLinksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F38E7578683EAB7EC5530F4 /* CaptureLinksSection.swift */; };
 		637776DD2C3FE925B0CC3036 /* CaptureCardViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE7D03EF7FAD1B0CBDC0A59 /* CaptureCardViewTests.swift */; };
+		6524163B6CD4A9E05F8AE337 /* CLICommandCatalogCaptures.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7532CAA943BDB70D1E3541 /* CLICommandCatalogCaptures.swift */; };
 		653447F7059B945ECF9657B2 /* CLIRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9B8849B7B1BFA35E198D7 /* CLIRunner.swift */; };
 		6559B6F6894A0EEE0C24A90A /* CaptureFormResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */; };
 		6589D2CB4C0EE68009254627 /* RedditReminderCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54BD88A85812A32DB0D0EF9E /* RedditReminderCLI.swift */; };
@@ -144,6 +147,7 @@
 		AD72D92BE212AF74D0BBDE44 /* CLISubredditManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9000531B86E8AB4A89157704 /* CLISubredditManager.swift */; };
 		AF81908B71E4E383D63467DD /* NotificationSettingsOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A01564D830A81EEF54CF9 /* NotificationSettingsOpener.swift */; };
 		AFB9ADC77D8591C4C0C8724F /* CaptureMediaEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8EA185EFDC5E3CF3A013B6D /* CaptureMediaEditing.swift */; };
+		B0B1FF17C923518B37F8412B /* CLICommandCatalogEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FB7AC7766A6364E04AFF37 /* CLICommandCatalogEvents.swift */; };
 		B0C340A0AB5DE1005CC425FC /* CLIProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85FE2A447522454CC9824DD4 /* CLIProjectManager.swift */; };
 		B0D0C0F6AAB6EDF25163D32B /* PlannerPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99F26EE47E652BD2FEF295C /* PlannerPresentation.swift */; };
 		B10546669B16B587E5C2D40E /* NotificationSettingsOpenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AEC6DD3FA5A8034E07E6B9 /* NotificationSettingsOpenerTests.swift */; };
@@ -155,6 +159,7 @@
 		B9A0FFC6B8D690F11AC676EA /* CLIArgumentParserEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E937747CC61B8E422CE6018 /* CLIArgumentParserEvents.swift */; };
 		BA3588948937708CD83AFEBC /* CLIOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14A6B7A047D5672F9159659 /* CLIOutput.swift */; };
 		BA3B263D9D03FA844568F913 /* EventSourceSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B11556A9191FFF70BA98B /* EventSourceSummaryTests.swift */; };
+		BCC7F73AC96ABB112DB497F0 /* CLICommandCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010AF0B52B3B20A9AF3FD10 /* CLICommandCatalog.swift */; };
 		BEE74F03864389AD3A108EFE /* BackupSettingsPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61052DF5F8EFC70EA9076106 /* BackupSettingsPersistence.swift */; };
 		BFFFDEA5E6BAD356DC03006F /* CLIDiscoveryTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D057AC06C4DF9C7404C609 /* CLIDiscoveryTypes.swift */; };
 		C09ACAB4043D4C29B0CCC0E7 /* OnboardingEmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA51CEB234C228C79959816 /* OnboardingEmptyView.swift */; };
@@ -213,6 +218,7 @@
 		00BE11378DD3F2E280F890D6 /* BackupPreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPreviewTests.swift; sourceTree = "<group>"; };
 		04BBC25F859C9533DF9820A7 /* CaptureSubredditPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSubredditPicker.swift; sourceTree = "<group>"; };
 		050BB3D18ECE13E70E7CED42 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		0562480A128BF2812DB8536B /* CLICommandCatalogConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalogConfig.swift; sourceTree = "<group>"; };
 		0660CE7B44D0AAA9892ADBBD /* CRUDTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRUDTestSupport.swift; sourceTree = "<group>"; };
 		06AAE5BD6FAD212E9C9E5AAB /* CapturePersistenceActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePersistenceActionsTests.swift; sourceTree = "<group>"; };
 		07A63D3714291E8917CA1694 /* PopoverContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentView.swift; sourceTree = "<group>"; };
@@ -334,6 +340,7 @@
 		A94E8BF8DAD4FB3EAEB7B9D2 /* AppDelegateShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateShortcuts.swift; sourceTree = "<group>"; };
 		ABAFC3BF96ACD4F01D08367F /* MarkdownPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPreviewView.swift; sourceTree = "<group>"; };
 		AD3C4FF9EDB23763DEF6DCBD /* CaptureMediaChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureMediaChips.swift; sourceTree = "<group>"; };
+		AD7532CAA943BDB70D1E3541 /* CLICommandCatalogCaptures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalogCaptures.swift; sourceTree = "<group>"; };
 		AE1122ADEB6045619C303C31 /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		AEE4E14F7A70E1A66FA994A3 /* Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capture.swift; sourceTree = "<group>"; };
 		B14A6B7A047D5672F9159659 /* CLIOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIOutput.swift; sourceTree = "<group>"; };
@@ -355,12 +362,14 @@
 		C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentActions.swift; sourceTree = "<group>"; };
 		C1DDFC92B31A2562246F8D58 /* CLIArgumentParserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIArgumentParserConfig.swift; sourceTree = "<group>"; };
 		C4A4C24B7D668794706240A8 /* EdgeCaseTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeCaseTestSupport.swift; sourceTree = "<group>"; };
+		C8C6DAB7D790FE62A62D947F /* CLICommandCatalogTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalogTypes.swift; sourceTree = "<group>"; };
 		C9AC123670C416604F87973B /* CLIEventTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIEventTypes.swift; sourceTree = "<group>"; };
 		CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTabView.swift; sourceTree = "<group>"; };
 		D08AEB86FFDCB22E4FB7E9F0 /* PlannerPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerPresentationTests.swift; sourceTree = "<group>"; };
 		D3E6715672E45708F5B3DDD5 /* CapturePerSubredditPostingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePerSubredditPostingTests.swift; sourceTree = "<group>"; };
 		D483D5534D2A0BC4C03BC77B /* AppDelegateShortcutRegistrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateShortcutRegistrationTests.swift; sourceTree = "<group>"; };
 		D4925806B8E7919B5E93D38D /* AppModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelContainerFactory.swift; sourceTree = "<group>"; };
+		D4FB7AC7766A6364E04AFF37 /* CLICommandCatalogEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalogEvents.swift; sourceTree = "<group>"; };
 		D5570C2EF1DD747B43C6F4ED /* PopoverChromeViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverChromeViewTests.swift; sourceTree = "<group>"; };
 		D65088A443B0F0C62306146D /* BackupSettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSettingsPersistenceTests.swift; sourceTree = "<group>"; };
 		DCB15AEFC17C70DC66CA4A05 /* PostHandoffViewHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHandoffViewHelpers.swift; sourceTree = "<group>"; };
@@ -374,6 +383,7 @@
 		EB4A20FE04DD7075E02C7092 /* SubredditCRUDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditCRUDTests.swift; sourceTree = "<group>"; };
 		EBC07E95FAB15C8EAB34E541 /* CaptureMediaAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureMediaAccessibilityTests.swift; sourceTree = "<group>"; };
 		EC37D0F8A68C606C7A79ADA0 /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
+		F010AF0B52B3B20A9AF3FD10 /* CLICommandCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalog.swift; sourceTree = "<group>"; };
 		F32050796326D457C67C1870 /* CLIFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIFilter.swift; sourceTree = "<group>"; };
 		F72682A4379AE1A17B7D4559 /* BackupTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupTypes.swift; sourceTree = "<group>"; };
 		F89CCDB745C6D3B557E3342A /* AppDelegateQA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateQA.swift; sourceTree = "<group>"; };
@@ -531,6 +541,11 @@
 				8E2755BD3961DE8EA13B8A1E /* CLIArgumentParserHelpers.swift */,
 				B1C71FB925E32942AFE42575 /* CLICaptureCreator.swift */,
 				736DAA72999AF48AFC9A849C /* CLICaptureLifecycle.swift */,
+				F010AF0B52B3B20A9AF3FD10 /* CLICommandCatalog.swift */,
+				AD7532CAA943BDB70D1E3541 /* CLICommandCatalogCaptures.swift */,
+				0562480A128BF2812DB8536B /* CLICommandCatalogConfig.swift */,
+				D4FB7AC7766A6364E04AFF37 /* CLICommandCatalogEvents.swift */,
+				C8C6DAB7D790FE62A62D947F /* CLICommandCatalogTypes.swift */,
 				77F3C79809C4BF0DD2B05AF6 /* CLIDiscoveryManager.swift */,
 				28D057AC06C4DF9C7404C609 /* CLIDiscoveryTypes.swift */,
 				3B81CF275655D5E1ECD5EC37 /* CLIDTOs.swift */,
@@ -832,6 +847,11 @@
 				E651BBE6C6C84CA44281F9B7 /* CLIArgumentParserHelpers.swift in Sources */,
 				D70537E281AB16807DE1E2FA /* CLICaptureCreator.swift in Sources */,
 				1690FE987E73EE0BB803779E /* CLICaptureLifecycle.swift in Sources */,
+				BCC7F73AC96ABB112DB497F0 /* CLICommandCatalog.swift in Sources */,
+				6524163B6CD4A9E05F8AE337 /* CLICommandCatalogCaptures.swift in Sources */,
+				5C7C1DE86B921C9BEC82DED5 /* CLICommandCatalogConfig.swift in Sources */,
+				B0B1FF17C923518B37F8412B /* CLICommandCatalogEvents.swift in Sources */,
+				13E7899C74330A230D4C5B35 /* CLICommandCatalogTypes.swift in Sources */,
 				8BDBD62791F99A373564D5B3 /* CLIDTOs.swift in Sources */,
 				E39C6204803369529EE71FA8 /* CLIDiscoveryManager.swift in Sources */,
 				BFFFDEA5E6BAD356DC03006F /* CLIDiscoveryTypes.swift in Sources */,
