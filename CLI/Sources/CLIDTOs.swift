@@ -72,6 +72,33 @@ struct CaptureUpdateInput {
   }
 }
 
+struct ProjectUpdateInput {
+  let id: String
+  let name: String?
+  let description: String?
+  let clearDescription: Bool
+  let color: String?
+  let clearColor: Bool
+  let archive: Bool
+  let unarchive: Bool
+
+  var hasChanges: Bool {
+    name != nil || description != nil || clearDescription || color != nil || clearColor || archive
+      || unarchive
+  }
+}
+
+struct SubredditUpdateInput {
+  let id: String
+  let name: String?
+  let checklist: String?
+  let clearChecklist: Bool
+
+  var hasChanges: Bool {
+    name != nil || checklist != nil || clearChecklist
+  }
+}
+
 struct DeletedDTO: Encodable {
   let id: String
 }

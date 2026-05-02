@@ -32,6 +32,7 @@ targets:
       - path: Sources/Models/SubredditEvent.swift
       - path: Sources/Services/HeuristicsStore.swift
       - path: Sources/Services/MediaStore.swift
+      - path: Sources/Services/NotificationService.swift
       - path: Sources/Services/TimingEngine.swift
       - path: Sources/App/AppRefreshAction.swift
       - path: Sources/Utilities/CapturePersistenceActions.swift

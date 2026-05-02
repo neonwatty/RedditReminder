@@ -35,8 +35,12 @@ enum CLICommand {
   case eventDelete(id: String)
   case projectsList(query: String?)
   case projectCreate(name: String)
+  case projectUpdate(ProjectUpdateInput)
+  case projectDelete(id: String)
   case subredditsList(query: String?)
   case subredditAdd(name: String, verify: Bool)
+  case subredditUpdate(SubredditUpdateInput)
+  case subredditDelete(id: String)
   case subredditVerify(name: String)
   case peaksPresets
   case peaksGet(subreddit: String)
@@ -76,6 +80,10 @@ enum CLICommand {
       self = .projectsList(query: try parser.consumeRequiredValue(for: "--query"))
     case ("projects", "create"):
       self = .projectCreate(name: try parser.consumeTrailingName(label: "project name"))
+    case ("projects", "update"):
+      self = .projectUpdate(try parser.consumeProjectUpdateInput())
+    case ("projects", "delete"):
+      self = .projectDelete(id: try parser.consumeRequiredArgument(label: "project id or name"))
     case ("subreddits", "list"):
       self = .subredditsList(query: parser.consumeOptionalValue(for: "--query"))
     case ("subreddits", "search"):
@@ -85,6 +93,10 @@ enum CLICommand {
       self = .subredditAdd(
         name: try parser.consumeTrailingName(label: "subreddit name"),
         verify: verify)
+    case ("subreddits", "update"):
+      self = .subredditUpdate(try parser.consumeSubredditUpdateInput())
+    case ("subreddits", "delete"):
+      self = .subredditDelete(id: try parser.consumeRequiredArgument(label: "subreddit id or name"))
     case ("subreddits", "verify"):
       self = .subredditVerify(name: try parser.consumeTrailingName(label: "subreddit name"))
     case ("peaks", "presets"):
