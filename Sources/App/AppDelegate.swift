@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   private var refreshTask: Task<Void, Never>?
   private var shortcutObserver: NSObjectProtocol?
   var activeShortcutConfig: KeyboardShortcutConfig?
+  private var keepAliveWindow: NSWindow?
 
   override convenience init() {
     self.init(
@@ -93,6 +94,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    ProcessInfo.processInfo.disableAutomaticTermination(
+      "Keep RedditReminder menu bar app running"
+    )
+    setupKeepAliveWindow()
     bootstrapApplication()
 
     if AppRuntime.shouldRegisterGlobalShortcut() {
@@ -131,11 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     #if DEBUG
       if ProcessInfo.processInfo.arguments.contains("--seed-qa") {
         QAFixtures.seed(context: container.mainContext)
-      } else {
-        DefaultSubreddits.seedIfEmpty(context: container.mainContext)
       }
-    #else
-      DefaultSubreddits.seedIfEmpty(context: container.mainContext)
     #endif
     runRefreshCycle()
 
@@ -147,6 +148,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     )
     .modelContainer(container)
     menuBarController.setup(popoverContent: popoverView)
+  }
+
+  private func setupKeepAliveWindow() {
+    guard keepAliveWindow == nil else { return }
+
+    let window = NSWindow(
+      contentRect: NSRect(x: -10_000, y: -10_000, width: 1, height: 1),
+      styleMask: [.borderless],
+      backing: .buffered,
+      defer: false
+    )
+    window.contentView = NSView(frame: NSRect(x: 0, y: 0, width: 1, height: 1))
+    window.backgroundColor = .clear
+    window.alphaValue = 0.01
+    window.ignoresMouseEvents = true
+    window.isOpaque = false
+    window.isReleasedWhenClosed = false
+    window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+    window.orderFront(nil)
+    keepAliveWindow = window
   }
 
   private func presentStoreUnavailableAlert(error: Error) {
@@ -175,6 +196,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func applicationWillTerminate(_ notification: Notification) {
     globalShortcut.unregister()
     refreshTask?.cancel()
+    keepAliveWindow?.close()
+    keepAliveWindow = nil
+    ProcessInfo.processInfo.enableAutomaticTermination(
+      "Keep RedditReminder menu bar app running"
+    )
     if let shortcutObserver {
       NotificationCenter.default.removeObserver(shortcutObserver)
     }

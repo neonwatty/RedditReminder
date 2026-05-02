@@ -31,6 +31,7 @@ targets:
       path: Sources/Info.plist
       properties:
         LSUIElement: true
+        NSSupportsAutomaticTermination: false
         CFBundleName: RedditReminder
         CFBundleDisplayName: RedditReminder
         CFBundleIdentifier: com.neonwatty.RedditReminder
