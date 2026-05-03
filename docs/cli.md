@@ -17,6 +17,16 @@ This installs:
 ~/bin/RedditReminderResources/peak-times.json
 ```
 
+From a source checkout, agents can bootstrap without installing:
+
+```sh
+./scripts/agent-bootstrap.sh
+make agent-bootstrap
+```
+
+Both commands build the debug CLI if needed and run `agent bootstrap` with JSON
+output.
+
 ## Global Flags
 
 ```sh

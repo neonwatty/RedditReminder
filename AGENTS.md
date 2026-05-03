@@ -7,10 +7,28 @@ JSON for Codex, Claude Code, scripts, and shell pipelines.
 ## Start Here
 
 ```sh
+./scripts/agent-bootstrap.sh
+```
+
+That source-tree entry point builds the CLI if needed, then runs:
+
+```sh
+build/Build/Products/Debug/redditreminder --json agent bootstrap
+```
+
+The Makefile target is equivalent:
+
+```sh
+make agent-bootstrap
+```
+
+If `redditreminder` is already on `PATH`, this also works:
+
+```sh
 redditreminder --json agent bootstrap
 ```
 
-If `redditreminder` is not on `PATH`, install or build it:
+To install the CLI globally:
 
 ```sh
 make install-cli

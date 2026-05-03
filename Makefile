@@ -1,4 +1,4 @@
-.PHONY: build build-debug build-cli test cli-test ui-test install install-debug install-cli clean generate qa
+.PHONY: agent-bootstrap build build-debug build-cli test cli-test ui-test install install-debug install-cli clean generate qa
 
 APP_NAME := RedditReminder
 CLI_NAME := redditreminder
@@ -61,9 +61,13 @@ test: generate
 	  OTHER_CODE_SIGN_FLAGS=
 
 cli-test: build-cli
+	@./scripts/agent-bootstrap.sh >/dev/null
 	./scripts/cli-smoke.sh "$(BUILD_DIR)/Build/Products/Debug/$(CLI_NAME)"
 	./scripts/cli-agent-smoke.sh "$(BUILD_DIR)/Build/Products/Debug/$(CLI_NAME)"
 	./scripts/cli-catalog-check.py "$(BUILD_DIR)/Build/Products/Debug/$(CLI_NAME)"
+
+agent-bootstrap:
+	@./scripts/agent-bootstrap.sh
 
 ui-test: generate
 	xcodebuild test \
