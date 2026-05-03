@@ -51,6 +51,7 @@ JSON responses use this envelope:
 
 ```sh
 redditreminder agent bootstrap --json
+redditreminder agent validate -- projects create "Launch Ideas" --json
 redditreminder context show --json
 redditreminder context show --limit 5 --json
 redditreminder search all --query "launch" --json
@@ -68,6 +69,9 @@ redditreminder recipes show posting.create-with-media-dry-run --json
 agents. Once an agent knows the `redditreminder` binary name, bootstrap tells it
 which discovery commands to run next, where to find recipes, how to handle
 mutations safely, and includes command and recipe schemas in the same response.
+`agent validate -- <domain> <command> [args]` checks a proposed CLI command
+against the command catalog without executing it. The validation response reports
+unknown commands, unknown flags, missing required flags, and missing positionals.
 `AGENTS.md` is the repo-level bootstrap guide for agents starting from source.
 `context show` returns a compact snapshot of the workspace: counts, projects,
 subreddits with peak summaries, queued captures, active events, and peak presets.

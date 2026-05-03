@@ -29,6 +29,13 @@ enum CLICommandCatalog {
       output: output("agentBootstrap", "Versioned agent bootstrap guidance.")
     ),
     command(
+      "agent.validate", "agent", "validate",
+      "Validate a proposed CLI command against the command catalog without executing it.",
+      positionals: [arg("command", "Command tokens after --, for example projects create Draft.")],
+      examples: ["redditreminder --json agent validate -- projects create Draft"],
+      output: output("agentValidation", "Validation result with errors and command schema.")
+    ),
+    command(
       "context.show", "context", "show",
       "Return a compact workspace snapshot for agent planning.",
       flags: [flag("--limit", "N", "Maximum items per collection. Defaults to 20.")],

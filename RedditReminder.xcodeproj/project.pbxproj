@@ -180,6 +180,7 @@
 		E651BBE6C6C84CA44281F9B7 /* CLIArgumentParserHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2755BD3961DE8EA13B8A1E /* CLIArgumentParserHelpers.swift */; };
 		E7E5E6539BF7A2B53E5600AC /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D70A5A33EC82E24F9A0330 /* KeyboardShortcuts.swift */; };
 		E91A5DDE67643B2D081C9340 /* PopoverCaptureFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEA78C5D7E701E78352BF98 /* PopoverCaptureFilteringTests.swift */; };
+		E9484CB4CA514954F2C5D1F3 /* CLIAgentValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6642BDB50320A87AB68443A /* CLIAgentValidator.swift */; };
 		E9EDB8A89099DE463C304AA7 /* AppRuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A6F301705FB85E1459A403 /* AppRuntimeTests.swift */; };
 		EA437C7902BEFE4C1F701586 /* PopoverContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A63D3714291E8917CA1694 /* PopoverContentView.swift */; };
 		EA9B4D6D73A9BE87850EB6B1 /* AppRefreshAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979105135C8B3C67FC080326 /* AppRefreshAction.swift */; };
@@ -368,6 +369,7 @@
 		C15D988E0168482E463F5FE6 /* PopoverContentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverContentActions.swift; sourceTree = "<group>"; };
 		C1DDFC92B31A2562246F8D58 /* CLIArgumentParserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIArgumentParserConfig.swift; sourceTree = "<group>"; };
 		C4A4C24B7D668794706240A8 /* EdgeCaseTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeCaseTestSupport.swift; sourceTree = "<group>"; };
+		C6642BDB50320A87AB68443A /* CLIAgentValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIAgentValidator.swift; sourceTree = "<group>"; };
 		C8C6DAB7D790FE62A62D947F /* CLICommandCatalogTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLICommandCatalogTypes.swift; sourceTree = "<group>"; };
 		C9AC123670C416604F87973B /* CLIEventTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIEventTypes.swift; sourceTree = "<group>"; };
 		CDFFD74D3BB094379C0212C1 /* NotificationsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsTabView.swift; sourceTree = "<group>"; };
@@ -542,6 +544,7 @@
 			isa = PBXGroup;
 			children = (
 				9BF046679692C90640222864 /* CLIAgentBootstrap.swift */,
+				C6642BDB50320A87AB68443A /* CLIAgentValidator.swift */,
 				237DBF1605FF8CDD5CDD51A5 /* CLIArgumentParserCaptures.swift */,
 				C1DDFC92B31A2562246F8D58 /* CLIArgumentParserConfig.swift */,
 				5E937747CC61B8E422CE6018 /* CLIArgumentParserEvents.swift */,
@@ -851,6 +854,7 @@
 			files = (
 				EA9B4D6D73A9BE87850EB6B1 /* AppRefreshAction.swift in Sources */,
 				D866DE76F83DD239C8C16BE6 /* CLIAgentBootstrap.swift in Sources */,
+				E9484CB4CA514954F2C5D1F3 /* CLIAgentValidator.swift in Sources */,
 				407571238A58E84A82F37D32 /* CLIArgumentParserCaptures.swift in Sources */,
 				7A921D8AE858EAC9BC2C9556 /* CLIArgumentParserConfig.swift in Sources */,
 				B9A0FFC6B8D690F11AC676EA /* CLIArgumentParserEvents.swift in Sources */,

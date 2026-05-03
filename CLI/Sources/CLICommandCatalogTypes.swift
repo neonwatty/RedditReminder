@@ -70,3 +70,13 @@ struct AgentBootstrapDTO: Encodable {
   let recipeSchemas: [RecipeReferenceDTO]
   let docs: [String]
 }
+
+struct AgentValidationDTO: Encodable {
+  let schemaVersion: Int
+  let valid: Bool
+  let commandId: String?
+  let normalizedCommand: [String]
+  let errors: [String]
+  let warnings: [String]
+  let command: CommandReferenceDTO?
+}
