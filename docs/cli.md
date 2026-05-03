@@ -56,10 +56,10 @@ subreddits with peak summaries, queued captures, active events, and peak presets
 `search all` searches captures, events, projects, subreddits, and peak presets so
 agents can inspect the widget state without guessing which domain to query first.
 `commands list` and `commands show` return structured command metadata for agents:
-command ids, positionals, flags, examples, and output data shapes.
+schema versions, command ids, positionals, flags, examples, and output data shapes.
 `recipes list`, `recipes search`, and `recipes show` return higher-level agent
-workflows: expected inputs, ordered command steps, example invocations, and
-related command ids.
+workflows: schema versions, expected inputs, ordered command steps, example
+invocations, and related command ids.
 
 ## Captures
 

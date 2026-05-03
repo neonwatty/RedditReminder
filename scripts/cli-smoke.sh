@@ -171,6 +171,7 @@ assert_contains "context peak presets" "$context_snapshot" '"peakPresets":['
 commands_list="$(run_json commands list)"
 assert_contains "commands list ok" "$commands_list" '"ok":true'
 assert_contains "commands list captures create" "$commands_list" '"id":"captures.create"'
+assert_contains "commands list schema" "$commands_list" '"schemaVersion":1'
 assert_contains "commands list output" "$commands_list" '"output":'
 
 commands_show="$(run_json commands show captures.create)"
@@ -182,6 +183,7 @@ assert_contains "commands show output kind" "$commands_show" '"data":"captureCre
 recipes_list="$(run_json recipes list)"
 assert_contains "recipes list ok" "$recipes_list" '"ok":true'
 assert_contains "recipes list create media" "$recipes_list" '"id":"posting.create-with-media"'
+assert_contains "recipes list schema" "$recipes_list" '"schemaVersion":1'
 assert_contains "recipes list steps" "$recipes_list" '"steps":'
 
 recipes_search="$(run_json recipes search --query media)"
