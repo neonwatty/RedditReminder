@@ -1,5 +1,7 @@
 # RedditReminder
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/7xsxU4ZG6A)
+
 macOS menu bar app for preparing Reddit posts, tracking subreddit posting windows, and getting nudged when it is time to post.
 
 ## Workflow
