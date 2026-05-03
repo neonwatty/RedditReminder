@@ -48,6 +48,17 @@ assert_contains "validate invalid ok" "$invalid_command" '"ok":true'
 assert_contains "validate invalid" "$invalid_command" '"valid":false'
 assert_contains "validate missing flag" "$invalid_command" "Missing required flag --hours."
 
+dry_run_preview="$(run_json agent dry-run -- projects create "Agent Draft")"
+assert_contains "agent dry-run ok" "$dry_run_preview" '"ok":true'
+assert_contains "agent dry-run valid" "$dry_run_preview" '"valid":true'
+assert_contains "agent dry-run confirmation" "$dry_run_preview" '"requiresConfirmation":true'
+assert_contains "agent dry-run preview" "$dry_run_preview" "Would create project Agent Draft."
+
+read_only_preview="$(run_json agent dry-run -- context show --limit 1)"
+assert_contains "agent dry-run read-only ok" "$read_only_preview" '"ok":true'
+assert_contains "agent dry-run read-only invalid" "$read_only_preview" '"valid":false'
+assert_contains "agent dry-run read-only rejected" "$read_only_preview" "read-only"
+
 context="$(run_json context show --limit 10)"
 assert_contains "context ok" "$context" '"ok":true'
 assert_contains "context counts" "$context" '"counts":'

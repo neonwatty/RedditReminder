@@ -80,3 +80,20 @@ struct AgentValidationDTO: Encodable {
   let warnings: [String]
   let command: CommandReferenceDTO?
 }
+
+struct AgentDryRunDTO: Encodable {
+  let schemaVersion: Int
+  let valid: Bool
+  let wouldRun: [String]
+  let requiresConfirmation: Bool
+  let validation: AgentValidationDTO
+  let preview: AgentDryRunPreviewDTO?
+  let errors: [String]
+}
+
+struct AgentDryRunPreviewDTO: Encodable {
+  let ok: Bool
+  let message: String?
+  let warnings: [String]
+  let errors: [String]
+}

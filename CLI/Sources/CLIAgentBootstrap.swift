@@ -24,6 +24,7 @@ enum CLIAgentBootstrap {
             "redditreminder --json context show --limit 10",
             "redditreminder --json commands list",
             "redditreminder --json agent validate -- projects create Draft",
+            "redditreminder --json agent dry-run -- projects create Draft",
             "redditreminder --json recipes list",
             "redditreminder --json recipes search --query dry-run",
           ],
@@ -36,6 +37,7 @@ enum CLIAgentBootstrap {
           discoveryCommands: [
             "context.show",
             "agent.validate",
+            "agent.dry-run",
             "search.all",
             "commands.list",
             "commands.show",
