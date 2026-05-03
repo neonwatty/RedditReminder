@@ -59,10 +59,14 @@ struct AgentBootstrapDTO: Encodable {
   let schemaVersion: Int
   let toolName: String
   let summary: String
+  let installCommands: [String]
+  let binaryLocations: [String]
   let recommendedStart: [String]
   let safety: [String]
   let discoveryCommands: [String]
   let recipeCommands: [String]
   let coreWorkflows: [String]
+  let commandSchemas: [CommandReferenceDTO]
+  let recipeSchemas: [RecipeReferenceDTO]
   let docs: [String]
 }
