@@ -48,7 +48,9 @@ redditreminder commands list --json
 redditreminder commands show captures.create --json
 redditreminder recipes list --json
 redditreminder recipes search --query "media" --json
+redditreminder recipes search --query "dry-run" --json
 redditreminder recipes show posting.create-with-media --json
+redditreminder recipes show posting.create-with-media-dry-run --json
 ```
 
 `context show` returns a compact snapshot of the workspace: counts, projects,
@@ -59,7 +61,8 @@ agents can inspect the widget state without guessing which domain to query first
 schema versions, command ids, positionals, flags, examples, and output data shapes.
 `recipes list`, `recipes search`, and `recipes show` return higher-level agent
 workflows: schema versions, expected inputs, ordered command steps, example
-invocations, and related command ids.
+invocations, and related command ids. Dry-run recipes document safer mutation
+patterns that preview changes before executing them.
 
 ## Captures
 

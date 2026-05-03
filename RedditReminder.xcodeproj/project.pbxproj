@@ -134,6 +134,7 @@
 		8BDBD62791F99A373564D5B3 /* CLIDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B81CF275655D5E1ECD5EC37 /* CLIDTOs.swift */; };
 		8BFB4386A5522097EAA5B7AC /* AppDelegateShortcutRegistrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D483D5534D2A0BC4C03BC77B /* AppDelegateShortcutRegistrationTests.swift */; };
 		8DBE4AF4BC0B7AEBB360C5F5 /* ShortcutRecorderInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9D18BDF63A57734A4A6C7A /* ShortcutRecorderInput.swift */; };
+		92CAD57D97C1526FA3C50242 /* CLIRecipeCatalogDryRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B8EDC6BDDBC291303F4BE8 /* CLIRecipeCatalogDryRun.swift */; };
 		9308DC394CD017D3E527EF59 /* MenuBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48A6922EC50A2426089E7A2 /* MenuBarControllerTests.swift */; };
 		9455C1014FD9C64F0B68D3F7 /* CLIFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32050796326D457C67C1870 /* CLIFilter.swift */; };
 		94636B0369D90D9FC93B2780 /* BackupMediaPayloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83951E8660A332C18651B94E /* BackupMediaPayloadTests.swift */; };
@@ -307,6 +308,7 @@
 		75FA87973FC3B43FDB7B37F8 /* PostingChecklistItemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostingChecklistItemsTests.swift; sourceTree = "<group>"; };
 		77F3C79809C4BF0DD2B05AF6 /* CLIDiscoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIDiscoveryManager.swift; sourceTree = "<group>"; };
 		787D3D5B9009F0ADFDC50CFF /* RedditReminderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedditReminderApp.swift; sourceTree = "<group>"; };
+		78B8EDC6BDDBC291303F4BE8 /* CLIRecipeCatalogDryRun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIRecipeCatalogDryRun.swift; sourceTree = "<group>"; };
 		793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutConfig.swift; sourceTree = "<group>"; };
 		7D9810B901F7241E88A6D898 /* SubredditInputValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubredditInputValidation.swift; sourceTree = "<group>"; };
 		83951E8660A332C18651B94E /* BackupMediaPayloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupMediaPayloadTests.swift; sourceTree = "<group>"; };
@@ -558,6 +560,7 @@
 				B14A6B7A047D5672F9159659 /* CLIOutput.swift */,
 				85FE2A447522454CC9824DD4 /* CLIProjectManager.swift */,
 				4143AED39BD8255725DAC766 /* CLIRecipeCatalog.swift */,
+				78B8EDC6BDDBC291303F4BE8 /* CLIRecipeCatalogDryRun.swift */,
 				97F9B8849B7B1BFA35E198D7 /* CLIRunner.swift */,
 				9000531B86E8AB4A89157704 /* CLISubredditManager.swift */,
 				FACB9393BCF9FAB1070EEFD8 /* CLISubredditVerifier.swift */,
@@ -865,6 +868,7 @@
 				BA3588948937708CD83AFEBC /* CLIOutput.swift in Sources */,
 				B0C340A0AB5DE1005CC425FC /* CLIProjectManager.swift in Sources */,
 				F94C03AEBAB43FA4AB4910FD /* CLIRecipeCatalog.swift in Sources */,
+				92CAD57D97C1526FA3C50242 /* CLIRecipeCatalogDryRun.swift in Sources */,
 				653447F7059B945ECF9657B2 /* CLIRunner.swift in Sources */,
 				AD72D92BE212AF74D0BBDE44 /* CLISubredditManager.swift in Sources */,
 				414614EDB4705F4BAB10EAB7 /* CLISubredditVerifier.swift in Sources */,

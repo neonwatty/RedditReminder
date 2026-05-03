@@ -33,7 +33,9 @@ enum CLIRecipeCatalog {
     ).joined(separator: " ")
   }
 
-  static let recipes: [RecipeReferenceDTO] = [
+  static let recipes: [RecipeReferenceDTO] = coreRecipes + dryRunRecipes
+
+  static let coreRecipes: [RecipeReferenceDTO] = [
     recipe(
       "posting.create-with-media",
       "Create a queued post with image media and a due posting window.",

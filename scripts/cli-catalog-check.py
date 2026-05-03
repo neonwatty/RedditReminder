@@ -103,6 +103,16 @@ def validate_recipes(cli, recipes, command_ids):
     search_ids = {recipe["id"] for recipe in search["data"]}
     if "posting.create-with-media" not in search_ids:
         fail("recipes search did not return posting.create-with-media for media")
+    dry_run_search = cli_json(cli, ["recipes", "search", "--query", "dry-run"])
+    dry_run_ids = {recipe["id"] for recipe in dry_run_search["data"]}
+    expected_dry_run_ids = {
+        "posting.create-with-media-dry-run",
+        "subreddit.configure-peak-times-dry-run",
+        "project.archive-dry-run",
+    }
+    missing_dry_run_ids = sorted(expected_dry_run_ids - dry_run_ids)
+    if missing_dry_run_ids:
+        fail(f"recipes search missing dry-run recipes: {', '.join(missing_dry_run_ids)}")
 
 
 def main():
