@@ -56,8 +56,9 @@ redditreminder recipes show posting.create-with-media-dry-run --json
 
 `agent bootstrap` is the cold-start entry point for Codex, Claude Code, and other
 agents. Once an agent knows the `redditreminder` binary name, bootstrap tells it
-which discovery commands to run next, where to find recipes, and how to handle
-mutations safely.
+which discovery commands to run next, where to find recipes, how to handle
+mutations safely, and includes command and recipe schemas in the same response.
+`AGENTS.md` is the repo-level bootstrap guide for agents starting from source.
 `context show` returns a compact snapshot of the workspace: counts, projects,
 subreddits with peak summaries, queued captures, active events, and peak presets.
 `search all` searches captures, events, projects, subreddits, and peak presets so

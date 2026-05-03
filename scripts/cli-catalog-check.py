@@ -49,14 +49,24 @@ def recipe_catalog(cli):
 
 def validate_bootstrap(cli, command_ids):
     bootstrap = cli_json(cli, ["agent", "bootstrap"])["data"]
-    if bootstrap.get("schemaVersion") != 1:
-        fail("agent bootstrap missing schemaVersion 1")
+    if bootstrap.get("schemaVersion") != 2:
+        fail("agent bootstrap missing schemaVersion 2")
     if bootstrap.get("toolName") != "redditreminder":
         fail("agent bootstrap returned wrong toolName")
     discovery = set(bootstrap.get("discoveryCommands", []))
     unknown = sorted(discovery - command_ids)
     if unknown:
         fail(f"agent bootstrap references unknown commands: {', '.join(unknown)}")
+    schema_ids = {command.get("id") for command in bootstrap.get("commandSchemas", [])}
+    if schema_ids != command_ids:
+        missing = sorted(command_ids - schema_ids)
+        extra = sorted(schema_ids - command_ids)
+        fail(f"agent bootstrap commandSchemas mismatch: missing={missing} extra={extra}")
+    recipe_schemas = bootstrap.get("recipeSchemas", [])
+    if not recipe_schemas:
+        fail("agent bootstrap missing recipeSchemas")
+    if "AGENTS.md" not in bootstrap.get("docs", []):
+        fail("agent bootstrap docs must include AGENTS.md")
 
 
 def validate_catalog(cli, catalog):

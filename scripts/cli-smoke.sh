@@ -170,7 +170,7 @@ assert_contains "context peak presets" "$context_snapshot" '"peakPresets":['
 
 agent_bootstrap="$(run_json agent bootstrap)"
 assert_contains "agent bootstrap ok" "$agent_bootstrap" '"ok":true'
-assert_contains "agent bootstrap schema" "$agent_bootstrap" '"schemaVersion":1'
+assert_contains "agent bootstrap schema" "$agent_bootstrap" '"schemaVersion":2'
 
 commands_list="$(run_json commands list)"
 assert_contains "commands list ok" "$commands_list" '"ok":true'

@@ -5,10 +5,18 @@ enum CLIAgentBootstrap {
     .success(
       data: .agentBootstrap(
         AgentBootstrapDTO(
-          schemaVersion: 1,
+          schemaVersion: 2,
           toolName: "redditreminder",
           summary:
             "Cold-start guide for agents using the RedditReminder menu bar app through the CLI.",
+          installCommands: [
+            "make install-cli",
+            "make build-cli",
+          ],
+          binaryLocations: [
+            "~/bin/redditreminder",
+            "build/Build/Products/Debug/redditreminder",
+          ],
           recommendedStart: [
             "redditreminder --json agent bootstrap",
             "redditreminder --json context show --limit 10",
@@ -45,9 +53,13 @@ enum CLIAgentBootstrap {
             "subreddit.configure-peak-times-dry-run",
             "project.archive-dry-run",
           ],
+          commandSchemas: CLICommandCatalog.commands,
+          recipeSchemas: CLIRecipeCatalog.recipes,
           docs: [
+            "AGENTS.md",
             "docs/cli.md",
             "scripts/cli-smoke.sh",
+            "scripts/cli-agent-smoke.sh",
             "scripts/cli-catalog-check.py",
           ])))
   }
