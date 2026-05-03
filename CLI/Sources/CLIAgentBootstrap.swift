@@ -10,6 +10,8 @@ enum CLIAgentBootstrap {
           summary:
             "Cold-start guide for agents using the RedditReminder menu bar app through the CLI.",
           installCommands: [
+            "make agent-bootstrap",
+            "./scripts/agent-bootstrap.sh",
             "make install-cli",
             "make build-cli",
           ],
