@@ -26,6 +26,8 @@ final class CLIRunner {
     switch command {
     case .agentBootstrap:
       return CLIAgentBootstrap.show()
+    case .agentValidate(let input):
+      return CLIAgentValidator.validate(input: input)
     case .capturesList(let query):
       return .success(data: .captures(fetchCaptures(matching: query).map(CaptureDTO.init)))
     case .captureCreate(let input):

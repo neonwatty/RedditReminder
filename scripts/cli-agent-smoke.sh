@@ -38,6 +38,16 @@ assert_contains "bootstrap captures create" "$bootstrap" '"id":"captures.create"
 assert_contains "bootstrap recipe schemas" "$bootstrap" '"recipeSchemas":'
 assert_contains "bootstrap agent docs" "$bootstrap" '"AGENTS.md"'
 
+valid_command="$(run_json agent validate -- projects create "Agent Draft")"
+assert_contains "validate ok" "$valid_command" '"ok":true'
+assert_contains "validate valid" "$valid_command" '"valid":true'
+assert_contains "validate command id" "$valid_command" '"commandId":"projects.create"'
+
+invalid_command="$(run_json agent validate -- peaks set SideProject --days mon)"
+assert_contains "validate invalid ok" "$invalid_command" '"ok":true'
+assert_contains "validate invalid" "$invalid_command" '"valid":false'
+assert_contains "validate missing flag" "$invalid_command" "Missing required flag --hours."
+
 context="$(run_json context show --limit 10)"
 assert_contains "context ok" "$context" '"ok":true'
 assert_contains "context counts" "$context" '"counts":'

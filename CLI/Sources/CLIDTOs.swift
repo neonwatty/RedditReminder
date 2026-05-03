@@ -21,6 +21,7 @@ enum CLIResponseData: Encodable {
   case recipeReferences([RecipeReferenceDTO])
   case recipeReference(RecipeReferenceDTO)
   case agentBootstrap(AgentBootstrapDTO)
+  case agentValidation(AgentValidationDTO)
   case dryRun(String)
 
   func encode(to encoder: Encoder) throws {
@@ -46,6 +47,7 @@ enum CLIResponseData: Encodable {
     case .recipeReferences(let value): try container.encode(value)
     case .recipeReference(let value): try container.encode(value)
     case .agentBootstrap(let value): try container.encode(value)
+    case .agentValidation(let value): try container.encode(value)
     case .dryRun(let value): try container.encode(["message": value])
     }
   }
@@ -60,6 +62,10 @@ struct CaptureCreateInput {
   let subreddits: [String]
   let mediaPaths: [String]
   let due: String?
+}
+
+struct AgentValidateInput {
+  let command: [String]
 }
 
 struct CaptureUpdateInput {

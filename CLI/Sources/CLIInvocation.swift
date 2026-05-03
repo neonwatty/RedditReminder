@@ -24,6 +24,7 @@ struct CLIOptions {
 
 enum CLICommand {
   case agentBootstrap
+  case agentValidate(AgentValidateInput)
   case capturesList(query: String?)
   case captureCreate(CaptureCreateInput)
   case captureUpdate(CaptureUpdateInput)
@@ -59,6 +60,8 @@ enum CLICommand {
     switch (domain, action) {
     case ("agent", "bootstrap"):
       self = .agentBootstrap
+    case ("agent", "validate"):
+      self = .agentValidate(try parser.consumeAgentValidateInput())
     case ("captures", "list"):
       self = .capturesList(query: parser.consumeOptionalValue(for: "--query"))
     case ("captures", "search"):
@@ -154,6 +157,9 @@ struct CLIArgumentParser {
     while index < arguments.count {
       let argument = arguments[index]
       switch argument {
+      case "--":
+        index += 1
+        return options
       case "--json":
         options.json = true
         arguments.remove(at: index)
@@ -227,6 +233,16 @@ struct CLIArgumentParser {
       throw CLIError.usage("Missing \(label).")
     }
     return value
+  }
+
+  mutating func consumeAgentValidateInput() throws -> AgentValidateInput {
+    _ = consumeFlag("--")
+    guard !arguments.isEmpty else {
+      throw CLIError.usage("Usage: redditreminder agent validate -- <domain> <command> [args]")
+    }
+    let command = arguments
+    arguments.removeAll()
+    return AgentValidateInput(command: command)
   }
 
   mutating func consumeCSV(for flag: String) throws -> [String] {

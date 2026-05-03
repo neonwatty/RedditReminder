@@ -84,6 +84,10 @@ enum CLIPrinter {
       return "\(recipe.id) - \(recipe.summary)"
     case .agentBootstrap(let bootstrap):
       return "\(bootstrap.toolName) agent bootstrap - \(bootstrap.summary)"
+    case .agentValidation(let validation):
+      return validation.valid
+        ? "Valid command: \(validation.commandId ?? validation.normalizedCommand.joined(separator: " "))"
+        : "Invalid command: \(validation.errors.joined(separator: "; "))"
     case .dryRun(let message): return message
     }
   }
@@ -128,7 +132,7 @@ enum CLIHelp {
 
   static func domain(_ domain: String) -> String {
     switch domain {
-    case "agent": return "Usage: redditreminder agent bootstrap"
+    case "agent": return "Usage: redditreminder agent bootstrap|validate"
     case "captures":
       return
         "Usage: redditreminder captures list|search|create|update|delete|mark-posted|mark-queued"
