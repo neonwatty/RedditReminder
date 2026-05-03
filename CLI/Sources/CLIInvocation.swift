@@ -23,6 +23,7 @@ struct CLIOptions {
 }
 
 enum CLICommand {
+  case agentBootstrap
   case capturesList(query: String?)
   case captureCreate(CaptureCreateInput)
   case captureUpdate(CaptureUpdateInput)
@@ -56,6 +57,8 @@ enum CLICommand {
 
   init(domain: String, action: String, parser: inout CLIArgumentParser) throws {
     switch (domain, action) {
+    case ("agent", "bootstrap"):
+      self = .agentBootstrap
     case ("captures", "list"):
       self = .capturesList(query: parser.consumeOptionalValue(for: "--query"))
     case ("captures", "search"):

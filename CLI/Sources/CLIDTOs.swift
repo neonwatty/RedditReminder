@@ -20,6 +20,7 @@ enum CLIResponseData: Encodable {
   case commandReference(CommandReferenceDTO)
   case recipeReferences([RecipeReferenceDTO])
   case recipeReference(RecipeReferenceDTO)
+  case agentBootstrap(AgentBootstrapDTO)
   case dryRun(String)
 
   func encode(to encoder: Encoder) throws {
@@ -44,6 +45,7 @@ enum CLIResponseData: Encodable {
     case .commandReference(let value): try container.encode(value)
     case .recipeReferences(let value): try container.encode(value)
     case .recipeReference(let value): try container.encode(value)
+    case .agentBootstrap(let value): try container.encode(value)
     case .dryRun(let value): try container.encode(["message": value])
     }
   }

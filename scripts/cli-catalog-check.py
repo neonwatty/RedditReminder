@@ -47,6 +47,18 @@ def recipe_catalog(cli):
     return cli_json(cli, ["recipes", "list"])["data"]
 
 
+def validate_bootstrap(cli, command_ids):
+    bootstrap = cli_json(cli, ["agent", "bootstrap"])["data"]
+    if bootstrap.get("schemaVersion") != 1:
+        fail("agent bootstrap missing schemaVersion 1")
+    if bootstrap.get("toolName") != "redditreminder":
+        fail("agent bootstrap returned wrong toolName")
+    discovery = set(bootstrap.get("discoveryCommands", []))
+    unknown = sorted(discovery - command_ids)
+    if unknown:
+        fail(f"agent bootstrap references unknown commands: {', '.join(unknown)}")
+
+
 def validate_catalog(cli, catalog):
     ids = [command["id"] for command in catalog]
     duplicates = sorted({command_id for command_id in ids if ids.count(command_id) > 1})
@@ -125,6 +137,7 @@ def main():
     catalog = command_catalog(cli)
     validate_catalog(cli, catalog)
     catalog_ids = {command["id"] for command in catalog}
+    validate_bootstrap(cli, catalog_ids)
     recipes = recipe_catalog(cli)
     validate_recipes(cli, recipes, catalog_ids)
 

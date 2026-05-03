@@ -24,6 +24,8 @@ final class CLIRunner {
 
   func run(command: CLICommand) async throws -> CLIResponse {
     switch command {
+    case .agentBootstrap:
+      return CLIAgentBootstrap.show()
     case .capturesList(let query):
       return .success(data: .captures(fetchCaptures(matching: query).map(CaptureDTO.init)))
     case .captureCreate(let input):

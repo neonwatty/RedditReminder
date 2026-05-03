@@ -23,6 +23,12 @@ enum CLICommandCatalog {
 
   static let discoveryCommands: [CommandReferenceDTO] = [
     command(
+      "agent.bootstrap", "agent", "bootstrap",
+      "Return the cold-start guide for agents.",
+      examples: ["redditreminder --json agent bootstrap"],
+      output: output("agentBootstrap", "Versioned agent bootstrap guidance.")
+    ),
+    command(
       "context.show", "context", "show",
       "Return a compact workspace snapshot for agent planning.",
       flags: [flag("--limit", "N", "Maximum items per collection. Defaults to 20.")],
