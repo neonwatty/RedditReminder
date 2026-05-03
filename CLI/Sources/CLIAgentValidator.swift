@@ -7,7 +7,7 @@ enum CLIAgentValidator {
     return .success(data: .agentValidation(result))
   }
 
-  private static func normalizedCommand(_ command: [String]) -> [String] {
+  static func normalizedCommand(_ command: [String]) -> [String] {
     var tokens = command
     if let first = tokens.first,
       first == "redditreminder" || first.hasSuffix("/redditreminder")
@@ -30,7 +30,7 @@ enum CLIAgentValidator {
     return output
   }
 
-  private static func validationResult(for tokens: [String]) -> AgentValidationDTO {
+  static func validationResult(for tokens: [String]) -> AgentValidationDTO {
     guard tokens.count >= 2 else {
       return result(tokens, nil, nil, ["Expected <domain> <command>."], [])
     }

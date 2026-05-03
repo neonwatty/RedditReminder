@@ -28,6 +28,8 @@ final class CLIRunner {
       return CLIAgentBootstrap.show()
     case .agentValidate(let input):
       return CLIAgentValidator.validate(input: input)
+    case .agentDryRun(let input):
+      return try await CLIAgentDryRunner.dryRun(input: input, options: options)
     case .capturesList(let query):
       return .success(data: .captures(fetchCaptures(matching: query).map(CaptureDTO.init)))
     case .captureCreate(let input):

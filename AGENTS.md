@@ -48,6 +48,7 @@ build/Build/Products/Debug/redditreminder --json agent bootstrap
   syntax.
 - Prefer recipe flows over raw mutation commands.
 - Validate proposed commands with `agent validate --` before execution.
+- Preview mutations with `agent dry-run --`, then ask for confirmation.
 - Use `--json` for machine-readable output.
 - Use `--dry-run` before mutations when supported.
 - Ask for user confirmation before executing non-dry-run mutations.
@@ -58,6 +59,7 @@ build/Build/Products/Debug/redditreminder --json agent bootstrap
 ```sh
 redditreminder --json context show --limit 10
 redditreminder --json agent validate -- projects create "Launch Ideas"
+redditreminder --json agent dry-run -- projects create "Launch Ideas"
 redditreminder --json commands list
 redditreminder --json commands show captures.create
 redditreminder --json recipes list

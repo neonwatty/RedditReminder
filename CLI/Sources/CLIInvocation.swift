@@ -25,6 +25,7 @@ struct CLIOptions {
 enum CLICommand {
   case agentBootstrap
   case agentValidate(AgentValidateInput)
+  case agentDryRun(AgentValidateInput)
   case capturesList(query: String?)
   case captureCreate(CaptureCreateInput)
   case captureUpdate(CaptureUpdateInput)
@@ -62,6 +63,8 @@ enum CLICommand {
       self = .agentBootstrap
     case ("agent", "validate"):
       self = .agentValidate(try parser.consumeAgentValidateInput())
+    case ("agent", "dry-run"):
+      self = .agentDryRun(try parser.consumeAgentCommandInput(usage: "dry-run"))
     case ("captures", "list"):
       self = .capturesList(query: parser.consumeOptionalValue(for: "--query"))
     case ("captures", "search"):
@@ -236,9 +239,13 @@ struct CLIArgumentParser {
   }
 
   mutating func consumeAgentValidateInput() throws -> AgentValidateInput {
+    try consumeAgentCommandInput(usage: "validate")
+  }
+
+  mutating func consumeAgentCommandInput(usage: String) throws -> AgentValidateInput {
     _ = consumeFlag("--")
     guard !arguments.isEmpty else {
-      throw CLIError.usage("Usage: redditreminder agent validate -- <domain> <command> [args]")
+      throw CLIError.usage("Usage: redditreminder agent \(usage) -- <domain> <command> [args]")
     }
     let command = arguments
     arguments.removeAll()

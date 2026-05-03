@@ -167,6 +167,7 @@
 		CC6A10A2CEA907B520EEE2F3 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAFC3BF96ACD4F01D08367F /* MarkdownPreviewView.swift */; };
 		CCE3B3D5EE4B39D55222CA19 /* ResourcePackagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A9BB4582DA895A6C18C321 /* ResourcePackagingTests.swift */; };
 		CE614FCDDCCDE1DA0C484E58 /* CaptureMediaSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B642ED62D86AC09680939A1 /* CaptureMediaSelectionTests.swift */; };
+		CF43177BB20A1FC060A78599 /* CLIAgentDryRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861F39432972E1CC1377F282 /* CLIAgentDryRunner.swift */; };
 		CFDA6CE34A7768D4CF33D759 /* HeuristicsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */; };
 		D4C25F69F19FB5F035561B86 /* CaptureMediaAccessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 256FB5A83C11819FC96533BA /* CaptureMediaAccessibility.swift */; };
 		D70537E281AB16807DE1E2FA /* CLICaptureCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C71FB925E32942AFE42575 /* CLICaptureCreator.swift */; };
@@ -317,6 +318,7 @@
 		843A01564D830A81EEF54CF9 /* NotificationSettingsOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsOpener.swift; sourceTree = "<group>"; };
 		84C5DAE3A8EB7A0149E897CD /* NotificationSchedulerPermissionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSchedulerPermissionTests.swift; sourceTree = "<group>"; };
 		85FE2A447522454CC9824DD4 /* CLIProjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIProjectManager.swift; sourceTree = "<group>"; };
+		861F39432972E1CC1377F282 /* CLIAgentDryRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIAgentDryRunner.swift; sourceTree = "<group>"; };
 		8667BBC305F7B1E7A92856AC /* CaptureHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureHelpers.swift; sourceTree = "<group>"; };
 		88999911A1A3157EE5DBB4A7 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		8A6C6B2B1A559FEFF67B391F /* RRuleOccurrenceEdgeCaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RRuleOccurrenceEdgeCaseTests.swift; sourceTree = "<group>"; };
@@ -544,6 +546,7 @@
 			isa = PBXGroup;
 			children = (
 				9BF046679692C90640222864 /* CLIAgentBootstrap.swift */,
+				861F39432972E1CC1377F282 /* CLIAgentDryRunner.swift */,
 				C6642BDB50320A87AB68443A /* CLIAgentValidator.swift */,
 				237DBF1605FF8CDD5CDD51A5 /* CLIArgumentParserCaptures.swift */,
 				C1DDFC92B31A2562246F8D58 /* CLIArgumentParserConfig.swift */,
@@ -854,6 +857,7 @@
 			files = (
 				EA9B4D6D73A9BE87850EB6B1 /* AppRefreshAction.swift in Sources */,
 				D866DE76F83DD239C8C16BE6 /* CLIAgentBootstrap.swift in Sources */,
+				CF43177BB20A1FC060A78599 /* CLIAgentDryRunner.swift in Sources */,
 				E9484CB4CA514954F2C5D1F3 /* CLIAgentValidator.swift in Sources */,
 				407571238A58E84A82F37D32 /* CLIArgumentParserCaptures.swift in Sources */,
 				7A921D8AE858EAC9BC2C9556 /* CLIArgumentParserConfig.swift in Sources */,

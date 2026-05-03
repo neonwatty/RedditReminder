@@ -36,6 +36,13 @@ enum CLICommandCatalog {
       output: output("agentValidation", "Validation result with errors and command schema.")
     ),
     command(
+      "agent.dry-run", "agent", "dry-run",
+      "Validate and preview a mutation command with dry-run forced on.",
+      positionals: [arg("command", "Mutation command tokens after --.")],
+      examples: ["redditreminder --json agent dry-run -- projects create Draft"],
+      output: output("agentDryRun", "Validation result plus forced dry-run preview.")
+    ),
+    command(
       "context.show", "context", "show",
       "Return a compact workspace snapshot for agent planning.",
       flags: [flag("--limit", "N", "Maximum items per collection. Defaults to 20.")],
