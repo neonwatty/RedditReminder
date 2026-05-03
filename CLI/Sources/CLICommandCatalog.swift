@@ -85,6 +85,7 @@ enum CLICommandCatalog {
     output: CommandOutputDTO
   ) -> CommandReferenceDTO {
     CommandReferenceDTO(
+      schemaVersion: 1,
       id: id,
       domain: domain,
       command: command,

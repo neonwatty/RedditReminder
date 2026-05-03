@@ -55,6 +55,8 @@ def validate_catalog(cli, catalog):
 
     for command in catalog:
         command_id = command["id"]
+        if command.get("schemaVersion") != 1:
+            fail(f"{command_id} missing schemaVersion 1")
         expected_id = f'{command["domain"]}.{command["command"]}'
         if command_id != expected_id:
             fail(f"{command_id} domain/command mismatch: expected {expected_id}")
@@ -83,6 +85,8 @@ def validate_recipes(cli, recipes, command_ids):
 
     for recipe in recipes:
         recipe_id = recipe["id"]
+        if recipe.get("schemaVersion") != 1:
+            fail(f"{recipe_id} missing schemaVersion 1")
         for field in ("summary", "goal", "inputs", "steps", "examples", "relatedCommands"):
             if not recipe.get(field):
                 fail(f"{recipe_id} missing {field}")

@@ -1,6 +1,7 @@
 import Foundation
 
 struct CommandReferenceDTO: Encodable {
+  let schemaVersion: Int
   let id: String
   let domain: String
   let command: String
@@ -31,6 +32,7 @@ struct CommandOutputDTO: Encodable {
 }
 
 struct RecipeReferenceDTO: Encodable {
+  let schemaVersion: Int
   let id: String
   let summary: String
   let goal: String

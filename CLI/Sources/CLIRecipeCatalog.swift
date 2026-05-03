@@ -131,6 +131,7 @@ enum CLIRecipeCatalog {
     relatedCommands: [String]
   ) -> RecipeReferenceDTO {
     RecipeReferenceDTO(
+      schemaVersion: 1,
       id: id,
       summary: summary,
       goal: goal,
