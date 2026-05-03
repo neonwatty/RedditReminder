@@ -191,11 +191,21 @@ assert_contains "recipes search ok" "$recipes_search" '"ok":true'
 assert_contains "recipes search create media" "$recipes_search" '"id":"posting.create-with-media"'
 assert_not_contains "recipes search excludes peak recipe" "$recipes_search" '"id":"subreddit.configure-peak-times"'
 
+recipes_dry_run_search="$(run_json recipes search --query dry-run)"
+assert_contains "recipes dry-run search ok" "$recipes_dry_run_search" '"ok":true'
+assert_contains "recipes dry-run posting" "$recipes_dry_run_search" '"id":"posting.create-with-media-dry-run"'
+assert_contains "recipes dry-run project" "$recipes_dry_run_search" '"id":"project.archive-dry-run"'
+
 recipes_show="$(run_json recipes show posting.create-with-media)"
 assert_contains "recipes show ok" "$recipes_show" '"ok":true'
 assert_contains "recipes show id" "$recipes_show" '"id":"posting.create-with-media"'
 assert_contains "recipes show capture command" "$recipes_show" '"commandId":"captures.create"'
 assert_contains "recipes show related commands" "$recipes_show" '"relatedCommands":'
+
+recipes_dry_run_show="$(run_json recipes show posting.create-with-media-dry-run)"
+assert_contains "recipes dry-run show ok" "$recipes_dry_run_show" '"ok":true'
+assert_contains "recipes dry-run show id" "$recipes_dry_run_show" '"id":"posting.create-with-media-dry-run"'
+assert_contains "recipes dry-run step" "$recipes_dry_run_show" "--dry-run"
 
 peak_reset="$(run_json peaks reset SideProject)"
 assert_contains "peak reset" "$peak_reset" '"ok":true'
