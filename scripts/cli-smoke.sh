@@ -168,6 +168,10 @@ assert_contains "context counts" "$context_snapshot" '"counts":'
 assert_contains "context subreddits" "$context_snapshot" '"subreddits":['
 assert_contains "context peak presets" "$context_snapshot" '"peakPresets":['
 
+agent_bootstrap="$(run_json agent bootstrap)"
+assert_contains "agent bootstrap ok" "$agent_bootstrap" '"ok":true'
+assert_contains "agent bootstrap schema" "$agent_bootstrap" '"schemaVersion":1'
+
 commands_list="$(run_json commands list)"
 assert_contains "commands list ok" "$commands_list" '"ok":true'
 assert_contains "commands list captures create" "$commands_list" '"id":"captures.create"'

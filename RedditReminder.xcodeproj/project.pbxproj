@@ -170,6 +170,7 @@
 		CFDA6CE34A7768D4CF33D759 /* HeuristicsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1D8A8A7F250226B68B172F /* HeuristicsStore.swift */; };
 		D4C25F69F19FB5F035561B86 /* CaptureMediaAccessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 256FB5A83C11819FC96533BA /* CaptureMediaAccessibility.swift */; };
 		D70537E281AB16807DE1E2FA /* CLICaptureCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C71FB925E32942AFE42575 /* CLICaptureCreator.swift */; };
+		D866DE76F83DD239C8C16BE6 /* CLIAgentBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF046679692C90640222864 /* CLIAgentBootstrap.swift */; };
 		D8C594251D6110586CEC8152 /* CaptureFormResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18096AB61A4D997C3C36A3AA /* CaptureFormResult.swift */; };
 		DA2B270CDFA18C60E33E913B /* KeyboardShortcutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793582517DF597A0F96E2072 /* KeyboardShortcutConfig.swift */; };
 		DF5BC4B40F68E4D77656AD97 /* ShortcutRecorderInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BECD53B7CA29C3F004D13EBB /* ShortcutRecorderInputTests.swift */; };
@@ -332,6 +333,7 @@
 		979105135C8B3C67FC080326 /* AppRefreshAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRefreshAction.swift; sourceTree = "<group>"; };
 		97F9B8849B7B1BFA35E198D7 /* CLIRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIRunner.swift; sourceTree = "<group>"; };
 		9884E228CA7B8C32C3669A85 /* BackupMappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupMappers.swift; sourceTree = "<group>"; };
+		9BF046679692C90640222864 /* CLIAgentBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIAgentBootstrap.swift; sourceTree = "<group>"; };
 		9C593329647C7A7C82103B02 /* CLIEventManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIEventManager.swift; sourceTree = "<group>"; };
 		9E2C8DBB12B2100D9B15CCA0 /* RedditReminderCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = RedditReminderCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FA306067C4690F4D1CDAC2D /* Subreddit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subreddit.swift; sourceTree = "<group>"; };
@@ -539,6 +541,7 @@
 		6BD3E7EA3F7D02FA08CCC4C4 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				9BF046679692C90640222864 /* CLIAgentBootstrap.swift */,
 				237DBF1605FF8CDD5CDD51A5 /* CLIArgumentParserCaptures.swift */,
 				C1DDFC92B31A2562246F8D58 /* CLIArgumentParserConfig.swift */,
 				5E937747CC61B8E422CE6018 /* CLIArgumentParserEvents.swift */,
@@ -847,6 +850,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EA9B4D6D73A9BE87850EB6B1 /* AppRefreshAction.swift in Sources */,
+				D866DE76F83DD239C8C16BE6 /* CLIAgentBootstrap.swift in Sources */,
 				407571238A58E84A82F37D32 /* CLIArgumentParserCaptures.swift in Sources */,
 				7A921D8AE858EAC9BC2C9556 /* CLIArgumentParserConfig.swift in Sources */,
 				B9A0FFC6B8D690F11AC676EA /* CLIArgumentParserEvents.swift in Sources */,

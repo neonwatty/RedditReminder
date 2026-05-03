@@ -54,3 +54,15 @@ struct RecipeStepDTO: Encodable {
   let purpose: String
   let example: String
 }
+
+struct AgentBootstrapDTO: Encodable {
+  let schemaVersion: Int
+  let toolName: String
+  let summary: String
+  let recommendedStart: [String]
+  let safety: [String]
+  let discoveryCommands: [String]
+  let recipeCommands: [String]
+  let coreWorkflows: [String]
+  let docs: [String]
+}
