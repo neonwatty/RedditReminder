@@ -38,12 +38,12 @@ enum CLIRecipeCatalog {
   static let coreRecipes: [RecipeReferenceDTO] = [
     recipe(
       "posting.create-with-media",
-      "Create a queued post with image media and a due posting window.",
-      goal: "Given a title, body, image path, subreddit, and due date, create the capture and its posting-window event.",
+      "Create a queued post with image or video media and a due posting window.",
+      goal: "Given a title, body, media path, subreddit, and due date, create the capture and its posting-window event.",
       inputs: [
         input("title", "Post title."),
         input("text", "Post body."),
-        input("mediaPath", "Local image path to attach."),
+        input("mediaPath", "Local image or video path to attach."),
         input("subreddit", "Existing subreddit name or id."),
         input("due", "ISO8601 posting-window date."),
         input("project", "Optional existing project name or id.", required: false),

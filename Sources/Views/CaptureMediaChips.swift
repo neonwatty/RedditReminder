@@ -3,6 +3,7 @@ import SwiftUI
 struct CaptureMediaChip: View {
     let title: String
     let image: NSImage?
+    var isVideo: Bool = false
     let previewIdentifier: String
     let removeIdentifier: String
     let onPreview: () -> Void
@@ -40,6 +41,9 @@ struct CaptureMediaChip: View {
                 .scaledToFill()
                 .frame(width: 18, height: 18)
                 .clipShape(RoundedRectangle(cornerRadius: 3))
+        } else if isVideo {
+            Image(systemName: "film")
+                .font(.system(size: 10))
         } else {
             Image(systemName: "photo")
                 .font(.system(size: 9))
@@ -50,6 +54,7 @@ struct CaptureMediaChip: View {
 struct RemovedCaptureMediaChip: View {
     let title: String
     let image: NSImage?
+    var isVideo: Bool = false
     let restoreIdentifier: String
     let onRestore: () -> Void
 
@@ -83,6 +88,9 @@ struct RemovedCaptureMediaChip: View {
                 .scaledToFill()
                 .frame(width: 18, height: 18)
                 .clipShape(RoundedRectangle(cornerRadius: 3))
+        } else if isVideo {
+            Image(systemName: "film")
+                .font(.system(size: 10))
         } else {
             Image(systemName: "photo")
                 .font(.system(size: 9))

@@ -28,8 +28,8 @@ extension CLICommandCatalog {
         flag("--project", "NAME_OR_ID", "Existing project."),
         flag("--subreddit", "NAME_OR_ID", "Existing subreddit.", repeatable: true),
         flag("--subreddits", "A,B", "Comma-separated subreddits."),
-        flag("--media", "PATH", "Image path to copy into media store.", repeatable: true),
-        flag("--media-paths", "A,B", "Comma-separated image paths."),
+        flag("--media", "PATH", "Image or video path to copy into media store.", repeatable: true),
+        flag("--media-paths", "A,B", "Comma-separated image or video paths."),
         flag("--due", "ISO8601", "Create one due event per selected subreddit."),
       ],
       examples: [

@@ -175,7 +175,7 @@ struct CaptureCardView: View {
       parts.append("\(capture.links.count) link\(capture.links.count == 1 ? "" : "s")")
     }
     if !capture.mediaRefs.isEmpty {
-      parts.append("\(capture.mediaRefs.count) image\(capture.mediaRefs.count == 1 ? "" : "s")")
+      parts.append("\(capture.mediaRefs.count) media file\(capture.mediaRefs.count == 1 ? "" : "s")")
     }
     if capture.notes != nil {
       parts.append("notes")

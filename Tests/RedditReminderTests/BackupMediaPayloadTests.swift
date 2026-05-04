@@ -55,6 +55,37 @@ import Testing
     #expect(destinationMediaStore.loadThumbnail(captureId: sourceCapture.id, ref: ref) != nil)
 }
 
+@Test @MainActor func backupImportRestoresEmbeddedVideoMediaFiles() throws {
+    let sourceContainer = try makeBackupContainer()
+    let sourceContext = ModelContext(sourceContainer)
+    let sourceMediaStore = MediaStore(rootDir: temporaryBackupMediaRoot())
+    let sourceCapture = Capture(text: "With video")
+    sourceContext.insert(sourceCapture)
+    let ref = try sourceMediaStore.saveFile(
+        at: try writeBackupVideoFixture(named: "demo.mp4"),
+        captureId: sourceCapture.id
+    )
+    sourceCapture.mediaRefs = [ref]
+    try sourceContext.save()
+    let data = try BackupService().exportBackup(from: sourceContext, mediaStore: sourceMediaStore)
+
+    let destinationContainer = try makeBackupContainer()
+    let destinationContext = ModelContext(destinationContainer)
+    let destinationMediaStore = MediaStore(rootDir: temporaryBackupMediaRoot())
+
+    try BackupService().importBackup(
+        from: data,
+        into: destinationContext,
+        mediaStore: destinationMediaStore
+    )
+
+    let captures = try destinationContext.fetch(FetchDescriptor<Capture>())
+    #expect(captures.count == 1)
+    #expect(captures[0].mediaRefs == [ref])
+    #expect(destinationMediaStore.exists(captureId: sourceCapture.id, ref: ref))
+    #expect(destinationMediaStore.loadThumbnail(captureId: sourceCapture.id, ref: ref) == nil)
+}
+
 @Test @MainActor func backupImportRejectsEmbeddedMediaWithInvalidRefsBeforeClearingData() throws {
     let container = try makeBackupContainer()
     let context = ModelContext(container)
@@ -177,4 +208,11 @@ private func backupPNGFixtureData() throws -> Data {
         throw MediaError.encodingFailed
     }
     return png
+}
+
+private func writeBackupVideoFixture(named fileName: String) throws -> URL {
+    let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent("\(UUID().uuidString)-\(fileName)")
+    try Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70]).write(to: url)
+    return url
 }

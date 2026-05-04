@@ -93,7 +93,7 @@ patterns that preview changes before executing them.
 ```sh
 redditreminder captures list --json
 redditreminder captures search --query "launch" --json
-redditreminder captures create --title "Launch post" --text "Post body" --project "Launch Ideas" --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z --json
+redditreminder captures create --title "Launch post" --text "Post body" --project "Launch Ideas" --subreddit SideProject --media ~/Desktop/mock.mp4 --due 2026-05-02T18:00:00Z --json
 redditreminder captures update CAPTURE_ID --title "Updated title" --clear-notes --json
 redditreminder captures mark-posted CAPTURE_ID --url "https://reddit.com/r/SideProject/comments/abc" --json
 redditreminder captures mark-queued CAPTURE_ID --json
@@ -111,8 +111,8 @@ redditreminder captures delete CAPTURE_ID --json
 --project NAME_OR_ID  Existing project name or UUID.
 --subreddit NAME      Repeatable existing subreddit name or UUID.
 --subreddits A,B      Comma-separated subreddits.
---media PATH          Repeatable image path copied into the media store.
---media-paths A,B     Comma-separated image paths.
+--media PATH          Repeatable image/video path copied into the media store.
+--media-paths A,B     Comma-separated image/video paths.
 --due ISO8601         Creates one one-off posting-window event per chosen subreddit.
 ```
 

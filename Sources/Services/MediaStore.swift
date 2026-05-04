@@ -44,13 +44,17 @@ final class MediaStore {
 
   func saveFile(at sourceURL: URL, captureId: UUID) throws -> String {
     let ext = sourceURL.pathExtension.lowercased()
-    guard MediaConstants.supportedImageTypes.contains(ext) else {
+    if MediaConstants.supportedImageTypes.contains(ext) {
+      guard let image = NSImage(contentsOf: sourceURL) else {
+        throw MediaError.decodingFailed
+      }
+      return try save(image: image, captureId: captureId, fileName: sourceURL.lastPathComponent)
+    }
+
+    guard MediaConstants.supportedVideoTypes.contains(ext) else {
       throw MediaError.unsupportedType
     }
-    guard let image = NSImage(contentsOf: sourceURL) else {
-      throw MediaError.decodingFailed
-    }
-    return try save(image: image, captureId: captureId, fileName: sourceURL.lastPathComponent)
+    return try copyFile(at: sourceURL, captureId: captureId)
   }
 
   func loadImage(captureId: UUID, ref: String) -> NSImage? {
@@ -79,17 +83,29 @@ final class MediaStore {
 
   func saveData(_ data: Data, captureId: UUID, ref: String) throws {
     guard isValidMediaRef(ref) else { throw MediaError.invalidReference }
-    guard let image = NSImage(data: data) else { throw MediaError.decodingFailed }
+    let ext = URL(fileURLWithPath: ref).pathExtension.lowercased()
+    guard MediaConstants.supportedTypes.contains(ext) else { throw MediaError.unsupportedType }
     let captureDir = rootDir.appendingPathComponent(captureId.uuidString)
     let thumbDir = captureDir.appendingPathComponent("thumbnails")
-    try fm.createDirectory(at: captureDir, withIntermediateDirectories: true)
-    try fm.createDirectory(at: thumbDir, withIntermediateDirectories: true)
-    try data.write(to: mediaURL(captureId: captureId, ref: ref))
-
-    let thumbnail = generateThumbnail(from: image, maxSize: MediaConstants.thumbnailMaxSize)
-    if let thumbData = pngData(from: thumbnail) {
-      try thumbData.write(to: thumbnailURL(captureId: captureId, ref: ref))
+    if MediaConstants.supportedImageTypes.contains(ext) {
+      guard let image = NSImage(data: data) else { throw MediaError.decodingFailed }
+      try fm.createDirectory(at: captureDir, withIntermediateDirectories: true)
+      try data.write(to: mediaURL(captureId: captureId, ref: ref))
+      try fm.createDirectory(at: thumbDir, withIntermediateDirectories: true)
+      let thumbnail = generateThumbnail(from: image, maxSize: MediaConstants.thumbnailMaxSize)
+      if let thumbData = pngData(from: thumbnail) {
+        try thumbData.write(to: thumbnailURL(captureId: captureId, ref: ref))
+      }
+    } else {
+      try fm.createDirectory(at: captureDir, withIntermediateDirectories: true)
+      try data.write(to: mediaURL(captureId: captureId, ref: ref))
     }
+  }
+
+  func isVideoRef(_ ref: String) -> Bool {
+    guard isValidMediaRef(ref) else { return false }
+    return MediaConstants.supportedVideoTypes.contains(
+      URL(fileURLWithPath: ref).pathExtension.lowercased())
   }
 
   private func mediaURL(captureId: UUID, ref: String) -> URL {
@@ -170,6 +186,14 @@ final class MediaStore {
       index += 1
     }
     return candidate
+  }
+
+  private func copyFile(at sourceURL: URL, captureId: UUID) throws -> String {
+    let captureDir = rootDir.appendingPathComponent(captureId.uuidString)
+    try fm.createDirectory(at: captureDir, withIntermediateDirectories: true)
+    let storedName = uniqueFileName(sourceURL.lastPathComponent, in: captureDir)
+    try fm.copyItem(at: sourceURL, to: captureDir.appendingPathComponent(storedName))
+    return storedName
   }
 
   private func isValidMediaRef(_ ref: String) -> Bool {
