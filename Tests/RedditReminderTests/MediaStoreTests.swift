@@ -66,6 +66,26 @@ import AppKit
   #expect(store.loadThumbnail(captureId: captureId, ref: ref) != nil)
 }
 
+@Test func saveFileCopiesDroppedVideoIntoMediaStore() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let sourceURL = rootDir
+    .deletingLastPathComponent()
+    .appendingPathComponent("\(UUID().uuidString).mp4")
+  let data = Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70])
+  try data.write(to: sourceURL)
+  defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+  let captureId = UUID()
+  let ref = try store.saveFile(at: sourceURL, captureId: captureId)
+
+  #expect(ref == sourceURL.lastPathComponent)
+  #expect(store.exists(captureId: captureId, ref: ref))
+  #expect(store.isVideoRef(ref))
+  #expect(store.loadThumbnail(captureId: captureId, ref: ref) == nil)
+  #expect(try store.loadData(captureId: captureId, ref: ref) == data)
+}
+
 @Test func saveFileGeneratesUniqueRefsForDuplicateNames() throws {
   let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
   let store = MediaStore(rootDir: rootDir)
@@ -168,6 +188,19 @@ import AppKit
   } catch {
     throw error
   }
+}
+
+@Test func saveDataRestoresVideoWithoutThumbnail() throws {
+  let rootDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  let store = MediaStore(rootDir: rootDir)
+  let captureId = UUID()
+  let data = Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70])
+
+  try store.saveData(data, captureId: captureId, ref: "clip.mp4")
+
+  #expect(store.exists(captureId: captureId, ref: "clip.mp4"))
+  #expect(store.loadThumbnail(captureId: captureId, ref: "clip.mp4") == nil)
+  #expect(try store.loadData(captureId: captureId, ref: "clip.mp4") == data)
 }
 
 private func createTestImage(width: Int, height: Int) -> NSImage {

@@ -4,12 +4,12 @@ extension CLIRecipeCatalog {
   static let dryRunRecipes: [RecipeReferenceDTO] = [
     recipe(
       "posting.create-with-media-dry-run",
-      "Safely preview and then create a queued post with image media.",
+      "Safely preview and then create a queued post with image or video media.",
       goal: "Inspect state, preview capture creation with --dry-run, wait for confirmation, execute the create, and verify the result.",
       inputs: [
         input("title", "Post title."),
         input("text", "Post body."),
-        input("mediaPath", "Local image path to attach."),
+        input("mediaPath", "Local image or video path to attach."),
         input("subreddit", "Existing subreddit name or id."),
         input("due", "ISO8601 posting-window date."),
         input("project", "Optional existing project name or id.", required: false),

@@ -22,6 +22,7 @@ struct CaptureMediaSection: View {
             CaptureMediaChip(
               title: ref,
               image: mediaStore.loadThumbnail(captureId: captureId, ref: ref),
+              isVideo: mediaStore.isVideoRef(ref),
               previewIdentifier: CaptureMediaAccessibility.previewExisting(ref: ref),
               removeIdentifier: CaptureMediaAccessibility.removeExisting(ref: ref),
               onPreview: {
@@ -47,6 +48,7 @@ struct CaptureMediaSection: View {
             RemovedCaptureMediaChip(
               title: ref,
               image: mediaStore.loadThumbnail(captureId: captureId, ref: ref),
+              isVideo: mediaStore.isVideoRef(ref),
               restoreIdentifier: CaptureMediaAccessibility.restoreExisting(ref: ref),
               onRestore: {
                 CaptureMediaEditing.restoreExisting(
@@ -67,6 +69,7 @@ struct CaptureMediaSection: View {
             CaptureMediaChip(
               title: url.lastPathComponent,
               image: NSImage(contentsOf: url),
+              isVideo: CaptureMediaSelection.isVideoURL(url),
               previewIdentifier: CaptureMediaAccessibility.previewNew(
                 fileName: url.lastPathComponent),
               removeIdentifier: CaptureMediaAccessibility.removeNew(index: index),
@@ -85,7 +88,7 @@ struct CaptureMediaSection: View {
         .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 1, dash: [6]))
         .frame(height: 48)
         .overlay {
-          Text("Drop images here or ").font(.system(size: 11)).foregroundStyle(.secondary)
+          Text("Drop images or videos here or ").font(.system(size: 11)).foregroundStyle(.secondary)
             + Text("browse").font(.system(size: 11)).foregroundStyle(.blue)
         }
         .background(isDragOver ? Color.blue.opacity(0.05) : Color.clear)
@@ -97,12 +100,12 @@ struct CaptureMediaSection: View {
         }
         .fileImporter(
           isPresented: $isShowingImporter,
-          allowedContentTypes: [.image],
+          allowedContentTypes: [.image, .movie],
           allowsMultipleSelection: true
         ) { result in
           switch result {
           case .success(let urls):
-            appendImageFiles(urls)
+            appendMediaFiles(urls)
           case .failure(let error):
             NSLog("RedditReminder: media import failed: \(error)")
           }
@@ -146,10 +149,11 @@ struct CaptureMediaSection: View {
     let value: NSImage
   }
 
-  private func appendImageFiles(_ urls: [URL]) {
+  private func appendMediaFiles(_ urls: [URL]) {
     let result = CaptureMediaSelection.result(from: urls)
-    droppedFiles.append(contentsOf: result.imageURLs)
-    mediaSelectionError = result.rejectedCount > 0 ? "Only image files can be attached." : nil
+    droppedFiles.append(contentsOf: result.mediaURLs)
+    mediaSelectionError =
+      result.rejectedCount > 0 ? "Only image or video files can be attached." : nil
   }
 
   private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
@@ -159,7 +163,7 @@ struct CaptureMediaSection: View {
           NSLog("RedditReminder: file drop failed: \(error)")
           return
         }
-        if let url { Task { @MainActor in appendImageFiles([url]) } }
+        if let url { Task { @MainActor in appendMediaFiles([url]) } }
       }
     }
     return true

@@ -47,6 +47,38 @@ private func makeCapturePersistenceContainer() throws -> ModelContainer {
     #expect(mediaStore.loadImage(captureId: captures[0].id, ref: captures[0].mediaRefs[0]) != nil)
 }
 
+@Test @MainActor func saveCapturePersistsVideoMediaRefs() throws {
+    let container = try makeCapturePersistenceContainer()
+    let context = ModelContext(container)
+    let mediaStore = MediaStore(rootDir: temporaryMediaRoot())
+    let subreddit = Subreddit(name: "r/SwiftUI")
+    context.insert(subreddit)
+    try context.save()
+
+    let sourceURL = try writeTestVideo(named: "demo.mp4")
+    defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+    let ok = CapturePersistenceActions.saveCapture(
+        CaptureFormResult(
+            text: "Video draft",
+            notes: nil,
+            links: [],
+            project: nil,
+            subreddits: [subreddit],
+            mediaURLs: [sourceURL]
+        ),
+        modelContext: context,
+        mediaStore: mediaStore
+    )
+
+    let captures = try context.fetch(FetchDescriptor<Capture>())
+    #expect(ok)
+    #expect(captures.count == 1)
+    #expect(captures[0].mediaRefs == ["demo.mp4"])
+    #expect(mediaStore.exists(captureId: captures[0].id, ref: "demo.mp4"))
+    #expect(mediaStore.loadThumbnail(captureId: captures[0].id, ref: "demo.mp4") == nil)
+}
+
 @Test @MainActor func updateCaptureRemovesDeletedMediaAfterSave() throws {
     let container = try makeCapturePersistenceContainer()
     let context = ModelContext(container)
@@ -164,6 +196,12 @@ private func writeTestImage(named fileName: String) throws -> URL {
 private func writeTextFile(named fileName: String) throws -> URL {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString)-\(fileName)")
     try "not media".write(to: url, atomically: true, encoding: .utf8)
+    return url
+}
+
+private func writeTestVideo(named fileName: String) throws -> URL {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+    try Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70]).write(to: url)
     return url
 }
 
