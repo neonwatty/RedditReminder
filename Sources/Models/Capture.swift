@@ -12,8 +12,8 @@ final class Capture {
   var title: String?
   var text: String
   var notes: String?
-  var links: [String]
-  var mediaRefs: [String]
+  var links: [String] = []
+  var mediaRefs: [String] = []
   var status: CaptureStatus
   var createdAt: Date
   var postedAt: Date?
