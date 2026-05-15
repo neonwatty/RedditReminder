@@ -25,7 +25,7 @@ import Testing
   #expect(ChannelsTabView.expandsNewSubredditAfterAdd == false)
 }
 
-@Test func onboardingPrimaryActionIsChannelSetupBeforeCapture() {
+@Test @MainActor func onboardingPrimaryActionIsChannelSetupBeforeCapture() {
   #expect(OnboardingEmptyView.primaryButtonText == "Add Subreddit")
   #expect(OnboardingEmptyView.secondaryButtonText == "New Capture")
   #expect(OnboardingEmptyView.setupSteps == [
@@ -35,13 +35,13 @@ import Testing
   ])
 }
 
-@Test func onboardingCopyExplainsFirstRunSetupOrder() {
+@Test @MainActor func onboardingCopyExplainsFirstRunSetupOrder() {
   #expect(OnboardingEmptyView.titleText == "Set up your posting channels")
   #expect(
     OnboardingEmptyView.descriptionText
       == "Add a subreddit first so captures have a destination and reminders can use peak posting times.")
 }
 
-@Test func captureWindowExposesSaveGuidanceIdentifier() {
+@Test @MainActor func captureWindowExposesSaveGuidanceIdentifier() {
   #expect(CaptureWindowView.saveRequirementsAccessibilityIdentifier == "captureWindow.saveRequirements")
 }
