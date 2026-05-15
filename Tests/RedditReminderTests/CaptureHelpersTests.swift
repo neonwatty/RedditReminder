@@ -74,6 +74,30 @@ import SwiftData
     #expect(CaptureHelpers.canSave(title: "", text: "", selectedSubredditCount: 0) == false)
 }
 
+@Test func saveRequirementsMessageExplainsMissingContentAndSubreddit() {
+    #expect(
+        CaptureHelpers.saveRequirementsMessage(title: "", text: "", selectedSubredditCount: 0)
+            == "To save, add a title or capture text and select at least one subreddit.")
+}
+
+@Test func saveRequirementsMessageExplainsMissingSubredditOnly() {
+    #expect(
+        CaptureHelpers.saveRequirementsMessage(title: "Launch", text: "", selectedSubredditCount: 0)
+            == "To save, select at least one subreddit.")
+}
+
+@Test func saveRequirementsMessageExplainsMissingContentOnly() {
+    #expect(
+        CaptureHelpers.saveRequirementsMessage(title: " ", text: "\n", selectedSubredditCount: 1)
+            == "To save, add a title or capture text.")
+}
+
+@Test func saveRequirementsMessageIsNilWhenCaptureCanSave() {
+    #expect(
+        CaptureHelpers.saveRequirementsMessage(title: "", text: "Post body", selectedSubredditCount: 1)
+            == nil)
+}
+
 // MARK: - subredditSummary
 
 @Test func subredditSummaryReturnsNilForNoSubreddits() {

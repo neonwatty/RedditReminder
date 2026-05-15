@@ -39,7 +39,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
 
     if let button = item.button {
       button.image = NSImage(
-        systemSymbolName: "r.circle", accessibilityDescription: "RedditReminder")
+        systemSymbolName: "bell.badge", accessibilityDescription: "RedditReminder")
       button.image?.isTemplate = true
       button.action = #selector(statusItemClicked)
       button.target = self
@@ -103,13 +103,13 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         paletteColors: [AppColors.reddit]
       )
       button.image = NSImage(
-        systemSymbolName: "r.circle.fill",
+        systemSymbolName: "bell.badge.fill",
         accessibilityDescription: "RedditReminder — urgent"
       )?.withSymbolConfiguration(config)
       button.image?.isTemplate = false
     } else {
       button.image = NSImage(
-        systemSymbolName: "r.circle",
+        systemSymbolName: "bell.badge",
         accessibilityDescription: "RedditReminder"
       )
       button.image?.isTemplate = true

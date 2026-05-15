@@ -26,6 +26,26 @@ enum CaptureHelpers {
         return (hasTitle || hasText) && selectedSubredditCount > 0
     }
 
+    static func saveRequirementsMessage(
+        title: String,
+        text: String,
+        selectedSubredditCount: Int
+    ) -> String? {
+        guard !canSave(title: title, text: text, selectedSubredditCount: selectedSubredditCount)
+        else { return nil }
+
+        let hasTitle = !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        var requirements: [String] = []
+        if !hasTitle && !hasText {
+            requirements.append("add a title or capture text")
+        }
+        if selectedSubredditCount == 0 {
+            requirements.append("select at least one subreddit")
+        }
+        return "To save, \(requirements.joined(separator: " and "))."
+    }
+
     static func subredditSummary(for subreddits: [Subreddit]) -> String? {
         let names = subreddits
             .sorted {

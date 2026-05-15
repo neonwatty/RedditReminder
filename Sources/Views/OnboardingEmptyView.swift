@@ -1,7 +1,18 @@
 import SwiftUI
 
 struct OnboardingEmptyView: View {
+    let onSetupChannels: () -> Void
     let onNewCapture: () -> Void
+
+    static let titleText = "Set up your posting channels"
+    static let descriptionText = "Add a subreddit first so captures have a destination and reminders can use peak posting times."
+    static let primaryButtonText = "Add Subreddit"
+    static let secondaryButtonText = "New Capture"
+    static let setupSteps = [
+        "Add subreddit/channel",
+        "Create capture",
+        "Enable reminders/notifications",
+    ]
 
     var body: some View {
         VStack(spacing: 16) {
@@ -12,23 +23,23 @@ struct OnboardingEmptyView: View {
                 .foregroundStyle(AppColors.redditOrange.opacity(0.7))
 
             VStack(spacing: 6) {
-                Text("Capture ideas, post at the right time")
+                Text(Self.titleText)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
 
-                Text("Save post ideas, tag subreddits, and get\nreminded when engagement peaks.")
+                Text(Self.descriptionText)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
             }
 
-            Button(action: onNewCapture) {
+            Button(action: onSetupChannels) {
                 HStack(spacing: 4) {
                     Image(systemName: "plus")
                         .font(.system(size: 10, weight: .semibold))
-                    Text("New Capture")
+                    Text(Self.primaryButtonText)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .foregroundStyle(.white)
@@ -38,12 +49,23 @@ struct OnboardingEmptyView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Add subreddit")
+            .accessibilityIdentifier("onboarding.setupChannels")
+
+            Button(action: onNewCapture) {
+                Text(Self.secondaryButtonText)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(AppColors.redditOrange)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("New capture")
+            .accessibilityIdentifier("onboarding.newCapture")
 
             // Quick-start hints
             VStack(alignment: .leading, spacing: 6) {
-                hintRow(icon: "text.bubble", text: "Capture a post idea")
-                hintRow(icon: "tag", text: "Tag target subreddits")
-                hintRow(icon: "bell", text: "Get reminded at peak times")
+                hintRow(icon: "tag", text: Self.setupSteps[0])
+                hintRow(icon: "text.bubble", text: Self.setupSteps[1])
+                hintRow(icon: "bell", text: Self.setupSteps[2])
             }
             .padding(.top, 4)
 

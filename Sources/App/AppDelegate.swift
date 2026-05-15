@@ -94,6 +94,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    guard !AppRuntime.isRunningUnitTests() else {
+      NSLog("RedditReminder: launched in unit test mode")
+      return
+    }
+
     ProcessInfo.processInfo.disableAutomaticTermination(
       "Keep RedditReminder menu bar app running"
     )
@@ -229,15 +234,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     let context = container.mainContext
 
-    let subreddits: [Subreddit]
-
     do {
-      subreddits = try context.fetch(FetchDescriptor<Subreddit>())
-      try heuristicsStore.syncGeneratedEvents(
-        for: subreddits,
-        context: context,
-        defaultLeadTimeMinutes: defaultLeadTimeMinutes
-      )
+      try syncGeneratedEventsForRefresh(context: context)
     } catch {
       NSLog("RedditReminder: heuristic event sync failed: \(error)")
     }
@@ -279,6 +277,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
   private var defaultLeadTimeMinutes: Int {
     defaults.object(forKey: SettingsKey.defaultLeadTimeMinutes) as? Int ?? 60
+  }
+
+  func syncGeneratedEventsForRefresh(context: ModelContext) throws {
+    let subreddits = try context.fetch(FetchDescriptor<Subreddit>())
+    try heuristicsStore.syncGeneratedEvents(
+      for: subreddits,
+      context: context,
+      defaultLeadTimeMinutes: defaultLeadTimeMinutes
+    )
   }
 
   func scheduleNotifications(

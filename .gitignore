@@ -17,5 +17,8 @@ DerivedData/
 coverage.json
 coverage.txt
 
+# Generated GoalBuddy board output
+docs/goals/**/.goalbuddy-board/
+
 # Node (semantic-release tooling only)
 node_modules/

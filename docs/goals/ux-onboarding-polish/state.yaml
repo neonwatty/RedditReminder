@@ -1,0 +1,505 @@
+version: 2
+
+goal:
+  title: "RedditReminder UX Onboarding Polish"
+  slug: "ux-onboarding-polish"
+  kind: existing_plan
+  tranche: "Implement a focused first UX improvement tranche from the independent critiques, prioritizing first-run setup clarity, zero-subreddit capture dead-end prevention, exposed channel setup, and disabled Save guidance. Allow light visual polish where directly touched by first-run work; defer broad redesign."
+  status: done
+  intake:
+    original_request: "Create a detailed plan plus acceptance criteria for this so we can drive development using /goal and GoalBuddy."
+    interpreted_outcome: "A GoalBuddy-ready board drives implementation of the highest-priority RedditReminder UX critique findings with explicit acceptance criteria and verification."
+    input_shape: existing_plan
+    audience: "RedditReminder first-time users and repeat menu bar power users."
+    authority: requested
+    proof_type: test
+    completion_proof: "Focused tests and existing verification pass where practical, and final Judge/PM audit maps implemented changes to first-run clarity acceptance criteria in goal.md."
+    likely_misfire: "Only planning or cosmetic polish gets completed while first-run dead ends and hidden primary actions remain unresolved."
+    blind_spots_considered:
+      - "The critiques were source-based because no local screenshots/assets were available."
+      - "The scope could sprawl into a full redesign; this board should drive a first high-impact tranche."
+      - "Native macOS fit should improve without breaking the compact menu bar utility model."
+      - "Clearer onboarding is not enough unless the first useful path can be proven with tests and code review."
+      - "Light visual polish is allowed where touched, but the tranche should not become a full visual-system rewrite."
+    existing_plan_facts:
+      - "Three independent critiques were collected: onboarding, macOS platform/styling, and power-user/accessibility."
+      - "High-priority issues include zero-subreddit capture dead end, unclear setup order, Channels hidden behind Settings, hover-only capture actions, linear capture form, non-scaling subreddit picker, cramped settings tabs, busy channel rows, small typography/targets, and weak empty-state recovery actions."
+      - "Owner chose first-run clarity as the first tranche priority."
+      - "Owner chose tests plus code review as the proof standard."
+      - "Owner allowed light visual polish where it supports first-run work; broad redesign remains out of scope."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/ux-onboarding-polish/"
+    command: "npx goalbuddy board docs/goals/ux-onboarding-polish"
+  github_projects:
+    status: not_requested
+    url: null
+    command: "npx goalbuddy extend github-projects"
+    missing: []
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: blocked
+    reasoning_hint: default
+    objective: "Validate UX critique findings against current source, identify exact impacted files, and map existing verification commands/tests."
+    inputs:
+      - "docs/goals/ux-onboarding-polish/goal.md"
+      - "Sources/Views"
+      - "Sources/Utilities"
+      - "Tests"
+      - "README.md"
+      - "Makefile"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Prefer concrete file-path evidence and existing test commands."
+      - "Do not rediscover generic UX advice; validate and operationalize the existing critique themes."
+    expected_output:
+      - "Finding-to-file map"
+      - "Relevant existing tests and commands"
+      - "Risk notes"
+      - "Candidate implementation slices ranked by impact/confidence/reversibility"
+    receipt:
+      result: blocked
+      summary: "Validated critique themes against source. Zero-subreddit empty state routes to New Capture; Save disables without requirement guidance; Channels are only reachable through Settings/Preferences; queue actions are hover-only despite context menu fallback; channel/settings surfaces are cramped but have focused test anchors. Best first slice is onboarding/channel setup route plus disabled Save guidance."
+      evidence:
+        - "Sources/Views/OnboardingEmptyView.swift: primary empty-state action is New Capture; hints list capture before tag subreddit."
+        - "Sources/Views/PopoverContentEmptyStates.swift: empty state only receives openNewCapture."
+        - "Sources/Views/CaptureWindowView.swift: Save disabled via canSave; no visible requirement explanation."
+        - "Sources/Utilities/CaptureHelpers.swift: canSave requires title or text plus selectedSubredditCount > 0."
+        - "Sources/Views/PreferencesView.swift: Channels is a preferences tab, default selected, but root reaches it only through preferences."
+        - "Sources/Views/ChannelsView.swift: add-subreddit field/button already exist with accessibility IDs."
+        - "Sources/Views/CaptureCardView.swift: queue actions render only when isHovered; context menu fallback exists."
+        - "Tests/RedditReminderTests/CaptureHelpersTests.swift: covers save requirements including zero-subreddit rejection."
+        - "Makefile: test, ui-test, cli-test, qa commands are available."
+      facts:
+        - "Candidate slice 1: Add zero-state Add Channel/Subreddit path and setup-order copy; impact high, confidence high, reversibility high."
+        - "Candidate slice 2: Add disabled Save requirement text/accessibility around CaptureWindowView; impact high, confidence high, reversibility high."
+        - "Candidate slice 3: Make one primary CaptureCard action visible without hover; impact medium, confidence medium, reversibility high."
+        - "Candidate slice 4: Compact Channels first-run add area and group advanced timing controls; impact medium, confidence medium, reversibility medium."
+        - "Focused tests likely include CaptureHelpersTests, CaptureCardViewTests, PreferencesViewTests, SubredditPersistenceActionsTests, and UI workflow tests where practical."
+      contradictions:
+        - "README workflow says add subreddits first in Settings > Channels, while OnboardingEmptyView's primary empty-state action creates a capture first."
+        - "Goal acceptance requires zero-state access to channel setup without a gear-only hunt, but current empty state has no preferences/channel callback."
+        - "TITLE and CAPTURE TEXT are marked optional, while CaptureHelpers.canSave requires at least one of them plus a subreddit."
+        - "Queue actions have accessibility labels and context menu entries, but visible buttons are gated by hover."
+      ambiguity_requiring_judge:
+        - "Direct open-channels route vs opening Preferences with Channels selected."
+        - "Whether zero-subreddit New Capture should be rerouted globally or only from the empty state."
+        - "Whether disabled Save guidance should be always visible, only disabled, or help/accessibility text."
+        - "How much channel timing complexity to handle in tranche one."
+
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Select the largest safe first implementation slice that materially improves first-run setup clarity and prevents the zero-subreddit capture dead end."
+    inputs:
+      - "T001 receipt"
+      - "docs/goals/ux-onboarding-polish/goal.md acceptance criteria"
+    constraints:
+      - "Do not implement."
+      - "Prefer a coherent vertical slice over tiny isolated edits."
+      - "The selected Worker task must include allowed_files, verify commands, and stop conditions."
+      - "Reject a slice that is only cosmetic unless functional first-run clarity is already handled."
+      - "Prefer tests plus code review evidence over manual demo-only proof."
+      - "Allow light polish only where directly adjacent to the selected first-run UX slice."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Deferred issues and rationale"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Approve one coherent vertical first-run slice: make zero-state setup actionable, route users to channel/subreddit setup before capture creation, and explain disabled Save requirements. This covers the highest-risk dead end and pairs UI behavior with testable validation."
+      evidence:
+        - "T001: OnboardingEmptyView currently makes New Capture the primary empty-state action and lists capture before tagging a subreddit."
+        - "T001: PopoverContentEmptyStates only receives openNewCapture, so zero-state cannot expose channel setup directly."
+        - "T001: CaptureWindowView disables Save through canSave with no visible requirement explanation."
+        - "T001: CaptureHelpers.canSave requires title or text plus selectedSubredditCount > 0."
+        - "goal.md AC1 requires zero-subreddit primary action to route toward adding a subreddit/channel and disabled Save requirements to be clear."
+        - "goal.md AC2 requires concise setup order with at least the first required step actionable from the empty state."
+        - "goal.md AC7 requires changed UI behavior to have tests where suitable coverage exists."
+      blocked_tasks: []
+      required_board_updates:
+        - "Set T003 objective, allowed_files, verify, and stop_if for a vertical first-run setup clarity slice."
+      deferred_issues:
+        - "Queue actions visible without hover."
+        - "Sticky Save/Cancel or broader capture form re-layout."
+        - "Advanced channel timing simplification and broad settings redesign."
+        - "App-wide styling and visual-system polish."
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: default
+    objective: "Implement a vertical first-run setup clarity slice: update the zero-subreddit empty state so the primary path opens channel/subreddit setup before capture creation, present the concise setup sequence add subreddit/channel -> create capture -> enable reminders/notifications, and add visible disabled-Save guidance in the capture form explaining the minimum requirements. Preserve existing create/edit persistence behavior and add or update focused tests for the new routing/copy/save-guidance behavior."
+    allowed_files:
+      - "Sources/Views/OnboardingEmptyView.swift"
+      - "Sources/Views/PopoverContentEmptyStates.swift"
+      - "Sources/Views/CaptureWindowView.swift"
+      - "Sources/Views/PreferencesView.swift"
+      - "Sources/Views/ChannelsView.swift"
+      - "Sources/Utilities/CaptureHelpers.swift"
+      - "Tests/RedditReminderTests/CaptureHelpersTests.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      - "Tests/RedditReminderTests/SubredditPersistenceActionsTests.swift"
+      - "Tests/RedditReminderTests/OnboardingEmptyViewTests.swift"
+      - "Tests/RedditReminderTests/CaptureWindowViewTests.swift"
+    verify:
+      - "make test"
+      - "make cli-test"
+      - "make ui-test if UI test coverage exists or is touched; otherwise document why it is not applicable in the receipt"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Cannot determine whether opening Preferences with Channels selected satisfies the existing app architecture without broader navigation changes."
+      - "Implementation would change SwiftData models, persistence semantics, or unrelated capture/card workflows."
+      - "Verification fails twice for the same unclear reason."
+      - "The solution becomes mostly cosmetic without solving zero-subreddit routing and disabled Save guidance."
+    receipt:
+      result: blocked
+      changed_files:
+        - "Sources/Views/OnboardingEmptyView.swift"
+        - "Sources/Views/PopoverContentEmptyStates.swift"
+        - "Sources/Views/CaptureWindowView.swift"
+        - "Sources/Views/PreferencesView.swift"
+        - "Sources/Utilities/CaptureHelpers.swift"
+        - "Tests/RedditReminderTests/CaptureHelpersTests.swift"
+        - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      commands:
+        - cmd: "make test"
+          status: fail
+          details: "Worker reported two attempts hung at existing appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents; PM confirmed xcodebuild still enters and stalls on that Swift Testing case even with -skip-testing:RedditReminderTests/AppDelegateSchedulingTests."
+        - cmd: "xcodebuild test -project RedditReminder.xcodeproj -scheme RedditReminder -destination 'platform=macOS' -derivedDataPath build ... -only-testing:RedditReminderTests/CaptureHelpersTests -only-testing:RedditReminderTests/PreferencesViewTests"
+          status: pass
+          details: "Build/test target compiled and command exited 0, but Xcode reported 0 selected tests for Swift Testing filters; treated as compile evidence, not execution proof."
+        - cmd: "make cli-test"
+          status: pass
+          details: "CLI smoke, agent smoke, and command catalog check passed."
+        - cmd: "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build ..."
+          status: pass
+          details: "App build succeeded."
+        - cmd: "git diff --check"
+          status: pass
+      summary: "Implemented first-run clarity slice. Zero-state onboarding now makes Add Subreddit the primary action, routes to Preferences/Channels, keeps New Capture secondary, and presents setup order. Capture form now shows disabled Save requirements from CaptureHelpers. Added focused assertions for onboarding copy/order, Preferences default channel tab, save requirement messages, and save guidance identifier."
+      remaining_blockers:
+        - "Full make test remains blocked by a pre-existing hang in appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents; xcodebuild Swift Testing filters did not skip/target cases reliably."
+
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the first implemented slice and choose the next highest-leverage first-run clarity slice, likely setup-order onboarding, channel discoverability, disabled Save guidance, compact settings/channel simplification, or light adjacent polish."
+    inputs:
+      - "T003 receipt"
+      - "Current diff"
+      - "Verification output"
+      - "Acceptance criteria in goal.md"
+    constraints:
+      - "Do not implement."
+      - "Approve continuation only when the next slice is bounded and verifiable."
+      - "If first-run acceptance criteria are not satisfied, send work back to complete them before styling-only or power-workflow work."
+      - "Defer full settings redesign, bulk triage, and app-wide visual polish unless necessary for first-run criteria."
+    expected_output:
+      - "approved | needs_revision | blocked"
+      - "Next Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "T003 materially satisfies the first-run dead-end and setup-order criteria: zero-state primary action opens setup, capture remains secondary, setup order is explicit, and disabled Save guidance is visible. Full-suite verification remains blocked by an unrelated existing hang and focused Swift Testing assertions were not proven to execute. Continue with one bounded Channels/Preferences simplification slice, then add verification recovery before final completion."
+      evidence:
+        - "T003 diff changes OnboardingEmptyView primary action to Add Subreddit via onSetupChannels and keeps New Capture secondary."
+        - "PopoverContentEmptyStates routes zero-state setup to openPreferences; PreferencesView defaults to Channels."
+        - "CaptureHelpers adds saveRequirementsMessage and CaptureWindowView displays it with accessibility identifier captureWindow.saveRequirements."
+        - "Tests add assertions for onboarding copy/order, Preferences default tab, and Save guidance identifier."
+        - "T003 receipt: git diff --check, app build, and make cli-test passed; make test hangs in existing appDelegateScheduling test; focused xcodebuild test exited 0 but executed 0 Swift Testing tests."
+        - "goal.md AC1 and AC2 are addressed; AC5 and adjacent AC6 remain highest-leverage first-run criteria."
+      blocked_tasks:
+        - "Full make test remains blocked by existing appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents hang."
+        - "Focused xcodebuild Swift Testing filters did not prove newly added tests executed."
+      missing_evidence:
+        - "Reliable execution evidence for the newly added Swift Testing assertions."
+        - "Current verification recovery path for excluding or fixing the unrelated full-suite hang."
+      required_board_updates:
+        - "Activate T005 for first-run Channels/Preferences setup surface simplification."
+        - "Create or preserve a later verification recovery task before final audit."
+
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: default
+    objective: "Simplify the first-run Channels/Preferences setup surface: make the add-subreddit/channel path prominent at 460pt width, group or de-emphasize advanced timing controls, preserve existing subreddit/channel persistence, and apply only adjacent spacing/target/label polish needed for first-run clarity."
+    allowed_files:
+      - "Sources/Views/ChannelsView.swift"
+      - "Sources/Views/PreferencesView.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      - "Tests/RedditReminderTests/SubredditPersistenceActionsTests.swift"
+      - "Tests/RedditReminderTests/ChannelsViewTests.swift"
+    verify:
+      - "git diff --check"
+      - "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+      - "make cli-test"
+      - "Run the most focused available Swift Testing command for touched tests; record executed test count and do not claim pass if 0 tests execute."
+      - "Document make test as blocked only if the same existing AppDelegateSchedulingTests hang recurs."
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Work expands into full settings redesign, app-wide visual polish, model changes, or bulk triage."
+      - "Core channel setup cannot be made clearer without changing navigation architecture."
+      - "Focused test command again executes 0 tests and no alternate reliable test path is found."
+      - "Verification fails twice for the same unclear reason."
+    receipt:
+      result: blocked
+      changed_files:
+        - "Sources/Views/ChannelsView.swift"
+        - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+        - cmd: "xcodebuild test -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build '-only-testing:RedditReminderTests/channelsSetupCopyPrioritizesAddingAChannel()' '-only-testing:RedditReminderTests/channelsKeepAdvancedTimingCollapsedAfterAdd()'"
+          status: pass
+          executed_tests: 2
+          details: "Worker reported focused Swift Testing command executed 2 tests successfully before PM's later duplicate rerun hung after app launch."
+        - cmd: "make test"
+          status: fail
+          details: "Blocked by same existing AppDelegateSchedulingTests hang after appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents; interrupted."
+      summary: "Made Channels first-run setup prioritize adding a posting channel with clearer title/copy, larger input/button targets, empty-list guidance, and preserved persistence. Successful adds now use a test-backed policy to keep advanced row timing controls collapsed. Added focused Swift Testing coverage for setup copy and collapsed-after-add policy."
+      remaining_blockers:
+        - "Full make test remains blocked by existing AppDelegateSchedulingTests hang."
+
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Decide whether another implementation slice is required before final audit."
+    inputs:
+      - "All completed receipts"
+      - "Current diff"
+      - "Acceptance criteria in goal.md"
+    constraints:
+      - "Do not implement."
+      - "Do not declare the tranche ready for final audit if core first-run, discoverability, or verification criteria remain unaddressed."
+    expected_output:
+      - "continue | ready_for_final_audit"
+      - "If continue: next Worker objective, allowed_files, verify, stop_if"
+      - "If ready: acceptance criteria coverage summary"
+    receipt:
+      result: done
+      decision: not_complete
+      full_outcome_complete: false
+      rationale: "Continue. T003 and T005 cover first-run setup, setup order, Save guidance, and Channels setup polish, but final audit is premature. AC3 queue action discoverability remains unimplemented, and final verification remains incomplete because full make test hangs and only T005 has focused executed-test evidence."
+      evidence:
+        - "Current diff changes OnboardingEmptyView, PopoverContentEmptyStates, CaptureWindowView, CaptureHelpers, PreferencesView, ChannelsView, CaptureHelpersTests, and PreferencesViewTests."
+        - "Diff shows zero-state primary action opens channel setup, capture remains secondary, setup order copy is explicit, and disabled Save guidance is exposed."
+        - "Diff shows Channels setup copy, larger add-channel controls, empty-list guidance, and collapsed advanced timing after add."
+        - "No current diff touches CaptureCardView or CaptureCardViewTests, so AC3 visible-without-hover queue action discoverability remains unaddressed."
+        - "T003 focused Swift Testing filters exited 0 but executed 0 tests, so T003 UI test evidence is compile-only."
+        - "T005 reports 2 focused Swift Testing tests executed and passed, but make test still hangs in existing AppDelegateSchedulingTests."
+      blocked_tasks:
+        - "Full make test remains blocked by existing appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents hang."
+        - "Final audit lacks reliable focused execution evidence across all changed UI behavior."
+      missing_evidence:
+        - "Implementation and focused tests for AC3: at least one primary capture action visible without hover, with secondary actions still discoverable."
+        - "Reliable final verification package with nonzero focused test execution for T003, T005, and AC3 slice."
+      required_board_updates:
+        - "Activate T007 to close queue action discoverability and verification gaps."
+
+  - id: T007
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: default
+    objective: "Close the pre-final discoverability and verification gaps: make at least one primary CaptureCard queue action visible without hover while preserving secondary/context/accessibility actions, add or update focused tests for that behavior, then produce reliable nonzero focused test execution evidence for the changed UI behavior from T003, T005, and this slice. Run full make test and document the same AppDelegateSchedulingTests hang as unrelated if it recurs."
+    allowed_files:
+      - "Sources/Views/CaptureCardView.swift"
+      - "Tests/RedditReminderTests/CaptureCardViewTests.swift"
+      - "Tests/RedditReminderTests/CaptureHelpersTests.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+    verify:
+      - "git diff --check"
+      - "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+      - "make cli-test"
+      - "Run focused Swift Testing for CaptureCardViewTests plus the T003/T005 touched test functions; record executed test count and do not claim pass if 0 tests execute."
+      - "make test; if the same AppDelegateSchedulingTests hang recurs, capture the exact test/log evidence and mark full-suite verification blocked by that unrelated existing failure."
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Work expands into broad queue workflow redesign, persistence/model changes, or app-wide styling."
+      - "Cannot make a primary queue action visible without changing capture semantics."
+      - "Focused Swift Testing again executes 0 tests and no alternate reliable focused command is found."
+      - "Verification fails twice for the same unclear reason."
+    receipt:
+      result: blocked
+      changed_files:
+        - "Sources/Views/CaptureCardView.swift"
+        - "Tests/RedditReminderTests/CaptureCardViewTests.swift"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+          details: "CLI smoke, agent smoke, and command catalog checks passed."
+        - cmd: "xcodebuild test -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build '-only-testing:RedditReminderTests/captureCardVisiblePrimaryActionUsesHandoff'"
+          status: fail
+          details: "Timed out before reliable Swift Testing execution evidence; app process launched and was killed. No executed-test count claimed."
+        - cmd: "make test"
+          status: not_run
+          details: "Not rerun in T007 after focused command hung; earlier T003/T005 evidence repeatedly shows the same existing AppDelegateSchedulingTests hang."
+      summary: "Made the primary CaptureCard handoff action visible without hover while preserving hover-gated copy/mark/delete actions and the context menu fallback. Added test constants/assertions identifying the always-visible primary action as Prepare post handoff."
+      remaining_blockers:
+        - "Reliable focused Swift Testing execution evidence is still missing for T003/T005/T007 changed assertions."
+        - "Full make test remains blocked by the known AppDelegateSchedulingTests hang."
+
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: default
+    objective: "Recover reliable verification for the UX onboarding polish tranche: diagnose or isolate the existing AppDelegateSchedulingTests hang enough to make final verification defensible, and establish a focused command that executes the changed Swift Testing assertions with a nonzero executed-test count, or document why the local runner cannot target them and provide the strongest alternate evidence."
+    allowed_files:
+      - "Tests/RedditReminderTests/AppDelegateSchedulingTests.swift"
+      - "Tests/RedditReminderTests/CaptureCardViewTests.swift"
+      - "Tests/RedditReminderTests/CaptureHelpersTests.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      - "Sources/App/AppDelegate.swift"
+    verify:
+      - "git diff --check"
+      - "Run the smallest command that reproduces or clears appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents; capture whether it hangs, fails, or passes."
+      - "Run focused Swift Testing for the changed assertions with nonzero executed count, or capture exact evidence that this Xcode/Swift Testing runner cannot select them."
+      - "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+      - "make cli-test"
+      - "make test if the hang is fixed or isolated; otherwise document the same unrelated blocker with exact test/log evidence."
+    stop_if:
+      - "Need to rewrite app scheduling architecture or persistence models."
+      - "A verification fix would change production behavior outside test-only injection or narrowly scoped scheduling cleanup."
+      - "Focused and full-suite verification both fail for new reasons unrelated to the known AppDelegateSchedulingTests hang."
+      - "No defensible alternate evidence can be produced after two targeted attempts."
+    receipt:
+      result: blocked
+      changed_files:
+        - "Sources/App/AppDelegate.swift"
+        - "Tests/RedditReminderTests/AppDelegateSchedulingTests.swift"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "xcodebuild build-for-testing -project RedditReminder.xcodeproj -scheme RedditReminder -destination 'platform=macOS' -derivedDataPath build"
+          status: pass
+        - cmd: "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+          details: "CLI smoke, agent smoke, and command catalog checks passed."
+        - cmd: "xcrun xctest direct Swift Testing harness after build-for-testing"
+          status: fail
+          details: "Executed 413 Swift tests; changed UX assertions and appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents passed, but direct harness failed ResourcePackagingTests because Bundle.main is xctest rather than the app bundle."
+        - cmd: "make test"
+          status: fail
+          details: "Xcode-hosted Swift Testing runner still hangs later in the suite after the original AppDelegateSchedulingTests hang was isolated; stopped by timeout."
+      summary: "Recovered usable verification evidence. Added a unit-test launch guard so the app host does not bootstrap runtime services during test launch, extracted AppDelegate heuristic sync into a narrow helper, and converted the default-lead-time assertion to an async test that explicitly enters MainActor instead of disabling coverage. Direct Swift Testing executed the changed UX assertions and restored AppDelegate coverage with nonzero evidence; build and CLI checks pass."
+      remaining_blockers:
+        - "Xcode-hosted make test remains unreliable in this environment and still hangs later in the suite."
+        - "Direct xctest full-suite run fails only on ResourcePackagingTests because the direct harness changes Bundle.main; changed UX assertions pass."
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the UX onboarding polish tranche is complete."
+    inputs:
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "docs/goals/ux-onboarding-polish/goal.md acceptance criteria"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if acceptance criteria are only planned rather than implemented and verified."
+      - "Reject completion if the likely misfire occurred."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Acceptance criteria coverage"
+      - "Verification evidence"
+      - "Next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      acceptance_criteria:
+        AC1: "Satisfied. Onboarding zero-state primary action is Add Subreddit, routes to Preferences/Channels, and CaptureWindowView now shows disabled Save requirements via CaptureHelpers."
+        AC2: "Satisfied. Onboarding copy presents add subreddit/channel -> create capture -> enable reminders/notifications, with the first step actionable."
+        AC3: "Satisfied. CaptureCardView now keeps the primary handoff action visible without hover while preserving hover secondary actions and the context menu fallback."
+        AC4: "Satisfied for this tranche. Capture form requirements are clearer; broader sticky Save/Cancel and form re-layout remain explicitly deferred."
+        AC5: "Satisfied. Preferences defaults to Channels, Channels setup copy/control prominence improved, empty guidance added, and advanced timing stays collapsed after add."
+        AC6: "Satisfied within scoped surfaces. Touched onboarding/channel/capture controls gained clearer labels, spacing, targets, and accessibility identifiers without a broad redesign."
+        AC7: "Satisfied with documented limitations. Build and CLI pass; direct Swift Testing executed changed UX assertions. make test remains blocked by Xcode-hosted runner behavior documented in T008."
+      verification_evidence:
+        - "git diff --check passed."
+        - "xcodebuild build passed."
+        - "xcodebuild build-for-testing passed."
+        - "make cli-test passed: CLI smoke, agent smoke, and 37 parser routes / 6 recipes covered."
+        - "Direct xcrun xctest ran 413 Swift tests; changed UX assertions including captureCardVisiblePrimaryActionUsesHandoff, saveRequirementsMessage*, channelsSetupCopyPrioritizesAddingAChannel, onboardingPrimaryActionIsChannelSetupBeforeCapture, and appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents passed."
+      residual_risks:
+        - "Full make test remains unreliable under the Xcode-hosted macOS app runner; this is documented as a runner/lifecycle limitation, not a UX acceptance gap."
+        - "Direct xctest full-suite failure is ResourcePackagingTests only, because Bundle.main differs under direct harness."
+      summary: "The planned first-run UX onboarding polish tranche is implemented and auditable. Remaining broad redesign items from the original critiques are intentionally out of scope for this tranche."
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: partial
+    task: T008
+    commands:
+      - "git diff --check"
+      - "xcodebuild build -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Debug -destination 'platform=macOS' -derivedDataPath build"
+      - "xcodebuild build-for-testing -project RedditReminder.xcodeproj -scheme RedditReminder -destination 'platform=macOS' -derivedDataPath build"
+      - "direct xcrun xctest Swift Testing harness: changed UX assertions and appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents passed; unrelated ResourcePackagingTests direct-harness failure documented"
+      - "make cli-test"

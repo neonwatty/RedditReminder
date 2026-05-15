@@ -154,32 +154,34 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     #expect(center.removedIdentifiers.isEmpty)
 }
 
-@Test @MainActor func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() throws {
-    let temporaryDefaults = makeTemporaryDefaults()
-    let defaults = temporaryDefaults.defaults
-    defer { temporaryDefaults.cleanup() }
-    defaults.set(15, forKey: SettingsKey.defaultLeadTimeMinutes)
-    defaults.set(false, forKey: SettingsKey.notificationsEnabled)
+@Test func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() async throws {
+    try await MainActor.run {
+        let temporaryDefaults = makeTemporaryDefaults()
+        let defaults = temporaryDefaults.defaults
+        defer { temporaryDefaults.cleanup() }
+        defaults.set(15, forKey: SettingsKey.defaultLeadTimeMinutes)
+        defaults.set(false, forKey: SettingsKey.notificationsEnabled)
 
-    let container = try ModelContainer(
-        for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    let context = container.mainContext
-    let subreddit = Subreddit(name: "r/SideProject")
-    context.insert(subreddit)
-    try context.save()
+        let container = try ModelContainer(
+            for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let subreddit = Subreddit(name: "r/SideProject")
+        context.insert(subreddit)
+        try context.save()
 
-    let center = RecordingNotificationCenter()
-    let store = HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false)
-    let delegate = makeSchedulingDelegate(center: center, defaults: defaults, heuristicsStore: store)
-    delegate.modelContainer = container
+        let center = RecordingNotificationCenter()
+        let store = HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false)
+        let delegate = makeSchedulingDelegate(center: center, defaults: defaults, heuristicsStore: store)
+        delegate.modelContainer = container
 
-    delegate.runRefreshCycle()
+        try delegate.syncGeneratedEventsForRefresh(context: context)
 
-    let events = try context.fetch(FetchDescriptor<SubredditEvent>())
-    #expect(!events.isEmpty)
-    #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
+        let events = try context.fetch(FetchDescriptor<SubredditEvent>())
+        #expect(!events.isEmpty)
+        #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
+    }
 }
 
 @Test @MainActor func appDelegateCoreWorkflowRefreshesBadgeAndNotificationsAfterMarkPosted() async throws {

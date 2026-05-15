@@ -2,7 +2,7 @@ import SwiftUI
 
 extension PopoverContentView {
   var emptyState: some View {
-    OnboardingEmptyView(onNewCapture: openNewCapture)
+    OnboardingEmptyView(onSetupChannels: openPreferences, onNewCapture: openNewCapture)
   }
 
   var filteredEmptyState: some View {
