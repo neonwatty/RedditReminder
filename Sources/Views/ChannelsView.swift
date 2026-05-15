@@ -5,6 +5,15 @@ struct ChannelsTabView: View {
   let notificationService: NotificationService
   let heuristicsStore: HeuristicsStore
 
+  static let setupTitleText = "Add a posting channel"
+  static let firstRunSetupText =
+    "Start with a subreddit so captures have a destination and reminders can use posting windows."
+  static let returningSetupText = "Add another subreddit when you want reminders for a new channel."
+  static let addSubredditPlaceholder = "Subreddit name"
+  static let addSubredditButtonText = "Add channel"
+  static let emptyListText = "Added channels will appear here."
+  static let expandsNewSubredditAfterAdd = false
+
   @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
   @Environment(\.modelContext) private var modelContext
 
@@ -16,37 +25,21 @@ struct ChannelsTabView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      VStack(alignment: .leading, spacing: 5) {
-        HStack(spacing: 8) {
-          TextField("Add subreddit...", text: $newSubredditName)
+      VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 3) {
+          Text(Self.setupTitleText)
+            .font(.system(size: 13, weight: .semibold))
+          Text(subreddits.isEmpty ? Self.firstRunSetupText : Self.returningSetupText)
             .font(.system(size: 11))
-            .textFieldStyle(.plain)
-            .padding(7)
-            .inputFieldStyle(cornerRadius: 6)
-            .accessibilityLabel("Add subreddit")
-            .accessibilityIdentifier("channels.addSubreddit.textField")
-            .onChange(of: newSubredditName) {
-              addFailureMessage = nil
-            }
-            .onSubmit { addSubreddit() }
-
-          Button(action: addSubreddit) {
-            Image(systemName: "plus")
-              .font(.system(size: 14, weight: .light))
-              .foregroundStyle(canAdd ? AppColors.redditOrange : .secondary)
-              .frame(width: 26, height: 26)
-              .background(
-                canAdd
-                  ? AppColors.redditOrange.opacity(0.15)
-                  : Color.clear
-              )
-              .clipShape(RoundedRectangle(cornerRadius: 6))
-          }
-          .buttonStyle(.plain)
-          .disabled(!canAdd)
-          .accessibilityLabel("Add subreddit")
-          .accessibilityIdentifier("channels.addSubreddit.button")
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
         }
+
+        HStack(spacing: 8) {
+          addSubredditField
+          addSubredditButton
+        }
+        .frame(maxWidth: .infinity)
 
         if let feedbackMessage {
           Text(feedbackMessage.text)
@@ -54,12 +47,20 @@ struct ChannelsTabView: View {
             .foregroundStyle(feedbackMessage.isError ? .red : .secondary)
         }
       }
-      .padding(12)
+      .padding(14)
 
       Divider()
 
       ScrollView {
         VStack(spacing: 8) {
+          if subreddits.isEmpty {
+            Text(Self.emptyListText)
+              .font(.system(size: 11))
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.vertical, 6)
+          }
+
           ForEach(subreddits, id: \.id) { sub in
             SubredditRow(
               sub: sub,
@@ -88,6 +89,38 @@ struct ChannelsTabView: View {
       .accessibilityIdentifier("channels.subredditList")
     }
     .onDisappear { savePendingChanges() }
+  }
+
+  private var addSubredditField: some View {
+    TextField(Self.addSubredditPlaceholder, text: $newSubredditName)
+      .font(.system(size: 12))
+      .textFieldStyle(.plain)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 8)
+      .frame(minHeight: 32)
+      .inputFieldStyle(cornerRadius: 7)
+      .accessibilityLabel("Subreddit name")
+      .accessibilityIdentifier("channels.addSubreddit.textField")
+      .onChange(of: newSubredditName) {
+        addFailureMessage = nil
+      }
+      .onSubmit { addSubreddit() }
+  }
+
+  private var addSubredditButton: some View {
+    Button(action: addSubreddit) {
+      Label(Self.addSubredditButtonText, systemImage: "plus")
+        .font(.system(size: 12, weight: .semibold))
+        .foregroundStyle(canAdd ? .white : .secondary)
+        .frame(minWidth: 112, minHeight: 32)
+        .padding(.horizontal, 2)
+        .background(canAdd ? AppColors.redditOrange : Color(NSColor.separatorColor).opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 7))
+    }
+    .buttonStyle(.plain)
+    .disabled(!canAdd)
+    .accessibilityLabel(Self.addSubredditButtonText)
+    .accessibilityIdentifier("channels.addSubreddit.button")
   }
 
   private var canAdd: Bool {
@@ -125,7 +158,7 @@ struct ChannelsTabView: View {
       newSubredditName = ""
       addFailureMessage = nil
       withAnimation(.easeInOut(duration: 0.2)) {
-        expandedSubredditId = subreddit.id
+        expandedSubredditId = Self.expandsNewSubredditAfterAdd ? subreddit.id : nil
       }
     case .failure(let error):
       addFailureMessage = error.message

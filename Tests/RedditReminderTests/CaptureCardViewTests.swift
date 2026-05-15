@@ -5,9 +5,14 @@ import Testing
 @Test func captureCardExposesPostingActionAccessibilityLabels() {
   #expect(CaptureCardView.copyTextAccessibilityLabel == "Copy post text")
   #expect(CaptureCardView.openHandoffAccessibilityLabel == "Prepare post handoff")
+  #expect(CaptureCardView.visiblePrimaryActionAccessibilityLabel == "Prepare post handoff")
   #expect(CaptureCardView.openSubmitAccessibilityLabel == "Open Reddit submit page")
   #expect(CaptureCardView.markPostedAccessibilityLabel == "Mark as posted")
   #expect(CaptureCardView.deleteAccessibilityLabel == "Delete capture")
+}
+
+@Test func captureCardVisiblePrimaryActionUsesHandoff() {
+  #expect(CaptureCardView.visiblePrimaryActionAccessibilityLabel == CaptureCardView.openHandoffAccessibilityLabel)
 }
 
 @Test func postedListExposesVisibleRecoveryActionAccessibilityLabels() {

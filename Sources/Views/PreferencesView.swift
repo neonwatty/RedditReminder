@@ -5,7 +5,9 @@ struct PreferencesView: View {
   let heuristicsStore: HeuristicsStore
   var onAppStateChanged: AppRefreshAction = {}
 
-  @State private var selectedTab: Tab = .channels
+  static let defaultTab: Tab = .channels
+
+  @State private var selectedTab: Tab = Self.defaultTab
 
   enum Tab: String, CaseIterable {
     case channels = "Channels"

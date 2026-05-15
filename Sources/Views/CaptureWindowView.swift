@@ -7,6 +7,8 @@ struct CaptureWindowView: View {
     case edit(Capture)
   }
 
+  static let saveRequirementsAccessibilityIdentifier = "captureWindow.saveRequirements"
+
   let mode: Mode
   let onSave: (CaptureFormResult) -> Bool
   let onCancel: () -> Void
@@ -135,6 +137,13 @@ struct CaptureWindowView: View {
             )
           }
 
+          if let saveRequirementsMessage {
+            Text(saveRequirementsMessage)
+              .font(.system(size: 11))
+              .foregroundStyle(.secondary)
+              .accessibilityIdentifier(Self.saveRequirementsAccessibilityIdentifier)
+          }
+
           if let saveError {
             Text(saveError)
               .font(.system(size: 11)).foregroundStyle(.red).accessibilityIdentifier(
@@ -205,6 +214,14 @@ struct CaptureWindowView: View {
 
   private var canSave: Bool {
     CaptureHelpers.canSave(
+      title: title,
+      text: text,
+      selectedSubredditCount: selectedSubreddits.count
+    )
+  }
+
+  private var saveRequirementsMessage: String? {
+    CaptureHelpers.saveRequirementsMessage(
       title: title,
       text: text,
       selectedSubredditCount: selectedSubreddits.count

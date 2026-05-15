@@ -4,6 +4,7 @@ import SwiftUI
 struct CaptureCardView: View {
   nonisolated static let copyTextAccessibilityLabel = "Copy post text"
   nonisolated static let openHandoffAccessibilityLabel = "Prepare post handoff"
+  nonisolated static let visiblePrimaryActionAccessibilityLabel = openHandoffAccessibilityLabel
   nonisolated static let openSubmitAccessibilityLabel = "Open Reddit submit page"
   nonisolated static let markPostedAccessibilityLabel = "Mark as posted"
   nonisolated static let deleteAccessibilityLabel = "Delete capture"
@@ -31,15 +32,15 @@ struct CaptureCardView: View {
       Spacer(minLength: 0)
 
       HStack(spacing: 6) {
-        if isHovered {
-          if let onOpenHandoff {
-            hoverActionButton(
-              systemName: "paperplane",
-              accessibilityLabel: Self.openHandoffAccessibilityLabel,
-              action: onOpenHandoff
-            )
-          }
+        if let onOpenHandoff {
+          hoverActionButton(
+            systemName: "paperplane",
+            accessibilityLabel: Self.visiblePrimaryActionAccessibilityLabel,
+            action: onOpenHandoff
+          )
+        }
 
+        if isHovered {
           if let onCopyText {
             hoverActionButton(
               systemName: "doc.on.doc",
