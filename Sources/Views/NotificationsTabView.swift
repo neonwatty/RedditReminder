@@ -64,6 +64,7 @@ struct NotificationsTabView: View {
         .onChange(of: nudgeWhenEmpty) {
             onAppStateChanged()
         }
+        .accessibilityIdentifier("preferences.content.Notifications")
     }
 
     private static func leadTimeLabel(_ minutes: Int) -> String {

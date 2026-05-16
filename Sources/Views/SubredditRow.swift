@@ -2,11 +2,19 @@ import SwiftData
 import SwiftUI
 
 struct SubredditRow: View {
+  nonisolated static let moreActionsAccessibilityLabel = "More channel actions"
+  nonisolated static let editWindowsAccessibilityLabel = "Edit channel windows"
+  nonisolated static let moveUpAccessibilityLabel = "Move channel up"
+  nonisolated static let moveDownAccessibilityLabel = "Move channel down"
+  nonisolated static let removeAccessibilityLabel = "Remove channel"
+
   @Bindable var sub: Subreddit
   let peakInfo: PeakInfo?
   let isExpanded: Bool
   let onToggle: () -> Void
   let onDelete: () -> Void
+  var onMoveUp: (() -> Void)? = nil
+  var onMoveDown: (() -> Void)? = nil
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -21,6 +29,7 @@ struct SubredditRow: View {
               .foregroundStyle(.primary)
           }
           Spacer()
+          channelActionsMenu
           if isExpanded {
             Button("Remove", action: onDelete)
               .font(.system(size: 11))
@@ -136,13 +145,45 @@ struct SubredditRow: View {
     .accessibilityIdentifier("channels.subredditRow.\(sub.id.uuidString)")
   }
 
+  private var channelActionsMenu: some View {
+    Menu {
+      Button(Self.editWindowsAccessibilityLabel, action: onToggle)
+      if let onMoveUp {
+        Button(Self.moveUpAccessibilityLabel, action: onMoveUp)
+      }
+      if let onMoveDown {
+        Button(Self.moveDownAccessibilityLabel, action: onMoveDown)
+      }
+      Divider()
+      Button(Self.removeAccessibilityLabel, role: .destructive, action: onDelete)
+    } label: {
+      Image(systemName: "ellipsis.circle")
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(.secondary)
+        .frame(width: 32, height: 32)
+        .background(.quaternary.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+    .menuStyle(.borderlessButton)
+    .menuIndicator(.hidden)
+    .help(Self.moreActionsAccessibilityLabel)
+    .accessibilityLabel(Self.moreActionsAccessibilityLabel)
+    .accessibilityIdentifier("channels.subredditRow.\(sub.id.uuidString).actions")
+  }
+
   private var peakDayChips: some View {
     HStack(spacing: 4) {
       ForEach(Array(zip(SubredditPeakSelection.allDays, SubredditPeakSelection.dayKeys)), id: \.0) {
         display, key in
         let isOn = effectivePeakDays.contains(key)
         Button(action: { toggleDay(key) }) {
-          Text(display)
+          HStack(spacing: 3) {
+            if isOn {
+              Image(systemName: "checkmark")
+                .font(.system(size: 8, weight: .bold))
+            }
+            Text(display)
+          }
             .font(.system(size: 10, weight: .medium))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
@@ -183,17 +224,23 @@ struct SubredditRow: View {
       ForEach(hours, id: \.self) { hour in
         let isOn = localSelected.contains(hour)
         Button(action: { toggleHourLocal(hour) }) {
-          Text("\(hour)")
+          HStack(spacing: 2) {
+            if isOn {
+              Image(systemName: "checkmark")
+                .font(.system(size: 7, weight: .bold))
+            }
+            Text("\(hour)")
+          }
             .font(.system(size: 9, weight: .medium))
-            .frame(minWidth: 24)
+            .frame(minWidth: 28)
             .padding(.vertical, 3)
-            .background(isOn ? Color.green.opacity(showsSuggested ? 0.04 : (hasOverride ? 0.12 : 0.06)) : Color.clear)
+            .background(isOn ? AppColors.success.opacity(showsSuggested ? 0.04 : (hasOverride ? 0.12 : 0.06)) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(
               RoundedRectangle(cornerRadius: 4)
-                .stroke(isOn ? Color.green : Color(NSColor.separatorColor), lineWidth: 0.5)
+                .stroke(isOn ? AppColors.success : Color(NSColor.separatorColor), lineWidth: 0.5)
             )
-            .foregroundStyle(isOn ? .green : .secondary)
+            .foregroundStyle(isOn ? AppColors.success : .secondary)
         }
         .buttonStyle(.plain)
       }

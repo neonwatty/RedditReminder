@@ -47,6 +47,16 @@ import SwiftData
     #expect(CaptureHelpers.normalizeLink("https://") == nil)
 }
 
+@Test func linkValidationMessageExplainsInvalidNonEmptyInput() {
+    #expect(CaptureHelpers.linkValidationMessage("bad domain.com") == CaptureHelpers.invalidLinkMessage)
+    #expect(CaptureHelpers.linkValidationAccessibilityIdentifier == "captureWindow.links.validation")
+}
+
+@Test func linkValidationMessageIgnoresEmptyAndValidInput() {
+    #expect(CaptureHelpers.linkValidationMessage("   ") == nil)
+    #expect(CaptureHelpers.linkValidationMessage("example.com") == nil)
+}
+
 // MARK: - canSave
 
 @Test func canSaveAcceptsNonEmptyTextAndSubreddits() {

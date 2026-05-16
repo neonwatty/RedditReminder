@@ -3,23 +3,8 @@ import Foundation
 import SwiftData
 @testable import RedditReminder
 
-// Helper: create a Bundle-like loader from the known Resources path at test time.
-// Tests run with TEST_HOST (bundle loader), so Bundle.main is the app bundle.
-// Rather than depend on the JSON being copied into the app bundle during build,
-// we load from the source tree path. In production the app uses Bundle.main normally.
 private func makeTestBundle() -> Bundle {
-  // Walk up from this file's compile-time path to find Resources/peak-times.json.
-  // #filePath resolves to the absolute source file path at compile time.
-  let sourceFile = URL(fileURLWithPath: #filePath)
-  // HeuristicsStoreTests.swift → Tests/RedditReminderTests/ → Tests/ → project root
-  let projectRoot = sourceFile
-    .deletingLastPathComponent()  // RedditReminderTests/
-    .deletingLastPathComponent()  // Tests/
-    .deletingLastPathComponent()  // project root
-  let resourcesDir = projectRoot.appendingPathComponent("Resources")
-
-  // Build a temporary Bundle from that directory so bundle.url(forResource:) works.
-  return Bundle(path: resourcesDir.path) ?? .main
+  makePeakTimesTestBundle()
 }
 
 @Test @MainActor func loadBundledHeuristics() {

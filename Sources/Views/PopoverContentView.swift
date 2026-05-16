@@ -5,7 +5,7 @@ enum PopoverRoute {
   case root
   case captureCreate
   case captureEdit(Capture)
-  case preferences
+  case preferences(PreferencesView.Tab)
   case postHandoff(Capture)
 }
 
@@ -17,7 +17,6 @@ struct PopoverContentView: View {
   let mediaStore = MediaStore()
 
   @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
-  @Query private var allEvents: [SubredditEvent]
   @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
   @Environment(\.modelContext) var modelContext
 
@@ -26,14 +25,12 @@ struct PopoverContentView: View {
   @State private var searchText: String = ""
   @State var toast: Toast?
   @State var toastTask: Task<Void, Never>?
-  @State var showPosted: Bool = false
+  @State var selectedWorkspace: PopoverWorkspace = .queue
   @State var route: PopoverRoute = .root
   @State var handledNewCaptureRequestCount: Int = 0
   @State var handledPreferencesRequestCount: Int = 0
+  @State var pendingCreateDraft: CaptureFormDraft?
 
-  private var activeEvents: [SubredditEvent] {
-    PopoverTimingPresentation.activeEvents(from: allEvents)
-  }
   private var queuedCaptures: [Capture] { PopoverCaptureFiltering.queuedCaptures(from: captures) }
   private var postedCaptures: [Capture] { PopoverCaptureFiltering.postedCaptures(from: captures) }
   private var displayedCaptures: [Capture] {
@@ -52,18 +49,19 @@ struct PopoverContentView: View {
       switch route {
       case .root:
         header
-        if !captures.isEmpty { searchBar }
-        if showPosted { postedContent } else { queuedContent }
+        if usesCaptureSearch && !captures.isEmpty { searchBar }
+        workspaceContent
         footer
       case .captureCreate:
         captureForm(mode: .create)
       case .captureEdit(let capture):
         captureForm(mode: .edit(capture))
-      case .preferences:
+      case .preferences(let tab):
         detailScreen(title: "Settings", systemName: "gearshape") {
           PreferencesView(
             notificationService: notificationService,
             heuristicsStore: heuristicsStore,
+            initialTab: tab,
             onAppStateChanged: onAppStateChanged
           )
           .modelContainer(modelContext.container)
@@ -92,9 +90,6 @@ struct PopoverContentView: View {
     .onChange(of: captureTimingSignature) {
       refreshTiming()
     }
-    .onChange(of: eventTimingSignature) {
-      refreshTiming()
-    }
     .onChange(of: subredditTimingSignature) {
       refreshTiming()
     }
@@ -104,16 +99,16 @@ struct PopoverContentView: View {
     PopoverTimingPresentation.captureTimingSignature(from: captures)
   }
 
-  private var eventTimingSignature: [String] {
-    PopoverTimingPresentation.eventTimingSignature(from: allEvents)
-  }
-
   private var subredditTimingSignature: [String] {
     PopoverTimingPresentation.subredditTimingSignature(from: subreddits)
   }
 
   private func refreshTiming() {
-    timingEngine.refresh(events: activeEvents, captures: captures)
+    guard let result = try? PlannerEventLoader.fetchUpcomingCandidates(context: modelContext) else {
+      timingEngine.refresh(events: [], captures: captures)
+      return
+    }
+    timingEngine.refresh(events: result.events, captures: captures)
   }
 
   // MARK: - Urgency
@@ -124,15 +119,62 @@ struct PopoverContentView: View {
 
   // MARK: - Content
 
+  private var usesCaptureSearch: Bool {
+    selectedWorkspace == .queue || selectedWorkspace == .posted
+  }
+
+  @ViewBuilder
+  private var workspaceContent: some View {
+    switch selectedWorkspace {
+    case .queue:
+      queuedContent
+    case .planner:
+      PlannerTabView(
+        onCreateCapture: openNewCapture,
+        onCreateCaptureForSubreddit: { openNewCapture(for: $0) },
+        onViewQueue: { selectedWorkspace = .queue },
+        onEditChannels: { selectedWorkspace = .channels }
+      )
+    case .channels:
+      ChannelsTabView(
+        notificationService: notificationService,
+        heuristicsStore: heuristicsStore,
+        onCreateCapture: { openNewCapture(for: $0) }
+      )
+    case .projects:
+      ProjectsTabView()
+    case .posted:
+      postedContent
+    }
+  }
+
   @ViewBuilder
   private var queuedContent: some View {
     if filterSubredditId != nil { filterBar }
-    if displayedCaptures.isEmpty && timingEngine.upcomingWindows.isEmpty && filterSubredditId == nil
-    {
+    switch Self.queueContentPresentation(
+      displayedCaptureCount: displayedCaptures.count,
+      upcomingWindowCount: timingEngine.upcomingWindows.count,
+      isFiltered: filterSubredditId != nil
+    ) {
+    case .onboarding:
       emptyState
-    } else if displayedCaptures.isEmpty && filterSubredditId != nil {
+    case .filteredEmpty:
       filteredEmptyState
-    } else {
+    case .emptyWithWindows:
+      ScrollView {
+        VStack(spacing: 0) {
+          EventBannerView(
+            upcomingWindows: timingEngine.upcomingWindows,
+            onTap: { window in
+              let tappedId = window.event.subreddit?.id
+              withAnimation(.easeInOut(duration: 0.15)) {
+                filterSubredditId = filterSubredditId == tappedId ? nil : tappedId
+              }
+            })
+          emptyQueueWithWindowsState
+        }
+      }
+    case .list:
       ScrollView {
         VStack(spacing: 0) {
           EventBannerView(
@@ -201,8 +243,8 @@ struct PopoverContentView: View {
 
   private var header: some View {
     PopoverHeaderView(
-      showPosted: $showPosted,
-      onOpenPreferences: openPreferences,
+      selectedWorkspace: $selectedWorkspace,
+      onOpenPreferences: { openPreferences() },
       onNewCapture: openNewCapture
     )
   }
@@ -222,7 +264,7 @@ struct PopoverContentView: View {
 
   private var footer: some View {
     let text = PopoverTimingPresentation.footerText(
-      showPosted: showPosted,
+      showPosted: selectedWorkspace == .posted,
       queuedCaptureCount: queuedCaptures.count,
       postedCaptureCount: postedCaptures.count,
       upcomingEventCount: timingEngine.upcomingWindows.count

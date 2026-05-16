@@ -20,6 +20,14 @@ enum AppColors {
   static let gold = NSColor(red: 0.81, green: 0.60, blue: 0.03, alpha: 1.0)
   static let pink = NSColor(red: 0.93, green: 0.29, blue: 0.60, alpha: 1.0)
 
+  static let brand = redditOrange
+  static let primaryAction = Color.accentColor
+  static let selectedState = Color.accentColor
+  static let warning = Color(red: 0.92, green: 0.45, blue: 0.05)
+  static let success = Color(red: 0.13, green: 0.67, blue: 0.34)
+  static let generatedState = Color(red: 0.42, green: 0.38, blue: 0.92)
+  static let link = Color.blue
+
   // Solid popover background — warm cream (light) / warm charcoal (dark)
   static let popoverBg = Color(nsColor: NSColor(name: nil) { appearance in
     appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PostedListView: View {
+  nonisolated static let minimumActionHitSize: CGFloat = 28
   nonisolated static let openPostedLinkAccessibilityLabel = "Open posted link"
   nonisolated static let restoreAccessibilityLabel = "Move posted capture back to queue"
   nonisolated static let deleteAccessibilityLabel = "Delete posted capture"
@@ -121,7 +122,7 @@ struct PostedListView: View {
         .labelStyle(.iconOnly)
         .font(.system(size: 12, weight: .medium))
         .foregroundStyle(.secondary)
-        .frame(width: 18, height: 18)
+        .frame(width: Self.minimumActionHitSize, height: Self.minimumActionHitSize)
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)

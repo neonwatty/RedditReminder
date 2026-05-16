@@ -3,6 +3,10 @@ import Foundation
 enum CaptureMediaAccessibility {
     static let dropZone = "capture-media-drop-zone"
     static let selectionError = "capture-media-selection-error"
+    static let browseLabel = "Browse for media"
+    static let browseHint = "Add image or video files to this capture."
+    static let rejectedSelectionMessage = "Only image or video files can be attached."
+    static let importFailureMessage = "Media could not be added. Try another image or video file."
 
     static func previewExisting(ref: String) -> String {
         "capture-media-preview-existing-\(token(ref))"

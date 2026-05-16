@@ -10,6 +10,28 @@ struct Toast: Equatable {
   let style: ToastStyle
 }
 
+enum PopoverWorkspace: String, CaseIterable {
+  case queue = "Queue"
+  case planner = "Planner"
+  case channels = "Channels"
+  case projects = "Projects"
+  case posted = "Posted"
+
+  var iconName: String {
+    switch self {
+    case .queue: "tray"
+    case .planner: "calendar"
+    case .channels: "tag"
+    case .projects: "folder"
+    case .posted: "checkmark.circle"
+    }
+  }
+
+  var accessibilityIdentifier: String {
+    "popover.header.\(rawValue.lowercased())"
+  }
+}
+
 struct PopoverToastView: View {
   let toast: Toast
 
@@ -43,86 +65,100 @@ struct PopoverToastView: View {
 
   private var accentColor: Color {
     switch toast.style {
-    case .success: Color(red: 0.13, green: 0.77, blue: 0.37)
+    case .success: AppColors.success
     case .error: Color(red: 0.94, green: 0.27, blue: 0.27)
     }
   }
 }
 
 struct PopoverHeaderView: View {
+  nonisolated static let minimumControlHitSize: CGFloat = 28
   nonisolated static let settingsButtonTitle = "Settings"
   nonisolated static let preferencesAccessibilityLabel = "Open preferences"
   nonisolated static let newCaptureAccessibilityLabel = "New capture"
+  nonisolated static let settingsButtonAccessibilityIdentifier = "popover.header.settings"
+  nonisolated static let newCaptureAccessibilityIdentifier = "popover.header.newCapture"
+  nonisolated static let workspaceTitles = PopoverWorkspace.allCases.map(\.rawValue)
   nonisolated static let queueToggleAccessibilityIdentifier = "popover.header.queue"
   nonisolated static let postedToggleAccessibilityIdentifier = "popover.header.posted"
+  nonisolated static let plannerToggleAccessibilityIdentifier = "popover.header.planner"
+  nonisolated static let channelsToggleAccessibilityIdentifier = "popover.header.channels"
+  nonisolated static let projectsToggleAccessibilityIdentifier = "popover.header.projects"
 
-  @Binding var showPosted: Bool
+  @Binding var selectedWorkspace: PopoverWorkspace
   let onOpenPreferences: () -> Void
   let onNewCapture: () -> Void
 
   var body: some View {
-    HStack {
-      Text("RedditReminder")
-        .font(.system(size: 13, weight: .semibold))
-        .foregroundStyle(.primary)
-      Spacer()
-      HStack(spacing: 2) {
-        toggleButton(
-          "Queue",
-          active: !showPosted,
-          identifier: Self.queueToggleAccessibilityIdentifier
-        ) { showPosted = false }
-        toggleButton(
-          "Posted",
-          active: showPosted,
-          identifier: Self.postedToggleAccessibilityIdentifier
-        ) { showPosted = true }
+    VStack(spacing: 8) {
+      HStack {
+        Text("RedditReminder")
+          .font(.system(size: 13, weight: .semibold))
+          .foregroundStyle(.primary)
+        Spacer()
+        Button(action: onOpenPreferences) {
+          Label(Self.settingsButtonTitle, systemImage: "gearshape")
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(.secondary)
+            .frame(minHeight: Self.minimumControlHitSize)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(Self.preferencesAccessibilityLabel)
+        .accessibilityLabel(Self.preferencesAccessibilityLabel)
+        .accessibilityIdentifier(Self.settingsButtonAccessibilityIdentifier)
+        Button(action: onNewCapture) {
+          Image(systemName: "plus").font(.system(size: 14, weight: .light))
+            .foregroundStyle(AppColors.redditOrange)
+            .frame(
+              width: Self.minimumControlHitSize,
+              height: Self.minimumControlHitSize
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(Self.newCaptureAccessibilityLabel)
+        .accessibilityLabel(Self.newCaptureAccessibilityLabel)
+        .accessibilityIdentifier(Self.newCaptureAccessibilityIdentifier)
+        .padding(.leading, 8)
       }
-      Spacer()
-      Button(action: onOpenPreferences) {
-        Label(Self.settingsButtonTitle, systemImage: "gearshape")
-          .font(.system(size: 11, weight: .medium))
-          .foregroundStyle(.secondary)
+
+      HStack(spacing: 4) {
+        ForEach(PopoverWorkspace.allCases, id: \.self) { workspace in
+          toggleButton(workspace)
+        }
       }
-      .buttonStyle(.plain)
-      .help(Self.preferencesAccessibilityLabel)
-      .accessibilityLabel(Self.preferencesAccessibilityLabel)
-      Button(action: onNewCapture) {
-        Image(systemName: "plus").font(.system(size: 14, weight: .light))
-          .foregroundStyle(AppColors.redditOrange)
-      }
-      .buttonStyle(.plain)
-      .help(Self.newCaptureAccessibilityLabel)
-      .accessibilityLabel(Self.newCaptureAccessibilityLabel)
-      .padding(.leading, 8)
     }
     .padding(.horizontal, 16)
-    .padding(.vertical, 12)
+    .padding(.top, 12)
+    .padding(.bottom, 10)
     .overlay(alignment: .bottom) { Divider() }
   }
 
-  private func toggleButton(
-    _ title: String,
-    active: Bool,
-    identifier: String,
-    action: @escaping () -> Void
-  ) -> some View {
-    Button(action: action) {
-      Text(title)
+  private func toggleButton(_ workspace: PopoverWorkspace) -> some View {
+    let active = selectedWorkspace == workspace
+    return Button(action: { selectedWorkspace = workspace }) {
+      Label(workspace.rawValue, systemImage: workspace.iconName)
         .font(.system(size: 10, weight: active ? .semibold : .medium))
         .foregroundStyle(active ? AppColors.redditOrange : .secondary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
+        .labelStyle(.titleAndIcon)
+        .frame(maxWidth: .infinity, minHeight: Self.minimumControlHitSize)
+        .padding(.vertical, 5)
         .background(active ? AppColors.redditOrange.opacity(0.1) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 4))
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(title)
-    .accessibilityIdentifier(identifier)
+    .help(workspace.rawValue)
+    .accessibilityLabel(workspace.rawValue)
+    .accessibilityIdentifier(workspace.accessibilityIdentifier)
   }
 }
 
 struct PopoverSearchBarView: View {
+  nonisolated static let clearSearchAccessibilityLabel = "Clear search"
+  nonisolated static let clearSearchAccessibilityIdentifier = "popover.search.clear"
+  nonisolated static let clearSearchHitSize: CGFloat = 28
+
   @Binding var searchText: String
 
   var body: some View {
@@ -138,8 +174,13 @@ struct PopoverSearchBarView: View {
           Image(systemName: "xmark.circle.fill")
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
+            .frame(width: Self.clearSearchHitSize, height: Self.clearSearchHitSize)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .help(Self.clearSearchAccessibilityLabel)
+        .accessibilityLabel(Self.clearSearchAccessibilityLabel)
+        .accessibilityIdentifier(Self.clearSearchAccessibilityIdentifier)
       }
     }
     .padding(.horizontal, 10)

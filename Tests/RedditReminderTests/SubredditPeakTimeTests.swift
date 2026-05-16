@@ -64,13 +64,7 @@ import Foundation
 // MARK: - Helpers
 
 private func makeTestBundle() -> Bundle {
-    let sourceFile = URL(fileURLWithPath: #filePath)
-    let projectRoot = sourceFile
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-    let resourcesDir = projectRoot.appendingPathComponent("Resources")
-    return Bundle(path: resourcesDir.path) ?? .main
+    makePeakTimesTestBundle()
 }
 
 private func dayOfWeek(_ weekday: Weekday, at utcHour: Int) -> Date {

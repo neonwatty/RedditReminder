@@ -15,12 +15,14 @@ private struct TemporaryDefaults {
 
 private final class RecordingNotificationCenter: NotificationCenterProtocol, @unchecked Sendable {
     var authorizationStatus: UNAuthorizationStatus = .authorized
+    private(set) var authorizationRequestCount = 0
     private(set) var addedRequests: [UNNotificationRequest] = []
     private(set) var removedIdentifiers: [[String]] = []
     private(set) var removedAll = false
 
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool {
-        authorizationStatus == .authorized
+        authorizationRequestCount += 1
+        return authorizationStatus == .authorized
     }
 
     func add(_ request: UNNotificationRequest, withCompletionHandler handler: (@Sendable (Error?) -> Void)?) {
@@ -39,6 +41,18 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     func getAuthorizationStatus() async -> UNAuthorizationStatus {
         authorizationStatus
     }
+}
+
+@Test @MainActor func appDelegateLaunchNotificationConfigurationDoesNotRequestPermission() {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    let center = RecordingNotificationCenter()
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults)
+
+    delegate.configureNotificationsOnLaunch()
+
+    #expect(center.authorizationRequestCount == 0)
 }
 
 @Test @MainActor func appDelegateSchedulesWindowAndEmptyQueueNudge() async {
@@ -154,34 +168,34 @@ private final class RecordingNotificationCenter: NotificationCenterProtocol, @un
     #expect(center.removedIdentifiers.isEmpty)
 }
 
-@Test func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() async throws {
-    try await MainActor.run {
-        let temporaryDefaults = makeTemporaryDefaults()
-        let defaults = temporaryDefaults.defaults
-        defer { temporaryDefaults.cleanup() }
-        defaults.set(15, forKey: SettingsKey.defaultLeadTimeMinutes)
-        defaults.set(false, forKey: SettingsKey.notificationsEnabled)
+@Test @MainActor func appDelegateUsesInjectedDefaultLeadTimeWhenSyncingEvents() throws {
+    let temporaryDefaults = makeTemporaryDefaults()
+    let defaults = temporaryDefaults.defaults
+    defer { temporaryDefaults.cleanup() }
+    defaults.set(15, forKey: SettingsKey.defaultLeadTimeMinutes)
+    defaults.set(false, forKey: SettingsKey.notificationsEnabled)
 
-        let container = try ModelContainer(
-            for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-        let context = container.mainContext
-        let subreddit = Subreddit(name: "r/SideProject")
-        context.insert(subreddit)
-        try context.save()
+    let container = try ModelContainer(
+        for: Project.self, Capture.self, Subreddit.self, SubredditEvent.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let subreddit = Subreddit(name: "r/SideProject")
+    subreddit.peakDaysOverride = ["mon"]
+    subreddit.peakHoursUtcOverride = [15]
+    context.insert(subreddit)
+    try context.save()
 
-        let center = RecordingNotificationCenter()
-        let store = HeuristicsStore(bundle: makeHeuristicsTestBundle(), logsMissingResource: false)
-        let delegate = makeSchedulingDelegate(center: center, defaults: defaults, heuristicsStore: store)
-        delegate.modelContainer = container
+    let center = RecordingNotificationCenter()
+    let store = HeuristicsStore(bundle: Bundle(path: "/tmp") ?? .main, logsMissingResource: false)
+    let delegate = makeSchedulingDelegate(center: center, defaults: defaults, heuristicsStore: store)
+    delegate.modelContainer = container
 
-        try delegate.syncGeneratedEventsForRefresh(context: context)
+    try delegate.syncGeneratedEventsForRefresh(context: context)
 
-        let events = try context.fetch(FetchDescriptor<SubredditEvent>())
-        #expect(!events.isEmpty)
-        #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
-    }
+    let events = try context.fetch(FetchDescriptor<SubredditEvent>())
+    #expect(!events.isEmpty)
+    #expect(events.allSatisfy { $0.reminderLeadMinutes == 15 })
 }
 
 @Test @MainActor func appDelegateCoreWorkflowRefreshesBadgeAndNotificationsAfterMarkPosted() async throws {
@@ -268,14 +282,4 @@ private func waitForNotificationRequests(
         if center.addedRequests.count >= count { return }
         try? await Task.sleep(for: .milliseconds(10))
     }
-}
-
-private func makeHeuristicsTestBundle() -> Bundle {
-    let sourceFile = URL(fileURLWithPath: #filePath)
-    let projectRoot = sourceFile
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-    let resourcesDir = projectRoot.appendingPathComponent("Resources")
-    return Bundle(path: resourcesDir.path) ?? .main
 }

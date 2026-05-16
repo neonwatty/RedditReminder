@@ -10,8 +10,10 @@ struct CaptureWindowView: View {
   static let saveRequirementsAccessibilityIdentifier = "captureWindow.saveRequirements"
 
   let mode: Mode
+  var initialDraft: CaptureFormDraft?
   let onSave: (CaptureFormResult) -> Bool
   let onCancel: () -> Void
+  var onAddSubreddit: (CaptureFormDraft) -> Void = { _ in }
 
   @Query(sort: \Project.name) private var projects: [Project]
   @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
@@ -90,11 +92,19 @@ struct CaptureWindowView: View {
               }
             }
           }
-          fieldSection("SUBREDDIT") {
+          fieldSection("SUBREDDIT", required: true) {
             CaptureSubredditPicker(
               subreddits: subreddits,
-              selectedSubreddits: $selectedSubreddits
+              selectedSubreddits: $selectedSubreddits,
+              onAddSubreddit: { onAddSubreddit(currentDraft) }
             )
+
+            if let saveRequirementsMessage, selectedSubreddits.isEmpty {
+              Text(saveRequirementsMessage)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier(Self.saveRequirementsAccessibilityIdentifier)
+            }
           }
 
           fieldSection("PROJECT", optional: true) {
@@ -137,7 +147,7 @@ struct CaptureWindowView: View {
             )
           }
 
-          if let saveRequirementsMessage {
+          if let saveRequirementsMessage, !selectedSubreddits.isEmpty {
             Text(saveRequirementsMessage)
               .font(.system(size: 11))
               .foregroundStyle(.secondary)
@@ -194,6 +204,7 @@ struct CaptureWindowView: View {
   private func fieldSection<Content: View>(
     _ label: String,
     optional: Bool = false,
+    required: Bool = false,
     @ViewBuilder content: () -> Content
   ) -> some View {
     VStack(alignment: .leading, spacing: 6) {
@@ -206,6 +217,11 @@ struct CaptureWindowView: View {
           Text("(optional)")
             .font(.system(size: 10))
             .foregroundStyle(.tertiary)
+        }
+        if required {
+          Text("(required)")
+            .font(.system(size: 10))
+            .foregroundStyle(AppColors.redditOrange)
         }
       }
       content()
@@ -227,6 +243,20 @@ struct CaptureWindowView: View {
       selectedSubredditCount: selectedSubreddits.count
     )
   }
+
+  private var currentDraft: CaptureFormDraft {
+    CaptureFormDraft(
+      title: title,
+      text: text,
+      notes: notes,
+      selectedProjectId: selectedProject?.id,
+      selectedSubredditIds: selectedSubreddits,
+      links: links,
+      newLinkText: newLinkText,
+      mediaURLs: droppedFiles
+    )
+  }
+
   private func save() {
     guard canSave else { return }
     let selectedSubs = subreddits.filter { selectedSubreddits.contains($0.id) }
@@ -254,7 +284,16 @@ struct CaptureWindowView: View {
   private func populateFromMode() {
     switch mode {
     case .create:
-      if let uuid = UUID(uuidString: defaultProjectId) {
+      if let initialDraft {
+        title = initialDraft.title
+        text = initialDraft.text
+        notes = initialDraft.notes
+        selectedProject = projects.first { $0.id == initialDraft.selectedProjectId }
+        selectedSubreddits = initialDraft.selectedSubredditIds
+        links = initialDraft.links
+        newLinkText = initialDraft.newLinkText
+        droppedFiles = initialDraft.mediaURLs
+      } else if let uuid = UUID(uuidString: defaultProjectId) {
         selectedProject = projects.first { $0.id == uuid }
       }
     case .edit(let capture):

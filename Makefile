@@ -1,4 +1,4 @@
-.PHONY: agent-bootstrap build build-debug build-cli test cli-test ui-test install install-debug install-cli clean generate qa
+.PHONY: agent-bootstrap build build-debug build-cli test cli-test ui-test install install-debug install-cli clean generate qa qa-seed qa-clear
 
 APP_NAME := RedditReminder
 CLI_NAME := redditreminder
@@ -101,6 +101,14 @@ install-cli: build-cli
 
 qa: install-debug
 	./scripts/qa.sh
+
+qa-seed: install-debug
+	-pkill -x $(APP_NAME) 2>/dev/null || true
+	open "$(INSTALL_DIR)/$(APP_NAME).app" --args --seed-qa
+
+qa-clear: install-debug
+	-pkill -x $(APP_NAME) 2>/dev/null || true
+	open "$(INSTALL_DIR)/$(APP_NAME).app" --args --clear-qa
 
 clean:
 	rm -rf $(PROJ) $(BUILD_DIR)
