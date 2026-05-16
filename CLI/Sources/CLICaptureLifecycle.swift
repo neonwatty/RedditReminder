@@ -69,22 +69,46 @@ struct CLICaptureLifecycle {
     return .success(data: .deleted(DeletedDTO(id: deletedId)))
   }
 
-  func markPosted(id: String, url: String?) throws -> CLIResponse {
-    let capture = try findCapture(id)
-    if options.dryRun {
-      return .success(data: .dryRun("Would mark capture \(capture.id.uuidString) posted."))
+  func markPosted(input: CapturePostStatusInput) throws -> CLIResponse {
+    let capture = try findCapture(input.id)
+    let subreddit = try input.subreddit.map(findSubreddit)
+    if let subreddit, !capture.subreddits.contains(where: { $0.id == subreddit.id }) {
+      throw CLIError.validation("\(subreddit.name) is not a target subreddit for this capture.")
     }
-    capture.markAsPosted(postedURL: url)
+    if options.dryRun {
+      let target = subreddit.map { " for \($0.name)" } ?? ""
+      return .success(data: .dryRun("Would mark capture \(capture.id.uuidString) posted\(target)."))
+    }
+    if let subreddit {
+      capture.markSubredditAsPosted(subreddit.id)
+      if capture.status == .posted {
+        capture.postedURL = input.url
+      }
+    } else {
+      capture.markAsPosted(postedURL: input.url)
+    }
     try context.save()
     return .success(data: .capture(CaptureDTO(capture)))
   }
 
-  func markQueued(id: String) throws -> CLIResponse {
-    let capture = try findCapture(id)
-    if options.dryRun {
-      return .success(data: .dryRun("Would mark capture \(capture.id.uuidString) queued."))
+  func markQueued(input: CaptureQueueStatusInput) throws -> CLIResponse {
+    let capture = try findCapture(input.id)
+    let subreddit = try input.subreddit.map(findSubreddit)
+    if let subreddit, !capture.subreddits.contains(where: { $0.id == subreddit.id }) {
+      throw CLIError.validation("\(subreddit.name) is not a target subreddit for this capture.")
     }
-    capture.markAsQueued()
+    if options.dryRun {
+      let target = subreddit.map { " for \($0.name)" } ?? ""
+      return .success(data: .dryRun("Would mark capture \(capture.id.uuidString) queued\(target)."))
+    }
+    if let subreddit {
+      capture.markSubredditAsUnposted(subreddit.id)
+      if capture.status == .queued {
+        capture.postedURL = nil
+      }
+    } else {
+      capture.markAsQueued()
+    }
     try context.save()
     return .success(data: .capture(CaptureDTO(capture)))
   }

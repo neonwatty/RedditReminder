@@ -91,6 +91,28 @@ extension CaptureWindowView {
     )
   }
 
+  var hasUnsavedEditChanges: Bool {
+    guard case .edit(let capture) = mode else { return false }
+    return currentDraft
+      != CaptureFormDraft(
+        title: capture.title ?? "",
+        text: capture.text,
+        notes: capture.notes ?? "",
+        selectedProjectId: capture.project?.id,
+        selectedSubredditIds: Set(capture.subreddits.map(\.id)),
+        links: capture.links
+      )
+  }
+
+  func addSubredditFromPicker() {
+    if hasUnsavedEditChanges {
+      saveError = "Save or cancel this edit before adding a channel."
+      return
+    }
+
+    onAddSubreddit(currentDraft)
+  }
+
   func save() {
     guard canSave else { return }
     let selectedSubs = subreddits.filter { selectedSubreddits.contains($0.id) }

@@ -62,17 +62,32 @@ final class Capture {
   }
 
   func markSubredditAsPosted(_ subredditId: UUID) {
-    guard !postedSubredditIDs.contains(subredditId) else { return }
-    postedSubredditIDs.append(subredditId)
-    if Set(postedSubredditIDs) == Set(subreddits.map(\.id)) {
-      status = .posted
-      postedAt = Date()
+    guard subreddits.contains(where: { $0.id == subredditId }) else { return }
+    if !postedSubredditIDs.contains(subredditId) {
+      postedSubredditIDs.append(subredditId)
     }
+    reconcilePostingStateForCurrentSubreddits()
   }
 
   func markSubredditAsUnposted(_ subredditId: UUID) {
     postedSubredditIDs.removeAll { $0 == subredditId }
-    if status == .posted {
+    reconcilePostingStateForCurrentSubreddits()
+  }
+
+  func reconcilePostingStateForCurrentSubreddits() {
+    let currentSubredditIDs = subreddits.map(\.id)
+    let currentSubredditIDSet = Set(currentSubredditIDs)
+    var seenSubredditIDs = Set<UUID>()
+    postedSubredditIDs = postedSubredditIDs.filter { subredditId in
+      currentSubredditIDSet.contains(subredditId) && seenSubredditIDs.insert(subredditId).inserted
+    }
+
+    if !currentSubredditIDs.isEmpty && Set(postedSubredditIDs) == currentSubredditIDSet {
+      status = .posted
+      if postedAt == nil {
+        postedAt = Date()
+      }
+    } else {
       status = .queued
       postedAt = nil
     }

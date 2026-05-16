@@ -66,6 +66,30 @@ private final class MockPasteboard: PasteboardWriting {
   )
 }
 
+@Test @MainActor func redditSubmitURLUsesSelectedCaptureSubreddit() {
+  let macOS = Subreddit(name: "r/macOS", sortOrder: 2)
+  let sideProject = Subreddit(name: "r/SideProject", sortOrder: 0)
+  let capture = Capture(
+    text: "Launch post",
+    subreddits: [macOS, sideProject]
+  )
+
+  #expect(
+    RedditPostingActions.submitURL(for: capture, subredditId: macOS.id)?
+      .absoluteString == "https://www.reddit.com/r/macOS/submit"
+  )
+  #expect(
+    RedditPostingActions.submitURL(for: capture, subredditId: sideProject.id)?
+      .absoluteString == "https://www.reddit.com/r/SideProject/submit"
+  )
+}
+
+@Test @MainActor func redditSubmitURLRejectsSubredditOutsideCapture() {
+  let capture = Capture(text: "Launch post", subreddits: [Subreddit(name: "r/macOS")])
+
+  #expect(RedditPostingActions.submitURL(for: capture, subredditId: UUID()) == nil)
+}
+
 @Test @MainActor func clipboardTextIncludesCaptureTextOnly() {
   let capture = Capture(text: "  Ship notes  ")
 

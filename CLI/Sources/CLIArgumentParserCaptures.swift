@@ -32,6 +32,9 @@ extension CLIArgumentParser {
     guard input.title != nil || !input.text.isEmpty else {
       throw CLIError.usage("Capture create requires --text, --title, or trailing text.")
     }
+    guard !input.subreddits.isEmpty else {
+      throw CLIError.usage("Capture create requires --subreddit or --subreddits.")
+    }
     return input
   }
 
@@ -74,5 +77,21 @@ extension CLIArgumentParser {
       throw CLIError.usage("Capture update requires at least one field flag.")
     }
     return input
+  }
+
+  mutating func consumeCapturePostStatusInput() throws -> CapturePostStatusInput {
+    let id = try consumeRequiredArgument(label: "capture id")
+    return CapturePostStatusInput(
+      id: id,
+      subreddit: normalizedOptional(consumeOptionalValue(for: "--subreddit")),
+      url: normalizedOptional(consumeOptionalValue(for: "--url"))
+    )
+  }
+
+  mutating func consumeCaptureQueueStatusInput() throws -> CaptureQueueStatusInput {
+    CaptureQueueStatusInput(
+      id: try consumeRequiredArgument(label: "capture id"),
+      subreddit: normalizedOptional(consumeOptionalValue(for: "--subreddit"))
+    )
   }
 }

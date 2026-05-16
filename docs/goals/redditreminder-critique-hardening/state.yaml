@@ -1,0 +1,654 @@
+version: 2
+
+goal:
+  title: "RedditReminder Critique Hardening"
+  slug: "redditreminder-critique-hardening"
+  kind: existing_plan
+  tranche: "Implement and verify the highest-value fixes from the UX, functionality, and CI/test critique."
+  status: done
+  intake:
+    original_request: "Create a detailed plan with clear acceptance criteria for each finding so development can be driven with GoalBuddy."
+    interpreted_outcome: "A GoalBuddy board sequences the critique findings into implementable, verified development slices with clear acceptance criteria."
+    input_shape: existing_plan
+    audience: "RedditReminder maintainer and GoalBuddy execution agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "All required critique-hardening tasks are done or explicitly blocked/deferred with receipts; targeted tests and CI checks pass; final audit maps evidence back to every accepted finding."
+    likely_misfire: "Stopping at a plan or completing easy low-risk UX wording while leaving cross-post correctness and CI protection gaps unresolved."
+    blind_spots_considered:
+      - "UI tests must not seed or clear the real app store before they are run locally or in CI."
+      - "Project deletion can cascade captures and needs stronger confirmation/dry-run messaging."
+      - "Multi-subreddit posting progress must stay consistent across notifications, edits, app UI, and CLI."
+      - "CI coverage reporting without enforcement may look protective while allowing regressions."
+      - "App/CLI parity matters because agents are expected to use the CLI as a primary interface."
+    existing_plan_facts:
+      - "UX finding: adding a subreddit while editing a capture can discard unsaved edits."
+      - "UX finding: project deletion is destructive and lacks confirmation/cascade warning."
+      - "UX finding: capture title/body labels both say optional although one is required."
+      - "UX finding: app channel creation lacks CLI-style subreddit verification."
+      - "UX finding: project add/rename failures are mostly silent."
+      - "UX finding: recipe search is brittle for terms like add subreddit."
+      - "Functionality finding: notification Mark as Posted over-posts multi-subreddit captures."
+      - "Functionality finding: editing capture subreddits does not reconcile postedSubredditIDs/status."
+      - "Functionality finding: CLI can create destination-less captures unlike the app UI."
+      - "Functionality finding: CLI lacks per-subreddit posting-progress parity."
+      - "Functionality finding: multi-subreddit Open Reddit chooses only the first subreddit."
+      - "CI finding: CI does not run the UI test target."
+      - "CI finding: UI test harness is not isolated from real app data."
+      - "CI finding: coverage is reported but not enforced; measured app coverage was 23.80%."
+      - "CI finding: destructive UI behavior is explicitly skipped."
+      - "CI finding: PR path filtering can mark some non-code changes green with skipped main checks."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/redditreminder-critique-hardening/"
+    command: "npx goalbuddy board docs/goals/redditreminder-critique-hardening"
+  github_projects:
+    status: not_requested
+    url: null
+    command: "npx goalbuddy extend github-projects"
+    missing: []
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Validate the critique findings, confirm the safest implementation sequence, and refine task scope before any product edits."
+    inputs:
+      - "Three-agent critique summarized in goal.intake.existing_plan_facts"
+      - "RedditReminder repository"
+      - "Current CI/test commands"
+    constraints:
+      - "Read-only."
+      - "Do not implement."
+      - "Preserve the user-provided critique as plan facts, but challenge priority, scope, and verification where needed."
+    expected_output:
+      - "Confirmed or revised priority order."
+      - "Any findings that should be deferred, merged, or split."
+      - "First Worker task objective, allowed_files, verify commands, and stop_if conditions."
+      - "Risk notes for UI-test isolation and destructive data behavior."
+    acceptance_criteria:
+      - "Every high-priority critique finding is mapped to a queued Worker task or a justified deferral."
+      - "The first Worker task is the largest safe useful slice and has exact allowed_files, verify commands, and stop_if rules."
+      - "No code or product files are edited during validation."
+    receipt:
+      result: done
+      decision: "approved"
+      full_outcome_complete: false
+      summary: "Confirmed the highest-risk first slice should be multi-subreddit posting-state correctness. AppDelegateNotifications currently calls markAsPosted for all matching queued captures, and CapturePersistenceActions updates subreddits without reconciling postedSubredditIDs or status."
+      priority_order:
+        - "T002 first: correctness bug can silently remove cross-post targets from future planner/reminder flows."
+        - "T003/T004 next: UI-test isolation must precede CI UI-test enablement."
+        - "T005 after correctness/test foundation: destructive/data-loss UX has product semantics to preserve."
+        - "T006-T008 after foundations: CLI parity, handoff, and polish are important but less urgent than state correctness."
+      evidence:
+        - "Sources/App/AppDelegateNotifications.swift:42"
+        - "Sources/App/AppDelegateNotifications.swift:55"
+        - "Sources/Models/Capture.swift:50"
+        - "Sources/Models/Capture.swift:64"
+        - "Sources/Utilities/CapturePersistenceActions.swift:67"
+        - "Tests/RedditReminderTests/CapturePerSubredditPostingTests.swift:71"
+      first_worker:
+        task: T002
+        objective: "Fix multi-subreddit posting-state correctness across notification actions and capture subreddit edits."
+        allowed_files:
+          - "Sources/App/AppDelegateNotifications.swift"
+          - "Sources/Models/Capture.swift"
+          - "Sources/Utilities/CapturePersistenceActions.swift"
+          - "Tests/RedditReminderTests/AppDelegateNotificationActionTests.swift"
+          - "Tests/RedditReminderTests/CapturePersistenceActionsTests.swift"
+          - "Tests/RedditReminderTests/CapturePerSubredditPostingTests.swift"
+        verify:
+          - "make test"
+        stop_if:
+          - "Fix requires changing SwiftData model schema beyond postedSubredditIDs/status semantics."
+          - "Expected behavior for editing a fully posted capture to add a new subreddit is ambiguous after reading existing tests."
+          - "Verification fails twice for unrelated reasons."
+
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Fix multi-subreddit posting-state correctness across notification actions and capture subreddit edits."
+    allowed_files:
+      - "Sources/App/AppDelegateNotifications.swift"
+      - "Sources/Models/Capture.swift"
+      - "Sources/Utilities/CapturePersistenceActions.swift"
+      - "Tests/RedditReminderTests/AppDelegateNotificationActionTests.swift"
+      - "Tests/RedditReminderTests/CapturePersistenceActionsTests.swift"
+      - "Tests/RedditReminderTests/CapturePerSubredditPostingTests.swift"
+    verify:
+      - "make test"
+    stop_if:
+      - "Fix requires changing SwiftData model schema beyond postedSubredditIDs/status semantics."
+      - "Expected behavior for editing a fully posted capture to add a new subreddit is ambiguous after reading existing tests."
+      - "Verification fails twice for unrelated reasons."
+    acceptance_criteria:
+      - "Notification Mark as Posted marks only the notification subreddit for matching multi-subreddit captures."
+      - "A multi-subreddit capture remains queued until all target subreddits are posted."
+      - "Editing a capture's subreddit list removes stale postedSubredditIDs for removed subreddits."
+      - "Adding a new target subreddit to a posted or partially posted capture reopens/keeps status consistently queued unless all current target subreddits are posted."
+      - "Unit tests cover notification partial posting, stale posted ID cleanup, and status reconciliation."
+      - "`make test` passes."
+    receipt:
+      result: done
+      changed_files:
+        - "Sources/App/AppDelegateNotifications.swift"
+        - "Sources/Models/Capture.swift"
+        - "Sources/Utilities/CapturePersistenceActions.swift"
+        - "Tests/RedditReminderTests/AppDelegateNotificationActionTests.swift"
+        - "Tests/RedditReminderTests/CapturePersistenceActionsTests.swift"
+      commands:
+        - cmd: "make test"
+          status: pass
+          summary: "440 tests passed."
+      summary: "Notification actions now mark only the matching notification subreddit. Capture posting state now reconciles current subreddit targets by filtering stale postedSubredditIDs, deduplicating posted IDs, reopening captures when added targets are unposted, and marking captures posted only when all current targets are posted."
+      acceptance:
+        - "Notification Mark as Posted marks only the notification subreddit for matching multi-subreddit captures."
+        - "A multi-subreddit capture remains queued until all target subreddits are posted."
+        - "Editing a capture's subreddit list removes stale postedSubredditIDs for removed subreddits."
+        - "Adding a new target subreddit to a posted or partially posted capture reopens/keeps status consistently queued unless all current target subreddits are posted."
+        - "Unit tests cover notification partial posting, stale posted ID cleanup, and status reconciliation."
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Make UI tests safe to run by isolating QA seed/clear storage from real app data."
+    allowed_files:
+      - "Sources/App/AppDelegate.swift"
+      - "Sources/App/AppDelegateQA.swift"
+      - "Sources/App/AppModelContainerFactory.swift"
+      - "Sources/Utilities/AppRuntime.swift"
+      - "Tests/RedditReminderUITests/RedditReminderUITestSupport.swift"
+      - "Tests/RedditReminderTests/AppModelContainerFactoryTests.swift"
+      - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+      - "Makefile"
+      - "README.md"
+    verify:
+      - "make test"
+      - "make ui-test"
+    stop_if:
+      - "macOS automation permissions prevent local UI-test verification."
+      - "Isolated store support requires changing production storage location semantics."
+      - "Verification fails twice for unrelated CI/permission reasons."
+    acceptance_criteria:
+      - "UI tests launch the app with an explicit isolated store path or in-memory/test container."
+      - "`--seed-qa` and `--clear-qa` cannot mutate the normal production SwiftData store during UI tests."
+      - "README or Makefile documents the UI-test isolation behavior."
+      - "A unit test or UI-test support assertion proves the test store path is distinct from the default app store."
+      - "`make test` passes."
+      - "`make ui-test` is run successfully or a permission-related blocker is recorded with enough detail for CI/local setup."
+    receipt:
+      result: done
+      changed_files:
+        - "Sources/App/AppDelegate.swift"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Utilities/AppRuntime.swift"
+        - "Tests/RedditReminderUITests/RedditReminderUITestSupport.swift"
+        - "Tests/RedditReminderTests/AppModelContainerFactoryTests.swift"
+        - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+        - "README.md"
+      commands:
+        - cmd: "make test"
+          status: pass
+          summary: "444 tests passed."
+        - cmd: "make ui-test"
+          status: pass
+          summary: "8 UI tests passed with 1 existing destructive-flow test skipped."
+      summary: "Added an explicit --ui-test-store launch argument, wired app startup to create a SwiftData container at that path, and updated UI tests to launch with per-test temporary store files. Documented that QA seed/clear runs against isolated UI-test storage."
+      acceptance:
+        - "UI tests launch the app with an explicit isolated store path."
+        - "--seed-qa and --clear-qa operate on the passed UI-test SwiftData store during UI tests."
+        - "README documents UI-test isolation behavior."
+        - "Unit tests cover UI-test store argument parsing and explicit store creation outside the default app support directory."
+        - "make test passes."
+        - "make ui-test passes."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Add UI tests to CI once the UI-test harness is isolated, and make CI gate the result appropriately."
+    allowed_files:
+      - ".github/workflows/ci.yml"
+      - "Makefile"
+      - "README.md"
+    verify:
+      - "make ui-test"
+      - "make test"
+      - "make cli-test"
+    stop_if:
+      - "T003 is not done or UI tests are still unsafe against real data."
+      - "GitHub-hosted macOS UI automation cannot run the target reliably without credentials or permission setup."
+      - "Workflow change would make normal PR CI impractically slow without an agreed gating strategy."
+    acceptance_criteria:
+      - "CI includes a UI test job or an explicitly documented/manual-gated alternative with rationale."
+      - "The final CI gate fails if the required UI test job fails or is cancelled."
+      - "Artifacts are uploaded for UI-test failures when available."
+      - "Docs state how UI tests are run locally and in CI."
+      - "`make ui-test`, `make test`, and `make cli-test` pass locally or any UI-automation permission blocker is recorded."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - "README.md"
+      commands:
+        - cmd: "ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"ci yaml ok\"'"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+        - cmd: "make test"
+          status: pass
+          summary: "444 tests passed after the product/UI-test isolation changes."
+        - cmd: "make ui-test"
+          status: pass
+          summary: "8 UI tests passed with 1 existing skipped destructive-flow test after UI-test isolation."
+      summary: "Added a required macOS UI Tests CI job that generates the Xcode project, runs the RedditReminderUITests scheme with a result bundle, uploads failure artifacts, and participates in the final CI gate. README now states that code-change CI runs unit, CLI, and UI test jobs."
+      acceptance:
+        - "CI includes a UI test job."
+        - "The final CI gate fails if the UI test job fails or is cancelled."
+        - "UI test failure artifacts are uploaded when available."
+        - "Docs state that CI runs UI tests and how UI tests isolate storage locally."
+        - "make ui-test, make test, and make cli-test pass locally."
+
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Protect destructive and data-loss-prone UX flows: project deletion, add-channel while editing, and skipped destructive UI coverage."
+    allowed_files:
+      - "Sources/Views/ProjectsTabView.swift"
+      - "Sources/Views/PopoverContentRoutes.swift"
+      - "Sources/Views/CaptureWindowView.swift"
+      - "Sources/Views/CaptureWindowView+FormState.swift"
+      - "Sources/Utilities/ProjectPersistenceActions.swift"
+      - "Tests/RedditReminderTests/ProjectPersistenceActionsTests.swift"
+      - "Tests/RedditReminderUITests/RedditReminderWorkflowUITests.swift"
+      - "Tests/RedditReminderUITests/RedditReminderUXFlowUITests.swift"
+    verify:
+      - "make test"
+      - "make ui-test"
+    stop_if:
+      - "Existing UI architecture cannot preserve edit draft state without broader navigation refactor."
+      - "Project deletion semantics are ambiguous: cascade delete versus detach captures."
+      - "UI-test hit targets remain unreliable after adding accessibility identifiers."
+    acceptance_criteria:
+      - "Project deletion requires explicit confirmation in the app UI."
+      - "Confirmation copy communicates capture impact when deletion can cascade or otherwise affect captures."
+      - "Deleting a project through persistence is covered by tests for the chosen capture behavior."
+      - "Adding a channel from capture edit mode preserves unsaved edits, prompts before discarding, or blocks navigation with a clear message."
+      - "Destructive capture/project UI flow has reliable accessibility identifiers and is no longer skipped solely because XCUITest cannot hit the controls."
+      - "`make test` passes."
+      - "`make ui-test` passes or records only an environment permission blocker."
+    receipt:
+      result: done
+      changed_files:
+        - "Sources/Views/ProjectsTabView.swift"
+        - "Sources/Views/CaptureWindowView.swift"
+        - "Sources/Views/CaptureWindowView+FormState.swift"
+        - "Tests/RedditReminderUITests/RedditReminderWorkflowUITests.swift"
+      commands:
+        - cmd: "make test"
+          status: pass
+          summary: "444 tests passed."
+        - cmd: "make ui-test"
+          status: pass
+          summary: "8 UI tests passed with 0 failures; the destructive confirmation test is no longer skipped."
+      notes:
+        - "Initial UI-test run exposed an ambiguous seeded query for postedList.delete; the test now uses firstMatch for the seeded posted delete action."
+        - "A strict app.alerts title lookup did not match the AppKit NSAlert accessibility shape; the test now verifies the blocking Delete and Cancel confirmation buttons."
+      summary: "Project deletion now opens an explicit SwiftUI confirmation before calling deleteProject, with copy that includes the affected capture count and warns that the action cannot be undone. Capture edit mode now blocks add-channel navigation when unsaved changes would be discarded and shows an inline save/cancel message. The skipped destructive UI coverage was replaced with a real posted-capture delete confirmation test."
+      acceptance:
+        - "Project deletion requires explicit confirmation in the app UI."
+        - "Confirmation copy communicates affected capture count and permanence."
+        - "Existing persistence tests cover project deletion cascade behavior for captures."
+        - "Adding a channel while editing with unsaved changes is blocked with a clear save/cancel message instead of discarding draft edits."
+        - "Destructive posted-capture UI coverage is no longer skipped and verifies a cancellable confirmation."
+        - "make test passes."
+        - "make ui-test passes."
+
+  - id: T006
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Bring CLI behavior into parity with app posting constraints and per-subreddit progress."
+    allowed_files:
+      - "CLI/Sources/CLIInvocation.swift"
+      - "CLI/Sources/CLIRunner.swift"
+      - "CLI/Sources/CLIArgumentParserCaptures.swift"
+      - "CLI/Sources/CLICaptureLifecycle.swift"
+      - "CLI/Sources/CLICommandCatalogCaptures.swift"
+      - "CLI/Sources/CLIDTOs.swift"
+      - "CLI/Sources/CLIAgentDryRunner.swift"
+      - "CLI/Sources/CLIAgentValidator.swift"
+      - "scripts/cli-smoke.sh"
+      - "scripts/cli-agent-smoke.sh"
+      - "scripts/cli-catalog-check.py"
+      - "docs/cli.md"
+      - "AGENTS.md"
+    verify:
+      - "make cli-test"
+      - "make test"
+    stop_if:
+      - "Existing agent recipes intentionally allow destination-less captures as a supported inbox workflow."
+      - "Adding per-subreddit CLI commands requires a command shape that is ambiguous without user approval."
+      - "CLI schema/catalog compatibility would break existing documented recipes without migration notes."
+    acceptance_criteria:
+      - "CLI validation and dry-run reject destination-less capture creation unless an explicit documented inbox/no-destination mode is approved and added."
+      - "Capture JSON output exposes per-subreddit posted state or equivalent machine-readable progress."
+      - "CLI supports marking/unmarking one subreddit posted for a multi-subreddit capture."
+      - "Command catalog, agent bootstrap, and docs describe the new/changed behavior."
+      - "CLI smoke and agent smoke tests cover destination validation and per-subreddit progress."
+      - "`make cli-test` and `make test` pass."
+    receipt:
+      result: done
+      changed_files:
+        - "AGENTS.md"
+        - "CLI/Sources/CLIArgumentParserCaptures.swift"
+        - "CLI/Sources/CLICaptureLifecycle.swift"
+        - "CLI/Sources/CLICommandCatalogCaptures.swift"
+        - "CLI/Sources/CLIDTOs.swift"
+        - "CLI/Sources/CLIAgentValidator.swift"
+        - "CLI/Sources/CLIInvocation.swift"
+        - "CLI/Sources/CLIRunner.swift"
+        - "docs/cli.md"
+        - "scripts/cli-agent-smoke.sh"
+        - "scripts/cli-smoke.sh"
+      commands:
+        - cmd: "make cli-test"
+          status: pass
+          summary: "CLI build, smoke, agent smoke, and catalog check passed."
+        - cmd: "make test"
+          status: pass
+          summary: "444 tests passed."
+      summary: "CLI capture creation now rejects destination-less captures through normal parsing and agent validate/dry-run. Capture JSON exposes subredditProgress for machine-readable per-target posted state. Existing mark-posted and mark-queued commands now accept --subreddit to update a single target while preserving whole-capture behavior when omitted."
+      acceptance:
+        - "CLI validation and dry-run reject destination-less capture creation unless --subreddit or --subreddits is provided."
+        - "Capture JSON output exposes per-subreddit posted state as subredditProgress."
+        - "CLI supports marking and unmarking one subreddit posted for a multi-subreddit capture through --subreddit."
+        - "Command catalog, agent bootstrap inputs, AGENTS.md, and docs describe the changed behavior."
+        - "CLI smoke and agent smoke cover destination validation and per-subreddit progress."
+        - "make cli-test and make test pass."
+
+  - id: T007
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Improve multi-subreddit handoff so opening Reddit is destination-specific instead of always using the first subreddit."
+    allowed_files:
+      - "Sources/Views/PostHandoffView.swift"
+      - "Sources/Views/PostHandoffViewHelpers.swift"
+      - "Sources/Views/PopoverContentActions.swift"
+      - "Sources/Views/PopoverContentRoutes.swift"
+      - "Sources/Utilities/RedditPostingActions.swift"
+      - "Tests/RedditReminderTests/RedditPostingActionsTests.swift"
+      - "Tests/RedditReminderTests/PostHandoffViewTests.swift"
+      - "Tests/RedditReminderUITests/RedditReminderWorkflowUITests.swift"
+    verify:
+      - "make test"
+      - "make ui-test"
+    stop_if:
+      - "Existing product decision requires a single default destination for Open Reddit."
+      - "Destination-specific UI would need a larger handoff redesign than the current tranche permits."
+      - "UI tests cannot verify the control because browser launching is not testable in the current harness."
+    acceptance_criteria:
+      - "Users can open Reddit submit flow for a selected target subreddit from a multi-subreddit capture."
+      - "The default action is clear and does not silently imply all destinations."
+      - "Single-subreddit captures keep a simple one-click path."
+      - "Tests cover URL generation for selected subreddit and stable behavior for single-subreddit captures."
+      - "`make test` passes."
+      - "`make ui-test` passes or records only an environment permission blocker."
+    receipt:
+      result: done
+      changed_files:
+        - "Sources/Utilities/RedditPostingActions.swift"
+        - "Sources/Views/PostHandoffView.swift"
+        - "Sources/Views/PostHandoffViewHelpers.swift"
+        - "Sources/Views/PopoverContentActions.swift"
+        - "Sources/Views/PopoverContentRoutes.swift"
+        - "Tests/RedditReminderTests/PostHandoffViewTests.swift"
+        - "Tests/RedditReminderTests/RedditPostingActionsTests.swift"
+      commands:
+        - cmd: "make test"
+          status: pass
+          summary: "446 tests passed."
+      notes:
+        - "make ui-test was retried twice and blocked before app test execution by XCTest automation initialization: 'Timed out while enabling automation mode.' Result bundles: build/Logs/Test/Test-RedditReminderUITests-2026.05.16_13-20-58--0700.xcresult and Test-RedditReminderUITests-2026.05.16_13-22-12--0700.xcresult."
+      summary: "Multi-subreddit post handoff now exposes destination-specific Open Reddit controls. Single-subreddit captures retain the one-click Open Reddit footer button, while multi-subreddit captures show a Choose Subreddit footer menu and per-row open controls. Reddit submit URL generation now supports a selected capture subreddit and rejects subreddit IDs outside the capture."
+      acceptance:
+        - "Users can open Reddit submit flow for a selected target subreddit from a multi-subreddit capture."
+        - "The multi-subreddit default action is explicit: the footer prompts to choose a subreddit instead of silently using the first target."
+        - "Single-subreddit captures keep a simple one-click Open Reddit path."
+        - "Tests cover URL generation for selected subreddit and rejection of non-target subreddit IDs."
+        - "make test passes."
+        - "make ui-test is blocked by local XCTest automation initialization, not by an app test failure."
+
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Address medium/low UX and agent-discoverability polish findings after correctness and CI foundations are stable."
+    allowed_files:
+      - "Sources/Views/CaptureWindowView.swift"
+      - "Sources/Views/ChannelsView.swift"
+      - "Sources/Views/ProjectsTabView.swift"
+      - "Sources/Utilities/SubredditPersistenceActions.swift"
+      - "CLI/Sources/CLIRecipeCatalog.swift"
+      - "CLI/Sources/CLIRecipeCatalogDryRun.swift"
+      - "Tests/RedditReminderTests/SubredditPersistenceActionsTests.swift"
+      - "Tests/RedditReminderTests/ProjectPersistenceActionsTests.swift"
+      - "Tests/RedditReminderUITests/RedditReminderUXFlowUITests.swift"
+      - "scripts/cli-agent-smoke.sh"
+      - "docs/cli.md"
+    verify:
+      - "make test"
+      - "make cli-test"
+      - "make ui-test"
+    stop_if:
+      - "Subreddit verification requires live network behavior that cannot be tested deterministically."
+      - "Recipe search needs a ranking/search design beyond simple synonym support."
+      - "UI polish conflicts with established copy or design decisions."
+    acceptance_criteria:
+      - "Capture title/body labels or nearby requirement copy clearly communicate that at least one is required."
+      - "In-app channel creation offers verification or clearly labels unverified local-only additions."
+      - "Project add/rename validation failures surface clear feedback and do not silently close failed edits."
+      - "Recipe search finds relevant subreddit setup recipes for natural queries such as add subreddit."
+      - "Targeted unit, UI, or CLI smoke tests cover the changed validation/discovery behavior."
+      - "`make test`, `make cli-test`, and `make ui-test` pass or UI automation permission blockers are recorded."
+    receipt:
+      result: done
+      changed_files:
+        - "CLI/Sources/CLIRecipeCatalog.swift"
+        - "CLI/Sources/CLIRecipeCatalogDryRun.swift"
+        - "Sources/Views/CaptureWindowView.swift"
+        - "Sources/Views/ChannelsView.swift"
+        - "Sources/Views/ProjectsTabView.swift"
+        - "scripts/cli-agent-smoke.sh"
+      commands:
+        - cmd: "make test"
+          status: pass
+          summary: "446 tests passed."
+        - cmd: "make cli-test"
+          status: pass
+          summary: "CLI build, smoke, agent smoke, and catalog check passed."
+      notes:
+        - "make ui-test was attempted after T008 changes but the local XCTest runner hung after 'Running tests' and before emitting test cases; xcodebuild and test runner were terminated to avoid leaving processes running. This follows repeated T007 automation initialization failures in the same local environment."
+      summary: "Capture form content fields now communicate that a title or capture text is required. App channel creation now labels additions as local-only and points verification-sensitive workflows to the CLI. Project add and rename flows show validation feedback and keep failed rename edits open. Recipe search now directly matches natural 'add subreddit' queries."
+      acceptance:
+        - "Capture title/body copy communicates that at least one is required."
+        - "In-app channel creation clearly labels additions as local-only and points to CLI verification."
+        - "Project add/rename validation failures surface clear feedback; failed renames no longer silently close edit mode."
+        - "Recipe search finds relevant subreddit setup recipes for natural queries such as add subreddit."
+        - "CLI smoke covers add-subreddit recipe discovery."
+        - "make test and make cli-test pass."
+        - "make ui-test is blocked by local XCTest automation state, not by an app test failure."
+
+  - id: T009
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review CI coverage enforcement and PR path-filter risks, then decide whether to implement thresholds, changed-file gates, or documented deferrals."
+    inputs:
+      - "T003 and T004 receipts"
+      - ".github/workflows/ci.yml"
+      - "coverage artifacts from the latest unit/UI runs if available"
+    constraints:
+      - "Read-only."
+      - "Do not implement."
+      - "Prefer a realistic gate that protects important behavior without making early development brittle."
+    expected_output:
+      - "Decision on coverage threshold or changed-file coverage gate."
+      - "Decision on PR path-filter/package metadata validation."
+      - "Worker task details if implementation is approved."
+      - "Deferral rationale if not approved."
+    acceptance_criteria:
+      - "Coverage enforcement is either converted into a Worker task with exact acceptance criteria or deferred with a concrete rationale."
+      - "Path-filter behavior for package/release metadata is either corrected by a Worker task or explicitly accepted as a tradeoff."
+      - "Decision references current CI commands and measured coverage evidence."
+    receipt:
+      result: done
+      decision: approved
+      coverage_decision: deferred
+      path_filter_decision: implement_package_metadata_gate
+      full_outcome_complete: false
+      summary: "Deferred numeric and changed-file coverage gates for this tranche because current app coverage is low, local Makefile tests do not produce coverage, and SwiftUI-heavy changes would make changed-file coverage noisy. Approved a narrow package/release metadata CI gate because package.json, package-lock.json, .releaserc.json, and commitlint.config.cjs can currently skip main PR checks while CI Gate accepts skipped jobs."
+      evidence:
+        - ".github/workflows/ci.yml unit-tests runs xcodebuild test with -enableCodeCoverage YES and uploads coverage artifacts."
+        - "Judge inspected latest local coverage evidence: RedditReminder.app 24.31% versus critique baseline 23.80%."
+        - "Current detect-changes filters include code/project/workflow paths but not package/release metadata."
+
+  - id: T010
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Fix CI PR path filtering so package/release metadata changes receive validation instead of green skipped main checks; leave coverage enforcement explicitly deferred by T009."
+    allowed_files:
+      - ".github/workflows/ci.yml"
+      - "README.md"
+    verify:
+      - "ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"ci yaml ok\"'"
+      - "ruby -e 'require \"yaml\"; ci=YAML.load_file(\".github/workflows/ci.yml\"); jobs=ci.fetch(\"jobs\"); abort(\"missing package-metadata job\") unless jobs.key?(\"package-metadata\"); filters=ci.dig(\"jobs\",\"detect-changes\",\"steps\").find { |s| s[\"id\"] == \"filter\" }.dig(\"with\",\"filters\"); %w[package.json package-lock.json .releaserc.json commitlint.config.cjs].each { |p| abort(\"missing #{p}\") unless filters.include?(p) }; gate_needs=jobs.dig(\"ci-gate\",\"needs\"); abort(\"gate missing package-metadata\") unless gate_needs.include?(\"package-metadata\"); puts \"ci package metadata gate ok\"'"
+      - "npm ci"
+    stop_if:
+      - "Workflow changes would make docs-only PRs fail instead of intentionally skipping expensive checks."
+      - "Package metadata validation requires GitHub tokens or live semantic-release credentials; use npm ci and static JSON/config checks instead."
+      - "Static workflow validation shows package-only PRs would still skip all required validation."
+      - "A coverage gate is requested during implementation; stop and return to Judge because T009 deferred coverage enforcement."
+    acceptance_criteria:
+      - "detect-changes exposes a package/release metadata output for package.json, package-lock.json, .releaserc.json, and commitlint.config.cjs."
+      - "A package-metadata CI job runs for package/release metadata PRs and validates npm dependency metadata with npm ci plus static JSON/config sanity checks that do not require release credentials."
+      - "ci-gate includes package-metadata and fails when it fails or is cancelled, while still allowing skipped jobs for docs-only PRs."
+      - "Existing code-change behavior is preserved: lint, build, unit-tests, cli-tests, ui-tests, and file-size-check still run for current code filters."
+      - "Coverage report generation/upload remains unchanged, with no numeric threshold or changed-file gate added."
+      - "README briefly documents that CI runs package/release metadata validation for package metadata changes and that coverage is reported but not currently enforced."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - "README.md"
+      commands:
+        - cmd: "ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"ci yaml ok\"'"
+          status: pass
+        - cmd: "ruby -e 'require \"yaml\"; ci=YAML.load_file(\".github/workflows/ci.yml\"); jobs=ci.fetch(\"jobs\"); abort(\"missing package-metadata job\") unless jobs.key?(\"package-metadata\"); filters=ci.dig(\"jobs\",\"detect-changes\",\"steps\").find { |s| s[\"id\"] == \"filter\" }.dig(\"with\",\"filters\"); %w[package.json package-lock.json .releaserc.json commitlint.config.cjs].each { |p| abort(\"missing #{p}\") unless filters.include?(p) }; gate_needs=jobs.dig(\"ci-gate\",\"needs\"); abort(\"gate missing package-metadata\") unless gate_needs.include?(\"package-metadata\"); puts \"ci package metadata gate ok\"'"
+          status: pass
+        - cmd: "npm ci"
+          status: pass
+          summary: "Installed 343 packages; npm audit reported existing 1 moderate and 1 high vulnerability."
+      summary: "CI now detects package/release metadata changes separately, runs a lightweight package-metadata job with npm ci plus JSON/config loading, and includes that job in ci-gate. Code-change jobs and coverage reporting/upload remain unchanged. README documents package metadata validation and the current report-only coverage policy."
+      acceptance:
+        - "detect-changes exposes package_metadata for package.json, package-lock.json, .releaserc.json, and commitlint.config.cjs."
+        - "package-metadata CI job runs npm ci and static package/release config sanity checks without release credentials."
+        - "ci-gate includes package-metadata and fails on failure/cancellation while preserving skipped docs-only behavior."
+        - "Existing code-change behavior is preserved."
+        - "Coverage report generation/upload remains unchanged; no numeric threshold or changed-file gate was added."
+        - "README documents package metadata validation and report-only coverage."
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the critique-hardening tranche satisfies the original GoalBuddy planning and implementation outcome."
+    inputs:
+      - "All task receipts"
+      - "Latest git diff"
+      - "Latest verification command results"
+      - "Original three-agent critique findings in goal.intake.existing_plan_facts"
+    constraints:
+      - "Read-only."
+      - "Reject completion if required Worker work remains queued, active, or unverified."
+      - "Reject completion if any high-priority critique finding lacks a fix, blocker, or explicit deferral rationale."
+      - "Reject completion if only planning was completed."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Finding-by-finding evidence map"
+      - "Missing evidence"
+      - "Next task if not complete"
+    acceptance_criteria:
+      - "Every accepted critique finding is mapped to a done receipt, blocked receipt, or deferral decision."
+      - "High-priority functionality, data-safety, and CI safety findings have implementation evidence unless blocked."
+      - "Verification commands include the relevant unit, CLI, and UI/CI checks or documented environment blockers."
+      - "The final receipt states `full_outcome_complete: true` only when the original outcome is actually met."
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      summary: "Final audit accepted completion. T002-T010 are all done with receipts; no required Worker task remains queued or active. The diff contains implementation, test, CI, and docs changes matching the critique findings. High-priority functionality, data-safety, and CI-safety findings are fixed or explicitly deferred with rationale."
+      evidence:
+        - "Multi-subreddit posting correctness fixed through notification partial posting and capture reconciliation receipts in T002."
+        - "UI-test store isolation and CI UI-test gating fixed in T003/T004."
+        - "Destructive/data-loss UX coverage fixed in T005, including project deletion confirmation, edit add-channel guard, and unskipped destructive UI test."
+        - "CLI destination validation and per-subreddit progress/actions fixed in T006."
+        - "Multi-subreddit Reddit handoff is destination-specific in T007."
+        - "UX/discoverability polish findings addressed in T008."
+        - "Coverage enforcement explicitly deferred by T009 with rationale; package/release metadata PR path-filter gap fixed in T010."
+        - "git diff --check passed."
+      missing_evidence: []
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T999
+    commands:
+      - "git diff --check"

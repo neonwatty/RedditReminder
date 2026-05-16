@@ -140,6 +140,24 @@ extension PopoverContentView {
     }
   }
 
+  func openRedditSubmitPage(for capture: Capture, subredditId: UUID) {
+    guard let url = RedditPostingActions.submitURL(for: capture, subredditId: subredditId) else {
+      showToast("Subreddit is not on this capture", style: .error)
+      return
+    }
+
+    let text = RedditPostingActions.clipboardText(for: capture)
+    if !text.isEmpty {
+      _ = RedditPostingActions.copyText(text)
+    }
+
+    if NSWorkspace.shared.open(url) {
+      showToast("Copied text and opened Reddit")
+    } else {
+      showToast("Could not open Reddit", style: .error)
+    }
+  }
+
   func openPostedURL(for capture: Capture) {
     guard
       let postedURL = capture.postedURL,

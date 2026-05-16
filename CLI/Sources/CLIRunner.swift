@@ -38,11 +38,10 @@ final class CLIRunner {
       return try CLICaptureLifecycle(options: options, context: context).update(input: input)
     case .captureDelete(let id):
       return try CLICaptureLifecycle(options: options, context: context).delete(id: id)
-    case .captureMarkPosted(let id, let url):
-      return try CLICaptureLifecycle(options: options, context: context).markPosted(
-        id: id, url: url)
-    case .captureMarkQueued(let id):
-      return try CLICaptureLifecycle(options: options, context: context).markQueued(id: id)
+    case .captureMarkPosted(let input):
+      return try CLICaptureLifecycle(options: options, context: context).markPosted(input: input)
+    case .captureMarkQueued(let input):
+      return try CLICaptureLifecycle(options: options, context: context).markQueued(input: input)
     case .eventsList(let input):
       return try CLIEventManager(options: options, context: context).list(input: input)
     case .eventCreate(let input):

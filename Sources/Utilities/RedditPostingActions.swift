@@ -35,6 +35,14 @@ enum RedditPostingActions {
   }
 
   @MainActor
+  static func submitURL(for capture: Capture, subredditId: UUID) -> URL? {
+    guard let subreddit = capture.subreddits.first(where: { $0.id == subredditId }) else {
+      return nil
+    }
+    return submitURL(forSubredditName: subreddit.name)
+  }
+
+  @MainActor
   static func titleText(for capture: Capture) -> String {
     capture.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
   }

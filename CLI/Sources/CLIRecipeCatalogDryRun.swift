@@ -5,7 +5,8 @@ extension CLIRecipeCatalog {
     recipe(
       "posting.create-with-media-dry-run",
       "Safely preview and then create a queued post with image or video media.",
-      goal: "Inspect state, preview capture creation with --dry-run, wait for confirmation, execute the create, and verify the result.",
+      goal:
+        "Inspect state, preview capture creation with --dry-run, wait for confirmation, execute the create, and verify the result.",
       inputs: [
         input("title", "Post title."),
         input("text", "Post body."),
@@ -26,11 +27,13 @@ extension CLIRecipeCatalog {
         step(
           3, "captures.create",
           "Preview the capture creation without saving app data.",
-          "redditreminder --json --dry-run captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"),
+          "redditreminder --json --dry-run captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"
+        ),
         step(
           4, "captures.create",
           "After user confirmation, create the capture and due posting-window event.",
-          "redditreminder --json captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"),
+          "redditreminder --json captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"
+        ),
         step(
           5, "context.show",
           "Verify the queued capture and event are visible.",
@@ -41,8 +44,9 @@ extension CLIRecipeCatalog {
     ),
     recipe(
       "subreddit.configure-peak-times-dry-run",
-      "Safely preview and then configure subreddit peak times.",
-      goal: "Verify the subreddit, inspect current peak settings, preview the peak override, wait for confirmation, apply it, and verify generated events.",
+      "Add subreddit safely by verifying it, previewing changes, and configuring peak times.",
+      goal:
+        "Verify the subreddit, inspect current peak settings, preview the peak override, wait for confirmation, apply it, and verify generated events.",
       inputs: [
         input("subreddit", "Existing subreddit name or id."),
         input("days", "Comma-separated day keys such as mon,wed,fri."),
@@ -61,11 +65,13 @@ extension CLIRecipeCatalog {
         step(
           3, "peaks.set",
           "Preview the peak override without saving app data.",
-          "redditreminder --json --dry-run peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"),
+          "redditreminder --json --dry-run peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"
+        ),
         step(
           4, "peaks.set",
           "After user confirmation, save the peak override and resync generated events.",
-          "redditreminder --json peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"),
+          "redditreminder --json peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"
+        ),
         step(
           5, "peaks.get",
           "Verify the updated effective peak configuration.",
@@ -77,9 +83,10 @@ extension CLIRecipeCatalog {
     recipe(
       "project.archive-dry-run",
       "Safely preview and then archive a project.",
-      goal: "Find the project, preview archival with --dry-run, wait for confirmation, archive it, and verify project state.",
+      goal:
+        "Find the project, preview archival with --dry-run, wait for confirmation, archive it, and verify project state.",
       inputs: [
-        input("project", "Existing project name or id."),
+        input("project", "Existing project name or id.")
       ],
       steps: [
         step(

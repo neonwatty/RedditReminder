@@ -8,6 +8,7 @@ struct CaptureWindowView: View {
   }
 
   static let saveRequirementsAccessibilityIdentifier = "captureWindow.saveRequirements"
+  static let contentRequirementText = "Add a title or capture text to save."
 
   let mode: Mode
   var initialDraft: CaptureFormDraft?
@@ -38,7 +39,7 @@ struct CaptureWindowView: View {
       Divider()
       ScrollView {
         VStack(alignment: .leading, spacing: 12) {
-          fieldSection("TITLE", optional: true) {
+          fieldSection("TITLE") {
             TextField("Add a Reddit post title...", text: $title)
               .font(.system(size: 12))
               .textFieldStyle(.plain)
@@ -48,7 +49,7 @@ struct CaptureWindowView: View {
               .accessibilityIdentifier("captureWindow.title")
           }
 
-          fieldSection("CAPTURE TEXT", optional: true) {
+          fieldSection("CAPTURE TEXT") {
             VStack(spacing: 6) {
               HStack {
                 Spacer()
@@ -90,13 +91,18 @@ struct CaptureWindowView: View {
                   .accessibilityLabel("Capture text")
                   .accessibilityIdentifier("captureWindow.text")
               }
+              Text(Self.contentRequirementText)
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("captureWindow.contentRequirement")
             }
           }
           fieldSection("SUBREDDIT", required: true) {
             CaptureSubredditPicker(
               subreddits: subreddits,
               selectedSubreddits: $selectedSubreddits,
-              onAddSubreddit: { onAddSubreddit(currentDraft) }
+              onAddSubreddit: addSubredditFromPicker
             )
 
             if let saveRequirementsMessage, selectedSubreddits.isEmpty {

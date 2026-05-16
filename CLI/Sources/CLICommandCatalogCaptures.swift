@@ -18,7 +18,7 @@ extension CLICommandCatalog {
     ),
     command(
       "captures.create", "captures", "create",
-      "Create a queued capture, optionally with media and due events.",
+      "Create a queued capture for one or more existing subreddits, optionally with media and due events.",
       flags: [
         flag("--title", "TEXT", "Optional post title."),
         flag("--text", "TEXT", "Post body. Trailing text is used when omitted."),
@@ -26,8 +26,11 @@ extension CLICommandCatalog {
         flag("--link", "URL", "Add one link.", repeatable: true),
         flag("--links", "A,B", "Comma-separated links."),
         flag("--project", "NAME_OR_ID", "Existing project."),
-        flag("--subreddit", "NAME_OR_ID", "Existing subreddit.", repeatable: true),
-        flag("--subreddits", "A,B", "Comma-separated subreddits."),
+        flag(
+          "--subreddit", "NAME_OR_ID", "Existing subreddit. Required unless --subreddits is used.",
+          repeatable: true),
+        flag(
+          "--subreddits", "A,B", "Comma-separated subreddits. Required unless --subreddit is used."),
         flag("--media", "PATH", "Image or video path to copy into media store.", repeatable: true),
         flag("--media-paths", "A,B", "Comma-separated image or video paths."),
         flag("--due", "ISO8601", "Create one due event per selected subreddit."),
@@ -71,17 +74,27 @@ extension CLICommandCatalog {
     ),
     command(
       "captures.mark-posted", "captures", "mark-posted",
-      "Mark a capture as posted.",
+      "Mark a capture, or one target subreddit on a capture, as posted.",
       positionals: [arg("id", "Capture UUID.")],
-      flags: [flag("--url", "URL", "Posted Reddit URL.")],
-      examples: ["redditreminder --json captures mark-posted CAPTURE_ID --url https://reddit.com/..."],
+      flags: [
+        flag("--subreddit", "NAME_OR_ID", "Mark only this target subreddit as posted."),
+        flag("--url", "URL", "Posted Reddit URL."),
+      ],
+      examples: [
+        "redditreminder --json captures mark-posted CAPTURE_ID --subreddit SideProject",
+        "redditreminder --json captures mark-posted CAPTURE_ID --url https://reddit.com/...",
+      ],
       output: output("capture", "Updated capture object.")
     ),
     command(
       "captures.mark-queued", "captures", "mark-queued",
-      "Move a posted capture back to queued.",
+      "Move a posted capture, or one target subreddit on a capture, back to queued.",
       positionals: [arg("id", "Capture UUID.")],
-      examples: ["redditreminder --json captures mark-queued CAPTURE_ID"],
+      flags: [flag("--subreddit", "NAME_OR_ID", "Move only this target subreddit back to queued.")],
+      examples: [
+        "redditreminder --json captures mark-queued CAPTURE_ID --subreddit SideProject",
+        "redditreminder --json captures mark-queued CAPTURE_ID",
+      ],
       output: output("capture", "Updated capture object.")
     ),
   ]

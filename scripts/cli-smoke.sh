@@ -127,6 +127,9 @@ rm -f /tmp/redditreminder-cli-duplicate.out /tmp/redditreminder-cli-duplicate.er
 subreddit_search="$(run_json subreddits search --query side)"
 assert_contains "subreddit search" "$subreddit_search" '"name":"r/SideProject"'
 
+companion_subreddit_created="$(run_json subreddits add CompanionSub)"
+assert_contains "companion subreddit create" "$companion_subreddit_created" '"name":"r/CompanionSub"'
+
 presets="$(run_json peaks presets)"
 assert_contains "peak presets" "$presets" '"label":"Weekday AM"'
 
@@ -250,6 +253,13 @@ assert_contains "event delete id" "$event_deleted" "\"id\":\"$event_id\""
 IMAGE="$TMP_DIR/pixel.png"
 sips -s format png /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out "$IMAGE" >/dev/null
 
+if run_json captures create --title "No destination" --text "Missing subreddit" >/tmp/redditreminder-cli-destinationless.out 2>/tmp/redditreminder-cli-destinationless.err; then
+  echo "FAIL: destination-less capture create unexpectedly succeeded" >&2
+  exit 1
+fi
+assert_contains "destination-less capture rejected" "$(cat /tmp/redditreminder-cli-destinationless.err)" "requires --subreddit or --subreddits"
+rm -f /tmp/redditreminder-cli-destinationless.out /tmp/redditreminder-cli-destinationless.err
+
 capture_created="$(
   run_json captures create \
     --title "Launch post" \
@@ -258,6 +268,7 @@ capture_created="$(
     --link "https://example.com" \
     --project "Launch Ideas" \
     --subreddit SideProject \
+    --subreddit CompanionSub \
     --media "$IMAGE" \
     --due "2026-05-02T18:00:00Z"
 )"
@@ -277,10 +288,23 @@ assert_contains "capture update ok" "$capture_updated" '"ok":true'
 assert_contains "capture update title" "$capture_updated" '"title":"Updated launch post"'
 assert_contains "capture update link" "$capture_updated" '"https://example.com/updated"'
 
-capture_posted="$(run_json captures mark-posted "$capture_id" --url "https://reddit.com/r/SideProject/comments/abc")"
+capture_partial_posted="$(run_json captures mark-posted "$capture_id" --subreddit SideProject)"
+assert_contains "capture partial mark posted ok" "$capture_partial_posted" '"ok":true'
+assert_contains "capture partial mark posted status" "$capture_partial_posted" '"status":"queued"'
+assert_contains "capture partial sideproject posted" "$capture_partial_posted" '"name":"r/SideProject","posted":true'
+assert_contains "capture partial companion queued" "$capture_partial_posted" '"name":"r/CompanionSub","posted":false'
+
+capture_posted="$(run_json captures mark-posted "$capture_id" --subreddit CompanionSub --url "https://reddit.com/r/CompanionSub/comments/abc")"
 assert_contains "capture mark posted ok" "$capture_posted" '"ok":true'
 assert_contains "capture mark posted status" "$capture_posted" '"status":"posted"'
-assert_contains "capture mark posted url" "$capture_posted" '"postedURL":"https://reddit.com/r/SideProject/comments/abc"'
+assert_contains "capture mark posted url" "$capture_posted" '"postedURL":"https://reddit.com/r/CompanionSub/comments/abc"'
+assert_contains "capture mark posted progress" "$capture_posted" '"name":"r/CompanionSub","posted":true'
+
+capture_partial_queued="$(run_json captures mark-queued "$capture_id" --subreddit SideProject)"
+assert_contains "capture partial mark queued ok" "$capture_partial_queued" '"ok":true'
+assert_contains "capture partial mark queued status" "$capture_partial_queued" '"status":"queued"'
+assert_contains "capture partial sideproject queued" "$capture_partial_queued" '"name":"r/SideProject","posted":false'
+assert_contains "capture partial companion still posted" "$capture_partial_queued" '"name":"r/CompanionSub","posted":true'
 
 capture_queued="$(run_json captures mark-queued "$capture_id")"
 assert_contains "capture mark queued ok" "$capture_queued" '"ok":true'

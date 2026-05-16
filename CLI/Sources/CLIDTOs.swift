@@ -66,6 +66,17 @@ struct CaptureCreateInput {
   let due: String?
 }
 
+struct CapturePostStatusInput {
+  let id: String
+  let subreddit: String?
+  let url: String?
+}
+
+struct CaptureQueueStatusInput {
+  let id: String
+  let subreddit: String?
+}
+
 struct AgentValidateInput {
   let command: [String]
 }
@@ -154,6 +165,7 @@ struct CaptureDTO: Encodable {
   let postedURL: String?
   let project: ProjectRefDTO?
   let subreddits: [SubredditRefDTO]
+  let subredditProgress: [CaptureSubredditProgressDTO]
 
   init(_ capture: Capture) {
     id = capture.id.uuidString
@@ -167,7 +179,25 @@ struct CaptureDTO: Encodable {
     postedAt = capture.postedAt.map(CLIFormat.date)
     postedURL = capture.postedURL
     project = capture.project.map(ProjectRefDTO.init)
-    subreddits = capture.subreddits.sorted { $0.sortOrder < $1.sortOrder }.map(SubredditRefDTO.init)
+    let sortedSubreddits = capture.subreddits.sorted { $0.sortOrder < $1.sortOrder }
+    subreddits = sortedSubreddits.map(SubredditRefDTO.init)
+    let postedSubredditIDs = Set(capture.postedSubredditIDs)
+    subredditProgress = sortedSubreddits.map { subreddit in
+      CaptureSubredditProgressDTO(
+        subreddit: subreddit, posted: postedSubredditIDs.contains(subreddit.id))
+    }
+  }
+}
+
+struct CaptureSubredditProgressDTO: Encodable {
+  let id: String
+  let name: String
+  let posted: Bool
+
+  init(subreddit: Subreddit, posted: Bool) {
+    id = subreddit.id.uuidString
+    name = subreddit.name
+    self.posted = posted
   }
 }
 

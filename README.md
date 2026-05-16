@@ -50,6 +50,10 @@ make qa
 
 The QA script uses System Events and CGWindowList, so the terminal needs Accessibility and Screen Recording permissions.
 The UI test target exercises native menu/window smoke coverage. It requires macOS UI automation permission for Xcode or the invoking terminal, and a signing setup that can run XCTest UI bundles.
+UI tests launch RedditReminder with a per-test `--ui-test-store` path so `--seed-qa` and `--clear-qa` operate on isolated SwiftData storage instead of the normal app store.
+CI runs unit, CLI, and UI test jobs for code changes. Package and release metadata
+changes run a lightweight npm metadata validation job. Coverage is reported and
+uploaded by CI, but it is not enforced as a numeric gate yet.
 
 ## Notes
 
