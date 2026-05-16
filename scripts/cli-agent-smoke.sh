@@ -48,6 +48,11 @@ assert_contains "validate invalid ok" "$invalid_command" '"ok":true'
 assert_contains "validate invalid" "$invalid_command" '"valid":false'
 assert_contains "validate missing flag" "$invalid_command" "Missing required flag --hours."
 
+destinationless_capture="$(run_json agent validate -- captures create --title "No destination" --text "Body")"
+assert_contains "validate destinationless ok" "$destinationless_capture" '"ok":true'
+assert_contains "validate destinationless invalid" "$destinationless_capture" '"valid":false'
+assert_contains "validate destinationless rejected" "$destinationless_capture" "provide --subreddit or --subreddits"
+
 dry_run_preview="$(run_json agent dry-run -- projects create "Agent Draft")"
 assert_contains "agent dry-run ok" "$dry_run_preview" '"ok":true'
 assert_contains "agent dry-run valid" "$dry_run_preview" '"valid":true'
@@ -59,6 +64,11 @@ assert_contains "agent dry-run read-only ok" "$read_only_preview" '"ok":true'
 assert_contains "agent dry-run read-only invalid" "$read_only_preview" '"valid":false'
 assert_contains "agent dry-run read-only rejected" "$read_only_preview" "read-only"
 
+destinationless_preview="$(run_json agent dry-run -- captures create --title "No destination" --text "Body")"
+assert_contains "agent dry-run destinationless ok" "$destinationless_preview" '"ok":true'
+assert_contains "agent dry-run destinationless invalid" "$destinationless_preview" '"valid":false'
+assert_contains "agent dry-run destinationless rejected" "$destinationless_preview" "provide --subreddit or --subreddits"
+
 context="$(run_json context show --limit 10)"
 assert_contains "context ok" "$context" '"ok":true'
 assert_contains "context counts" "$context" '"counts":'
@@ -66,6 +76,10 @@ assert_contains "context counts" "$context" '"counts":'
 recipes="$(run_json recipes search --query dry-run)"
 assert_contains "recipes ok" "$recipes" '"ok":true'
 assert_contains "recipes dry-run project" "$recipes" '"id":"project.archive-dry-run"'
+
+subreddit_recipes="$(run_json recipes search --query "add subreddit")"
+assert_contains "recipes add subreddit ok" "$subreddit_recipes" '"ok":true'
+assert_contains "recipes add subreddit core" "$subreddit_recipes" '"id":"subreddit.configure-peak-times"'
 
 preview="$(run_json_dry projects create "Agent Draft")"
 assert_contains "dry-run ok" "$preview" '"ok":true'

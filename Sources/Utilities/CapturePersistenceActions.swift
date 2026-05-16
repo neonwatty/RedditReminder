@@ -67,6 +67,7 @@ enum CapturePersistenceActions {
     capture.mediaRefs.append(contentsOf: newlySavedRefs)
     capture.project = result.project
     capture.subreddits = result.subreddits
+    capture.reconcilePostingStateForCurrentSubreddits()
 
     do {
       try modelContext.save()

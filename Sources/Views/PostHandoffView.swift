@@ -6,6 +6,8 @@ struct PostHandoffView: View {
   nonisolated static let copyLinksAccessibilityLabel = "Copy post links"
   nonisolated static let copyAllAccessibilityLabel = "Copy full post text"
   nonisolated static let openSubmitAccessibilityLabel = "Open Reddit submit page"
+  nonisolated static let chooseSubmitDestinationAccessibilityLabel =
+    "Choose Reddit submit destination"
 
   let capture: Capture
   var checklistItems: [String] = []
@@ -14,6 +16,7 @@ struct PostHandoffView: View {
   let onCopyLinks: () -> Bool
   let onCopyAll: () -> Bool
   let onOpenSubmit: () -> Void
+  var onOpenSubmitForSubreddit: ((UUID) -> Void)? = nil
   let onMarkPosted: () -> Void
   let onClose: () -> Void
   var onMarkSubredditPosted: ((UUID) -> Void)? = nil
@@ -101,55 +104,6 @@ struct PostHandoffView: View {
     }
   }
 
-  private var destinationSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      sectionHeader("Destination")
-
-      if capture.subreddits.isEmpty {
-        Text("No subreddit selected")
-          .font(.system(size: 12))
-          .foregroundStyle(.secondary)
-      } else {
-        VStack(alignment: .leading, spacing: 6) {
-          ForEach(sortedSubreddits, id: \.id) { subreddit in
-            let isPosted = capture.postedSubredditIDs.contains(subreddit.id)
-            HStack(spacing: 8) {
-              Text(subreddit.name)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(isPosted ? .secondary : AppColors.redditOrange)
-                .strikethrough(isPosted)
-
-              Spacer()
-
-              Button(action: {
-                if isPosted {
-                  onMarkSubredditUnposted?(subreddit.id)
-                } else {
-                  onMarkSubredditPosted?(subreddit.id)
-                }
-              }) {
-                HStack(spacing: 4) {
-                  Image(systemName: isPosted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 12))
-                  Text(isPosted ? "Posted" : "Not posted")
-                    .font(.system(size: 10, weight: .medium))
-                }
-                .foregroundStyle(isPosted ? Color(red: 0.13, green: 0.77, blue: 0.37) : .secondary)
-              }
-              .buttonStyle(.plain)
-              .accessibilityLabel(isPosted ? "Unmark \(subreddit.name) as posted" : "Mark \(subreddit.name) as posted")
-              .accessibilityIdentifier("postHandoff.subreddit.\(subreddit.name)")
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(isPosted ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.06) : AppColors.redditOrange.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-          }
-        }
-      }
-    }
-  }
-
   private var materialsSection: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack {
@@ -221,13 +175,7 @@ struct PostHandoffView: View {
       .accessibilityLabel("Mark posted")
       .accessibilityIdentifier("postHandoff.markPosted")
 
-      Button(action: onOpenSubmit) {
-        Label("Open Reddit", systemImage: "arrow.up.right.square")
-      }
-      .keyboardShortcut(.defaultAction)
-      .help(Self.openSubmitAccessibilityLabel)
-      .accessibilityLabel(Self.openSubmitAccessibilityLabel)
-      .accessibilityIdentifier("postHandoff.openSubmit")
+      openSubmitControl
     }
     .font(.system(size: 12, weight: .medium))
     .padding(.horizontal, 20)
@@ -251,4 +199,5 @@ struct PostHandoffView: View {
   private func runCopy(_ action: () -> Bool, successMessage: String) {
     statusMessage = action() ? successMessage : "Copy failed"
   }
+
 }

@@ -15,6 +15,8 @@ struct ChannelsTabView: View {
   static let createFirstCaptureButtonText = "Create first capture"
   static let addSubredditPlaceholder = "Subreddit name"
   static let addSubredditButtonText = "Add channel"
+  static let localOnlyChannelText =
+    "App additions are local-only; verify with redditreminder subreddits verify when needed."
   static let emptyListText = "Added channels will appear here."
   static let expandsNewSubredditAfterAdd = false
 
@@ -52,6 +54,12 @@ struct ChannelsTabView: View {
             .font(.system(size: 10))
             .foregroundStyle(feedbackMessage.isError ? .red : .secondary)
         }
+
+        Text(Self.localOnlyChannelText)
+          .font(.system(size: 10))
+          .foregroundStyle(.secondary)
+          .fixedSize(horizontal: false, vertical: true)
+          .accessibilityIdentifier("channels.localOnlyVerification")
 
         if didAddFirstChannel {
           firstChannelNextStep

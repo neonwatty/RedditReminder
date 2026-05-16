@@ -13,7 +13,7 @@ extension PopoverContentView {
             saveCapture(result)
           case .edit(let capture):
             updateCapture(capture, with: result)
-        }
+          }
         guard didSave else { return false }
         if mode.isCreate {
           pendingCreateDraft = nil
@@ -48,6 +48,9 @@ extension PopoverContentView {
       onCopyLinks: { copyPostLinks(for: capture) },
       onCopyAll: { copyPostHandoffText(for: capture) },
       onOpenSubmit: { openRedditSubmitPage(for: capture) },
+      onOpenSubmitForSubreddit: { subredditId in
+        openRedditSubmitPage(for: capture, subredditId: subredditId)
+      },
       onMarkPosted: { markCaptureAsPosted(capture) },
       onClose: { route = .root },
       onMarkSubredditPosted: { subredditId in

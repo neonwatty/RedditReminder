@@ -2,63 +2,64 @@ import SwiftData
 @preconcurrency import UserNotifications
 
 extension AppDelegate {
-    nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping @Sendable () -> Void
-    ) {
-        let userInfo = response.notification.request.content.userInfo
-        let subredditName = userInfo[AppNotificationIdentifiers.subredditNameUserInfoKey] as? String
-        let actionId = response.actionIdentifier
+  nonisolated func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+  ) {
+    let userInfo = response.notification.request.content.userInfo
+    let subredditName = userInfo[AppNotificationIdentifiers.subredditNameUserInfoKey] as? String
+    let actionId = response.actionIdentifier
 
-        Task { @MainActor in
-            self.handleNotificationAction(actionId, subredditName: subredditName)
-            completionHandler()
-        }
+    Task { @MainActor in
+      self.handleNotificationAction(actionId, subredditName: subredditName)
+      completionHandler()
     }
+  }
 
-    nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping @Sendable (UNNotificationPresentationOptions) -> Void
-    ) {
-        completionHandler([.banner, .sound])
-    }
+  nonisolated func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler:
+      @escaping @Sendable (UNNotificationPresentationOptions) -> Void
+  ) {
+    completionHandler([.banner, .sound])
+  }
 
-    func handleNotificationAction(_ actionId: String, subredditName: String?) {
-        switch actionId {
-        case AppNotificationIdentifiers.markPostedAction:
-            if let subredditName {
-                markCapturesAsPosted(forSubreddit: subredditName)
-            }
-            openPopoverForNotificationAction()
-        case UNNotificationDefaultActionIdentifier, AppNotificationIdentifiers.openAction:
-            openPopoverForNotificationAction()
-        default:
-            break
-        }
+  func handleNotificationAction(_ actionId: String, subredditName: String?) {
+    switch actionId {
+    case AppNotificationIdentifiers.markPostedAction:
+      if let subredditName {
+        markCapturesAsPosted(forSubreddit: subredditName)
+      }
+      openPopoverForNotificationAction()
+    case UNNotificationDefaultActionIdentifier, AppNotificationIdentifiers.openAction:
+      openPopoverForNotificationAction()
+    default:
+      break
     }
+  }
 
-    func markCapturesAsPosted(forSubreddit name: String) {
-        guard let container = modelContainer else {
-            NSLog("RedditReminder: markCapturesAsPosted skipped - no ModelContainer")
-            return
-        }
-        let context = container.mainContext
-        do {
-            let captures = try context.fetch(FetchDescriptor<Capture>())
-            let matching = captures.filter { capture in
-                capture.status == .queued &&
-                capture.subreddits.contains { $0.name == name }
-            }
-            for capture in matching {
-                capture.markAsPosted()
-            }
-            try context.save()
-            NSLog("RedditReminder: marked \(matching.count) captures as posted for \(name)")
-            runRefreshCycle()
-        } catch {
-            NSLog("RedditReminder: failed to mark captures as posted: \(error)")
-        }
+  func markCapturesAsPosted(forSubreddit name: String) {
+    guard let container = modelContainer else {
+      NSLog("RedditReminder: markCapturesAsPosted skipped - no ModelContainer")
+      return
     }
+    let context = container.mainContext
+    do {
+      let captures = try context.fetch(FetchDescriptor<Capture>())
+      let matching = captures.filter { capture in
+        capture.status == .queued && capture.subreddits.contains { $0.name == name }
+      }
+      for capture in matching {
+        guard let subreddit = capture.subreddits.first(where: { $0.name == name }) else { continue }
+        capture.markSubredditAsPosted(subreddit.id)
+      }
+      try context.save()
+      NSLog("RedditReminder: marked \(matching.count) captures as posted for \(name)")
+      runRefreshCycle()
+    } catch {
+      NSLog("RedditReminder: failed to mark captures as posted: \(error)")
+    }
+  }
 }

@@ -76,6 +76,7 @@ with than the full bootstrap payload.
 
 - Search workspace state: `redditreminder --json search all --query "launch"`
 - Create a project: `redditreminder --json projects create "Launch Ideas"`
+- Create captures only with at least one destination: `redditreminder --json captures create --title "Launch" --subreddit SideProject`
 - Add a subreddit safely: `redditreminder --json subreddits add --verify SideProject`
 - Configure peaks: `redditreminder --json peaks set SideProject --days mon,wed --hours 9,10`
 - Preview a mutation: `redditreminder --json --dry-run projects create "Draft"`

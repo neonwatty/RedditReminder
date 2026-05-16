@@ -133,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   private func bootstrapApplication() {
     let container: ModelContainer
     do {
-      container = try AppModelContainerFactory.makeContainer()
+      container = try AppModelContainerFactory.makeContainer(storeURL: AppRuntime.uiTestStoreURL())
     } catch {
       presentStoreUnavailableAlert(error: error)
       return
@@ -292,7 +292,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     )
   }
 
-  func scheduleNotifications(activeEvents: [SubredditEvent], windows: [TimingEngine.UpcomingWindow]) async {
+  func scheduleNotifications(activeEvents: [SubredditEvent], windows: [TimingEngine.UpcomingWindow])
+    async
+  {
     _ = await notificationScheduler.schedule(activeEvents: activeEvents, windows: windows)
   }
 }

@@ -48,13 +48,19 @@ enum CLIAgentValidator {
 
     let missingFlags = command.flags.filter { $0.required && !parsed.flags.contains($0.name) }
     errors.append(contentsOf: missingFlags.map { "Missing required flag \($0.name)." })
+    if commandId == "captures.create",
+      !parsed.flags.contains("--subreddit") && !parsed.flags.contains("--subreddits")
+    {
+      errors.append("Missing required destination: provide --subreddit or --subreddits.")
+    }
 
     let requiredPositionals = command.positionals.filter(\.required).count
     if parsed.positionals.count < requiredPositionals {
       errors.append("Missing required positional argument.")
     } else if command.positionals.isEmpty && !parsed.positionals.isEmpty {
       warnings.append("Command catalog does not define positional arguments for extra text.")
-    } else if command.positionals.count > 1 && parsed.positionals.count > command.positionals.count {
+    } else if command.positionals.count > 1 && parsed.positionals.count > command.positionals.count
+    {
       warnings.append("Command has more positional values than the catalog defines.")
     }
     return result(tokens, commandId, command, errors, warnings)

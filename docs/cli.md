@@ -95,8 +95,8 @@ redditreminder captures list --json
 redditreminder captures search --query "launch" --json
 redditreminder captures create --title "Launch post" --text "Post body" --project "Launch Ideas" --subreddit SideProject --media ~/Desktop/mock.mp4 --due 2026-05-02T18:00:00Z --json
 redditreminder captures update CAPTURE_ID --title "Updated title" --clear-notes --json
-redditreminder captures mark-posted CAPTURE_ID --url "https://reddit.com/r/SideProject/comments/abc" --json
-redditreminder captures mark-queued CAPTURE_ID --json
+redditreminder captures mark-posted CAPTURE_ID --subreddit SideProject --json
+redditreminder captures mark-queued CAPTURE_ID --subreddit SideProject --json
 redditreminder captures delete CAPTURE_ID --json
 ```
 
@@ -109,8 +109,8 @@ redditreminder captures delete CAPTURE_ID --json
 --link URL            Repeatable link value.
 --links A,B           Comma-separated links.
 --project NAME_OR_ID  Existing project name or UUID.
---subreddit NAME      Repeatable existing subreddit name or UUID.
---subreddits A,B      Comma-separated subreddits.
+--subreddit NAME      Repeatable existing subreddit name or UUID. Required unless --subreddits is used.
+--subreddits A,B      Comma-separated subreddits. Required unless --subreddit is used.
 --media PATH          Repeatable image/video path copied into the media store.
 --media-paths A,B     Comma-separated image/video paths.
 --due ISO8601         Creates one one-off posting-window event per chosen subreddit.
@@ -131,6 +131,12 @@ redditreminder captures delete CAPTURE_ID --json
 
 There is no separate due-date field on captures today. `--due` maps to the app's
 posting-window model by creating `SubredditEvent` rows for the selected subreddit(s).
+
+Capture JSON includes `subredditProgress`, an array of each target subreddit and
+whether that target has been posted. `captures mark-posted CAPTURE_ID --subreddit
+NAME` and `captures mark-queued CAPTURE_ID --subreddit NAME` update one target on
+a multi-subreddit capture. Omitting `--subreddit` keeps the existing whole-capture
+behavior.
 
 ## Events
 

@@ -19,6 +19,22 @@ import UserNotifications
   #expect(fixture.unrelated.status == .queued)
 }
 
+@Test @MainActor func appDelegateMarkPostedActionMarksOnlyNotificationSubreddit() throws {
+  let fixture = try makeCaptureFixture()
+  let delegate = makeNotificationActionDelegate()
+  delegate.modelContainer = fixture.container
+  let multiTarget = Capture(text: "Cross-post", subreddits: [fixture.target, fixture.other])
+  fixture.container.mainContext.insert(multiTarget)
+  try fixture.container.mainContext.save()
+
+  delegate.markCapturesAsPosted(forSubreddit: "r/Test")
+
+  #expect(multiTarget.status == .queued)
+  #expect(multiTarget.postedAt == nil)
+  #expect(multiTarget.postedSubredditIDs == [fixture.target.id])
+  #expect(!multiTarget.postedSubredditIDs.contains(fixture.other.id))
+}
+
 @Test @MainActor func appDelegateMarkPostedActionIsNoopWithoutContainer() {
   let delegate = makeNotificationActionDelegate()
 
@@ -193,6 +209,8 @@ private func makeCaptureFixture() throws -> CaptureFixture {
   try context.save()
   return CaptureFixture(
     container: container,
+    target: target,
+    other: other,
     matching: matching,
     alreadyPosted: alreadyPosted,
     unrelated: unrelated
@@ -201,6 +219,8 @@ private func makeCaptureFixture() throws -> CaptureFixture {
 
 private struct CaptureFixture {
   let container: ModelContainer
+  let target: Subreddit
+  let other: Subreddit
   let matching: Capture
   let alreadyPosted: Capture
   let unrelated: Capture

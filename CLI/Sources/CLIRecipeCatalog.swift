@@ -20,17 +20,15 @@ enum CLIRecipeCatalog {
   }
 
   private static func searchableText(for recipe: RecipeReferenceDTO) -> String {
-    (
-      [
-        recipe.id,
-        recipe.summary,
-        recipe.goal,
-        recipe.examples.joined(separator: " "),
-        recipe.relatedCommands.joined(separator: " "),
-      ]
+    ([
+      recipe.id,
+      recipe.summary,
+      recipe.goal,
+      recipe.examples.joined(separator: " "),
+      recipe.relatedCommands.joined(separator: " "),
+    ]
       + recipe.inputs.map { "\($0.name) \($0.summary)" }
-      + recipe.steps.map { "\($0.commandId) \($0.purpose) \($0.example)" }
-    ).joined(separator: " ")
+      + recipe.steps.map { "\($0.commandId) \($0.purpose) \($0.example)" }).joined(separator: " ")
   }
 
   static let recipes: [RecipeReferenceDTO] = coreRecipes + dryRunRecipes
@@ -39,7 +37,8 @@ enum CLIRecipeCatalog {
     recipe(
       "posting.create-with-media",
       "Create a queued post with image or video media and a due posting window.",
-      goal: "Given a title, body, media path, subreddit, and due date, create the capture and its posting-window event.",
+      goal:
+        "Given a title, body, media path, subreddit, and due date, create the capture and its posting-window event.",
       inputs: [
         input("title", "Post title."),
         input("text", "Post body."),
@@ -56,7 +55,8 @@ enum CLIRecipeCatalog {
         step(
           2, "captures.create",
           "Create the queued capture, copy media, and add a due event.",
-          "redditreminder --json captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"),
+          "redditreminder --json captures create --title 'Launch' --text 'Body' --subreddit SideProject --media ~/Desktop/mock.png --due 2026-05-02T18:00:00Z"
+        ),
         step(
           3, "context.show",
           "Verify the queued capture and upcoming event are visible.",
@@ -68,7 +68,8 @@ enum CLIRecipeCatalog {
     recipe(
       "workspace.recommend-targets",
       "Inspect the workspace before recommending subreddits and times.",
-      goal: "Gather enough state to recommend where and when a draft should be posted without mutating data.",
+      goal:
+        "Gather enough state to recommend where and when a draft should be posted without mutating data.",
       inputs: [
         input("topic", "Topic or launch text to search for."),
         input("limit", "Maximum rows per context collection.", required: false),
@@ -92,8 +93,9 @@ enum CLIRecipeCatalog {
     ),
     recipe(
       "subreddit.configure-peak-times",
-      "Add or verify a subreddit and configure its peak posting windows.",
-      goal: "Create a subreddit safely, then apply local peak days and hours used to generate posting events.",
+      "Add subreddit, verify it, and configure its peak posting windows.",
+      goal:
+        "Create a subreddit safely, then apply local peak days and hours used to generate posting events.",
       inputs: [
         input("subreddit", "Subreddit name or Reddit URL."),
         input("days", "Comma-separated day keys such as mon,wed,fri."),
@@ -112,7 +114,8 @@ enum CLIRecipeCatalog {
         step(
           3, "peaks.set",
           "Apply local peak days and hours; generated events resync automatically.",
-          "redditreminder --json peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"),
+          "redditreminder --json peaks set SideProject --days mon,wed --hours 9,10 --timezone America/Phoenix"
+        ),
         step(
           4, "peaks.get",
           "Confirm the effective peak configuration.",

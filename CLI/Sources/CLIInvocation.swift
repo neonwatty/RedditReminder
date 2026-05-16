@@ -30,8 +30,8 @@ enum CLICommand {
   case captureCreate(CaptureCreateInput)
   case captureUpdate(CaptureUpdateInput)
   case captureDelete(id: String)
-  case captureMarkPosted(id: String, url: String?)
-  case captureMarkQueued(id: String)
+  case captureMarkPosted(CapturePostStatusInput)
+  case captureMarkQueued(CaptureQueueStatusInput)
   case eventsList(EventListInput)
   case eventCreate(EventCreateInput)
   case eventUpdate(EventUpdateInput)
@@ -76,10 +76,9 @@ enum CLICommand {
     case ("captures", "delete"):
       self = .captureDelete(id: try parser.consumeRequiredArgument(label: "capture id"))
     case ("captures", "mark-posted"):
-      let id = try parser.consumeRequiredArgument(label: "capture id")
-      self = .captureMarkPosted(id: id, url: parser.consumeOptionalValue(for: "--url"))
+      self = .captureMarkPosted(try parser.consumeCapturePostStatusInput())
     case ("captures", "mark-queued"):
-      self = .captureMarkQueued(id: try parser.consumeRequiredArgument(label: "capture id"))
+      self = .captureMarkQueued(try parser.consumeCaptureQueueStatusInput())
     case ("events", "list"):
       self = .eventsList(try parser.consumeEventListInput(queryRequired: false))
     case ("events", "search"):

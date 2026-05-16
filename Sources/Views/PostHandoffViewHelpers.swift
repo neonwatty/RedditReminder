@@ -140,7 +140,7 @@ extension PostHandoffView {
 }
 
 extension String {
-  fileprivate var postHandoffIdentifierSuffix: String {
+  var postHandoffIdentifierSuffix: String {
     lowercased()
       .split { !$0.isLetter && !$0.isNumber }
       .joined(separator: ".")
