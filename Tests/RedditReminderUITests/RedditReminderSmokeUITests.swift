@@ -1,31 +1,19 @@
 import XCTest
 
+@MainActor
 final class RedditReminderSmokeUITests: XCTestCase {
-    private var app: XCUIApplication!
-
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["--seed-qa"]
-    }
-
-    override func tearDownWithError() throws {
-        app.terminate()
-        app = nil
-    }
-
     func testKeyboardCommandsOpenPopoverScreens() throws {
-        app.launch()
-        XCTAssertTrue(
-            app.wait(for: .runningForeground, timeout: 5)
-                || app.wait(for: .runningBackground, timeout: 5)
-        )
+        continueAfterFailure = false
+        let app = makeSeededRedditReminderApp()
+        defer { app.terminate() }
 
-        app.activate()
-        app.typeKey("n", modifierFlags: .command)
-        XCTAssertTrue(app.textFields["captureWindow.title"].waitForExistence(timeout: 3))
+        launchAndWaitForRedditReminder(app)
+        openNewCaptureRoute(in: app)
+        cancelCaptureRoute(in: app)
 
-        app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.buttons["preferences.tab.Channels"].waitForExistence(timeout: 3))
+        let settingsButton = app.buttons["popover.header.settings"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
+        settingsButton.click()
+        XCTAssertTrue(app.buttons["preferences.tab.General"].waitForExistence(timeout: 3))
     }
 }

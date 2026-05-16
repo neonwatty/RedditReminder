@@ -104,7 +104,7 @@ import Foundation
 @Test @MainActor func missingBundleProducesEmptyStore() throws {
     // Create a real but empty temp directory as a bundle — no peak-times.json inside
     let tempDir = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString)
+        .appendingPathComponent("\(UUID().uuidString).bundle", isDirectory: true)
     try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
     let emptyBundle = Bundle(path: tempDir.path)!
 
@@ -127,13 +127,7 @@ import Foundation
 // MARK: - Helpers
 
 private func makeTestBundle() -> Bundle {
-    let sourceFile = URL(fileURLWithPath: #filePath)
-    let projectRoot = sourceFile
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-    let resourcesDir = projectRoot.appendingPathComponent("Resources")
-    return Bundle(path: resourcesDir.path) ?? .main
+    makePeakTimesTestBundle()
 }
 
 private func dayOfWeek(_ weekday: Weekday, at utcHour: Int) -> Date {

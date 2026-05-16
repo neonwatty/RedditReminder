@@ -4,7 +4,6 @@ import SwiftData
 struct GeneralTabView: View {
     var onAppStateChanged: AppRefreshAction = {}
 
-    @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
     @AppStorage(SettingsKey.defaultProjectId) private var defaultProjectId: String = ""
     @AppStorage(SettingsKey.globalShortcutRegistrationFailed) private var shortcutRegistrationFailed = false
     @State private var shortcutConfig = KeyboardShortcutConfig.load()
@@ -23,13 +22,6 @@ struct GeneralTabView: View {
             }
 
             Section("Defaults") {
-                Picker("Default lead time", selection: $defaultLeadTimeMinutes) {
-                    ForEach(SettingsOptions.leadTimeMinutes, id: \.self) { minutes in
-                        Text(Self.leadTimeLabel(minutes)).tag(minutes)
-                    }
-                }
-                .font(.system(size: 12))
-
                 Picker("Default project", selection: $defaultProjectId) {
                     Text("None").tag("")
                     ForEach(projects.filter { !$0.archived }, id: \.id) { project in
@@ -58,12 +50,6 @@ struct GeneralTabView: View {
         .onChange(of: shortcutConfig) { _, newValue in
             KeyboardShortcutConfig.save(newValue)
         }
-        .onChange(of: defaultLeadTimeMinutes) {
-            onAppStateChanged()
-        }
-    }
-
-    private static func leadTimeLabel(_ minutes: Int) -> String {
-        minutes < 60 ? "\(minutes) minutes" : "\(minutes / 60) hour\(minutes == 60 ? "" : "s")"
+        .accessibilityIdentifier("preferences.content.General")
     }
 }

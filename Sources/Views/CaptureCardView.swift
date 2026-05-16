@@ -8,6 +8,7 @@ struct CaptureCardView: View {
   nonisolated static let openSubmitAccessibilityLabel = "Open Reddit submit page"
   nonisolated static let markPostedAccessibilityLabel = "Mark as posted"
   nonisolated static let deleteAccessibilityLabel = "Delete capture"
+  nonisolated static let moreActionsAccessibilityLabel = "More capture actions"
 
   let capture: Capture
   var urgency: UrgencyLevel = .none
@@ -18,8 +19,6 @@ struct CaptureCardView: View {
   var onOpenSubmit: (() -> Void)? = nil
   var onMarkPosted: (() -> Void)? = nil
   var onDelete: (() -> Void)? = nil
-
-  @State private var isHovered: Bool = false
 
   var body: some View {
     HStack(alignment: .top, spacing: 10) {
@@ -40,31 +39,36 @@ struct CaptureCardView: View {
           )
         }
 
-        if isHovered {
-          if let onCopyText {
-            hoverActionButton(
-              systemName: "doc.on.doc",
-              accessibilityLabel: Self.copyTextAccessibilityLabel,
-              action: onCopyText
-            )
+        if hasSecondaryActions {
+          Menu {
+            if let onCopyText {
+              Button(Self.copyTextAccessibilityLabel, action: onCopyText)
+            }
+            if let onOpenSubmit {
+              Button(Self.openSubmitAccessibilityLabel, action: onOpenSubmit)
+            }
+            if let onMarkPosted {
+              Button(Self.markPostedAccessibilityLabel, action: onMarkPosted)
+            }
+            if onCopyText != nil || onOpenSubmit != nil || onMarkPosted != nil {
+              Divider()
+            }
+            if let onDelete {
+              Button(Self.deleteAccessibilityLabel, role: .destructive, action: onDelete)
+            }
+          } label: {
+            Image(systemName: "ellipsis.circle")
+              .font(.system(size: 12, weight: .medium))
+              .foregroundStyle(.secondary)
+              .frame(width: 32, height: 32)
+              .background(.quaternary.opacity(0.3))
+              .clipShape(RoundedRectangle(cornerRadius: 4))
           }
-
-          if let onMarkPosted {
-            hoverActionButton(
-              systemName: "checkmark.circle",
-              accessibilityLabel: Self.markPostedAccessibilityLabel,
-              action: onMarkPosted
-            )
-          }
-
-          if let onDelete {
-            hoverActionButton(
-              systemName: "trash",
-              accessibilityLabel: Self.deleteAccessibilityLabel,
-              foregroundStyle: .red,
-              action: onDelete
-            )
-          }
+          .menuStyle(.borderlessButton)
+          .menuIndicator(.hidden)
+          .help(Self.moreActionsAccessibilityLabel)
+          .accessibilityLabel(Self.moreActionsAccessibilityLabel)
+          .accessibilityIdentifier("captureCard.\(Self.moreActionsAccessibilityLabel.identifierSuffix)")
         }
 
         if let dotColor = urgencyDotColor {
@@ -76,11 +80,9 @@ struct CaptureCardView: View {
             .accessibilityLabel(UrgencyPresentation.accessibilityLabel(for: urgency))
         }
       }
-      .animation(.easeInOut(duration: 0.15), value: isHovered)
     }
     .padding(.vertical, 10)
     .padding(.horizontal, 16)
-    .onHover { hovering in isHovered = hovering }
     .contextMenu {
       if let onTap { Button("Edit") { onTap() } }
       if let onOpenHandoff { Button("Prepare Post") { onOpenHandoff() } }
@@ -94,6 +96,10 @@ struct CaptureCardView: View {
       }
       if let onDelete { Button("Delete", role: .destructive) { onDelete() } }
     }
+  }
+
+  private var hasSecondaryActions: Bool {
+    onCopyText != nil || onOpenSubmit != nil || onMarkPosted != nil || onDelete != nil
   }
 
   private var captureSummary: some View {
@@ -155,7 +161,7 @@ struct CaptureCardView: View {
       Image(systemName: systemName)
         .font(.system(size: 12, weight: .medium))
         .foregroundStyle(foregroundStyle)
-        .frame(width: 26, height: 26)
+        .frame(width: 32, height: 32)
       .background(.quaternary.opacity(0.3))
       .clipShape(RoundedRectangle(cornerRadius: 4))
       .contentShape(Rectangle())

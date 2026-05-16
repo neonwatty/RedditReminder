@@ -30,3 +30,25 @@ struct CaptureFormResult {
     self.removedMediaRefs = removedMediaRefs
   }
 }
+
+struct CaptureFormDraft: Equatable {
+  var title: String = ""
+  var text: String = ""
+  var notes: String = ""
+  var selectedProjectId: UUID?
+  var selectedSubredditIds: Set<UUID> = []
+  var links: [String] = []
+  var newLinkText: String = ""
+  var mediaURLs: [URL] = []
+
+  var hasRecoverableContent: Bool {
+    !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      || !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      || !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      || !newLinkText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      || !links.isEmpty
+      || !mediaURLs.isEmpty
+      || selectedProjectId != nil
+      || !selectedSubredditIds.isEmpty
+  }
+}

@@ -84,16 +84,29 @@ struct CaptureMediaSection: View {
         }
       }
 
-      RoundedRectangle(cornerRadius: 8)
-        .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 1, dash: [6]))
-        .frame(height: 48)
-        .overlay {
-          Text("Drop images or videos here or ").font(.system(size: 11)).foregroundStyle(.secondary)
-            + Text("browse").font(.system(size: 11)).foregroundStyle(.blue)
+      Button(action: { isShowingImporter = true }) {
+        RoundedRectangle(cornerRadius: 8)
+          .stroke(Color(NSColor.separatorColor), style: StrokeStyle(lineWidth: 1, dash: [6]))
+          .frame(height: 52)
+          .overlay {
+            HStack(spacing: 6) {
+              Image(systemName: "photo.badge.plus")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppColors.primaryAction)
+              Text("Drop images or videos here or ")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                + Text("browse")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(AppColors.link)
+            }
+          }
+          .background(isDragOver ? AppColors.primaryAction.opacity(0.05) : Color.clear)
+          .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .background(isDragOver ? Color.blue.opacity(0.05) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .onTapGesture { isShowingImporter = true }
+        .buttonStyle(.plain)
+        .accessibilityLabel(CaptureMediaAccessibility.browseLabel)
+        .accessibilityHint(CaptureMediaAccessibility.browseHint)
         .accessibilityIdentifier(CaptureMediaAccessibility.dropZone)
         .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
           handleFileDrop(providers)
@@ -108,6 +121,7 @@ struct CaptureMediaSection: View {
             appendMediaFiles(urls)
           case .failure(let error):
             NSLog("RedditReminder: media import failed: \(error)")
+            mediaSelectionError = CaptureMediaAccessibility.importFailureMessage
           }
         }
       if let mediaSelectionError {
@@ -153,7 +167,7 @@ struct CaptureMediaSection: View {
     let result = CaptureMediaSelection.result(from: urls)
     droppedFiles.append(contentsOf: result.mediaURLs)
     mediaSelectionError =
-      result.rejectedCount > 0 ? "Only image or video files can be attached." : nil
+      result.rejectedCount > 0 ? CaptureMediaAccessibility.rejectedSelectionMessage : nil
   }
 
   private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
@@ -161,6 +175,9 @@ struct CaptureMediaSection: View {
       _ = provider.loadObject(ofClass: URL.self) { url, error in
         if let error {
           NSLog("RedditReminder: file drop failed: \(error)")
+          Task { @MainActor in
+            mediaSelectionError = CaptureMediaAccessibility.importFailureMessage
+          }
           return
         }
         if let url { Task { @MainActor in appendMediaFiles([url]) } }

@@ -1,6 +1,8 @@
 import SwiftUI
 
 extension PostHandoffView {
+  nonisolated static var iconButtonMinimumHitSize: CGFloat { 28 }
+
   func sectionHeader(_ title: String) -> some View {
     Text(title)
       .font(.system(size: 12, weight: .semibold))
@@ -88,7 +90,7 @@ extension PostHandoffView {
         .labelStyle(.iconOnly)
         .font(.system(size: 11, weight: .medium))
         .foregroundStyle(.secondary)
-        .frame(width: 22, height: 20)
+        .frame(width: Self.iconButtonMinimumHitSize, height: Self.iconButtonMinimumHitSize)
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)

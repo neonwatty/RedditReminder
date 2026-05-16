@@ -118,14 +118,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
       }
     }
 
-    UNUserNotificationCenter.current().delegate = self
-    notificationService.registerCategories()
-
-    Task { _ = await notificationService.requestPermission() }
+    configureNotificationsOnLaunch()
 
     startRefreshLoop()
 
     NSLog("RedditReminder: launched, refresh loop started")
+  }
+
+  func configureNotificationsOnLaunch() {
+    UNUserNotificationCenter.current().delegate = self
+    notificationService.registerCategories()
   }
 
   private func bootstrapApplication() {
@@ -139,8 +141,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     wireMenuActions(container: container)
     #if DEBUG
-      if ProcessInfo.processInfo.arguments.contains("--seed-qa") {
-        QAFixtures.seed(context: container.mainContext)
+      if ProcessInfo.processInfo.arguments.contains(QAFixtures.seedLaunchArgument) {
+        QAFixtures.seed(context: container.mainContext, mediaStore: mediaStore)
+      } else if ProcessInfo.processInfo.arguments.contains(QAFixtures.clearLaunchArgument) {
+        QAFixtures.clearAll(context: container.mainContext, mediaStore: mediaStore)
       }
     #endif
     runRefreshCycle()
@@ -288,11 +292,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     )
   }
 
-  func scheduleNotifications(
-    activeEvents: [SubredditEvent],
-    windows: [TimingEngine.UpcomingWindow]
-  ) async {
+  func scheduleNotifications(activeEvents: [SubredditEvent], windows: [TimingEngine.UpcomingWindow]) async {
     _ = await notificationScheduler.schedule(activeEvents: activeEvents, windows: windows)
   }
-
 }

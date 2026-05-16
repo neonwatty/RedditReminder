@@ -4,6 +4,16 @@ import Testing
 @Test func captureMediaAccessibilityDefinesStableDropZoneIdentifier() {
     #expect(CaptureMediaAccessibility.dropZone == "capture-media-drop-zone")
     #expect(CaptureMediaAccessibility.selectionError == "capture-media-selection-error")
+    #expect(CaptureMediaAccessibility.browseLabel == "Browse for media")
+    #expect(CaptureMediaAccessibility.browseHint == "Add image or video files to this capture.")
+    #expect(
+        CaptureMediaAccessibility.rejectedSelectionMessage
+            == "Only image or video files can be attached."
+    )
+    #expect(
+        CaptureMediaAccessibility.importFailureMessage
+            == "Media could not be added. Try another image or video file."
+    )
 }
 
 @Test func captureMediaAccessibilityNormalizesExistingRefIdentifiers() {

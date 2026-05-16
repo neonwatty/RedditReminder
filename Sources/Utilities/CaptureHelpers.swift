@@ -1,6 +1,9 @@
 import Foundation
 
 enum CaptureHelpers {
+    static let invalidLinkMessage = "Enter a valid http or https link."
+    static let linkValidationAccessibilityIdentifier = "captureWindow.links.validation"
+
     /// Normalizes a user-entered link, prepending https:// if needed.
     /// Returns nil for empty/whitespace input.
     static func normalizeLink(_ input: String) -> String? {
@@ -17,6 +20,12 @@ enum CaptureHelpers {
               url.password == nil else { return nil }
 
         return candidate
+    }
+
+    static func linkValidationMessage(_ input: String) -> String? {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return normalizeLink(trimmed) == nil ? invalidLinkMessage : nil
     }
 
     /// Validates that a capture form has the minimum required fields.

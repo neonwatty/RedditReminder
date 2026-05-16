@@ -4,15 +4,31 @@ import SwiftUI
 extension PopoverContentView {
   func openNewCapture() {
     route = .captureCreate
-    showPosted = false
+    selectedWorkspace = .queue
+  }
+
+  func openNewCapture(for subreddit: Subreddit?) {
+    if let subreddit {
+      var draft = pendingCreateDraft ?? CaptureFormDraft()
+      draft.selectedSubredditIds.insert(subreddit.id)
+      pendingCreateDraft = draft
+    } else {
+      pendingCreateDraft = nil
+    }
+    openNewCapture()
   }
 
   func openCaptureForEditing(_ capture: Capture) {
     route = .captureEdit(capture)
   }
 
-  func openPreferences() {
-    route = .preferences
+  func openPreferences(tab: PreferencesView.Tab = PreferencesView.defaultTab) {
+    route = .preferences(tab)
+  }
+
+  func openWorkspace(_ workspace: PopoverWorkspace) {
+    route = .root
+    selectedWorkspace = workspace
   }
 
   func openPostHandoff(for capture: Capture) {

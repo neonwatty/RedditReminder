@@ -2,6 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct ProjectsTabView: View {
+    nonisolated static let moreActionsAccessibilityLabel = "More project actions"
+    nonisolated static let renameAccessibilityLabel = "Rename project"
+    nonisolated static let archiveAccessibilityLabel = "Archive project"
+    nonisolated static let unarchiveAccessibilityLabel = "Unarchive project"
+    nonisolated static let deleteAccessibilityLabel = "Delete project"
+
     @Query(sort: \Project.name) private var projects: [Project]
     @Environment(\.modelContext) private var modelContext
 
@@ -30,7 +36,7 @@ struct ProjectsTabView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .light))
                     .foregroundStyle(canAdd ? AppColors.redditOrange : .secondary)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 32, height: 32)
                     .background(
                         canAdd
                             ? AppColors.redditOrange.opacity(0.15)
@@ -157,7 +163,35 @@ struct ProjectsTabView: View {
                     .foregroundStyle(.tertiary)
             }
             Spacer()
+            projectActionsMenu(project)
         }
+    }
+
+    private func projectActionsMenu(_ project: Project) -> some View {
+        Menu {
+            Button(Self.renameAccessibilityLabel) { startEditing(project) }
+            Button(project.archived ? Self.unarchiveAccessibilityLabel : Self.archiveAccessibilityLabel) {
+                ProjectPersistenceActions.setArchived(
+                    project,
+                    archived: !project.archived,
+                    modelContext: modelContext
+                )
+            }
+            Divider()
+            Button(Self.deleteAccessibilityLabel, role: .destructive) { deleteProject(project) }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 32, height: 32)
+                .background(.quaternary.opacity(0.3))
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .help(Self.moreActionsAccessibilityLabel)
+        .accessibilityLabel(Self.moreActionsAccessibilityLabel)
+        .accessibilityIdentifier("projects.row.\(project.id.uuidString).actions")
     }
 
     private var canAdd: Bool {

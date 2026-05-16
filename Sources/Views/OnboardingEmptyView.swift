@@ -3,15 +3,17 @@ import SwiftUI
 struct OnboardingEmptyView: View {
     let onSetupChannels: () -> Void
     let onNewCapture: () -> Void
+    let onSetupNotifications: () -> Void
 
     static let titleText = "Set up your posting channels"
-    static let descriptionText = "Add a subreddit first so captures have a destination and reminders can use peak posting times."
-    static let primaryButtonText = "Add Subreddit"
+    static let descriptionText = "Add a subreddit first, then create a capture and turn on reminders for posting windows."
+    static let primaryButtonText = "Add Channel"
     static let secondaryButtonText = "New Capture"
+    static let notificationsButtonText = "Enable Reminders"
     static let setupSteps = [
-        "Add subreddit/channel",
-        "Create capture",
-        "Enable reminders/notifications",
+        "Add a subreddit channel",
+        "Create your first capture",
+        "Enable reminder notifications",
     ]
 
     var body: some View {
@@ -35,31 +37,44 @@ struct OnboardingEmptyView: View {
                     .lineSpacing(2)
             }
 
-            Button(action: onSetupChannels) {
-                HStack(spacing: 4) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 10, weight: .semibold))
-                    Text(Self.primaryButtonText)
-                        .font(.system(size: 12, weight: .medium))
+            VStack(spacing: 8) {
+                Button(action: onSetupChannels) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(Self.primaryButtonText)
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColors.redditOrange)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(AppColors.redditOrange)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Add subreddit")
-            .accessibilityIdentifier("onboarding.setupChannels")
+                .buttonStyle(.plain)
+                .accessibilityLabel("Add channel")
+                .accessibilityIdentifier("onboarding.setupChannels")
 
-            Button(action: onNewCapture) {
-                Text(Self.secondaryButtonText)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(AppColors.redditOrange)
+                HStack(spacing: 14) {
+                    Button(action: onNewCapture) {
+                        Text(Self.secondaryButtonText)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(AppColors.redditOrange)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("New capture")
+                    .accessibilityIdentifier("onboarding.newCapture")
+
+                    Button(action: onSetupNotifications) {
+                        Text(Self.notificationsButtonText)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(AppColors.redditOrange)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Enable reminders")
+                    .accessibilityIdentifier("onboarding.setupNotifications")
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("New capture")
-            .accessibilityIdentifier("onboarding.newCapture")
 
             // Quick-start hints
             VStack(alignment: .leading, spacing: 6) {

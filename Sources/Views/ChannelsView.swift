@@ -4,11 +4,15 @@ import SwiftUI
 struct ChannelsTabView: View {
   let notificationService: NotificationService
   let heuristicsStore: HeuristicsStore
+  var onCreateCapture: (Subreddit?) -> Void = { _ in }
 
   static let setupTitleText = "Add a posting channel"
   static let firstRunSetupText =
     "Start with a subreddit so captures have a destination and reminders can use posting windows."
   static let returningSetupText = "Add another subreddit when you want reminders for a new channel."
+  static let firstChannelAddedText =
+    "Posting windows were generated for this channel. Create your first capture when you are ready."
+  static let createFirstCaptureButtonText = "Create first capture"
   static let addSubredditPlaceholder = "Subreddit name"
   static let addSubredditButtonText = "Add channel"
   static let emptyListText = "Added channels will appear here."
@@ -20,6 +24,8 @@ struct ChannelsTabView: View {
   @State private var expandedSubredditId: UUID?
   @State private var newSubredditName = ""
   @State private var addFailureMessage: String?
+  @State private var didAddFirstChannel = false
+  @State private var firstAddedSubreddit: Subreddit?
   @State private var draggingSubreddit: Subreddit?
   @AppStorage(SettingsKey.defaultLeadTimeMinutes) private var defaultLeadTimeMinutes: Int = 60
 
@@ -46,6 +52,10 @@ struct ChannelsTabView: View {
             .font(.system(size: 10))
             .foregroundStyle(feedbackMessage.isError ? .red : .secondary)
         }
+
+        if didAddFirstChannel {
+          firstChannelNextStep
+        }
       }
       .padding(14)
 
@@ -67,7 +77,9 @@ struct ChannelsTabView: View {
               peakInfo: heuristicsStore.peakInfo(for: sub),
               isExpanded: expandedSubredditId == sub.id,
               onToggle: { toggleExpanded(sub) },
-              onDelete: { deleteSubreddit(sub) }
+              onDelete: { deleteSubreddit(sub) },
+              onMoveUp: moveUpAction(for: sub),
+              onMoveDown: moveDownAction(for: sub)
             )
             .onDrag {
               draggingSubreddit = sub
@@ -123,6 +135,27 @@ struct ChannelsTabView: View {
     .accessibilityIdentifier("channels.addSubreddit.button")
   }
 
+  private var firstChannelNextStep: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text(Self.firstChannelAddedText)
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+
+      Button(action: { onCreateCapture(firstAddedSubreddit) }) {
+        Label(Self.createFirstCaptureButtonText, systemImage: "text.badge.plus")
+          .font(.system(size: 12, weight: .semibold))
+          .foregroundStyle(AppColors.redditOrange)
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel(Self.createFirstCaptureButtonText)
+      .accessibilityIdentifier("channels.createFirstCapture")
+    }
+    .padding(10)
+    .background(AppColors.redditOrange.opacity(0.08))
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+  }
+
   private var canAdd: Bool {
     inputValidation.canAdd
   }
@@ -147,6 +180,7 @@ struct ChannelsTabView: View {
   }
 
   private func addSubreddit() {
+    let wasFirstChannel = subreddits.isEmpty
     switch SubredditPersistenceActions.addSubreddit(
       named: newSubredditName,
       subreddits: subreddits,
@@ -157,6 +191,8 @@ struct ChannelsTabView: View {
     case .success(let subreddit):
       newSubredditName = ""
       addFailureMessage = nil
+      didAddFirstChannel = wasFirstChannel
+      firstAddedSubreddit = wasFirstChannel ? subreddit : nil
       withAnimation(.easeInOut(duration: 0.2)) {
         expandedSubredditId = Self.expandsNewSubredditAfterAdd ? subreddit.id : nil
       }
@@ -187,6 +223,38 @@ struct ChannelsTabView: View {
       modelContext: modelContext,
       notificationService: notificationService
     )
+  }
+
+  private func moveUpAction(for sub: Subreddit) -> (() -> Void)? {
+    guard let index = subreddits.firstIndex(where: { $0.id == sub.id }), index > 0 else {
+      return nil
+    }
+    let target = subreddits[index - 1]
+    return {
+      _ = SubredditPersistenceActions.reorder(
+        source: sub,
+        target: target,
+        subreddits: subreddits,
+        modelContext: modelContext
+      )
+    }
+  }
+
+  private func moveDownAction(for sub: Subreddit) -> (() -> Void)? {
+    guard let index = subreddits.firstIndex(where: { $0.id == sub.id }),
+      index < subreddits.count - 1
+    else {
+      return nil
+    }
+    let target = subreddits[index + 1]
+    return {
+      _ = SubredditPersistenceActions.reorder(
+        source: sub,
+        target: target,
+        subreddits: subreddits,
+        modelContext: modelContext
+      )
+    }
   }
 
 }

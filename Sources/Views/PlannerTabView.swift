@@ -2,42 +2,73 @@ import SwiftData
 import SwiftUI
 
 struct PlannerTabView: View {
-  @Query private var allEvents: [SubredditEvent]
-  @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
+  private enum PlannerMode: String, CaseIterable, Identifiable {
+    case list = "List"
+    case calendar = "Calendar"
 
-  @State private var timingEngine = TimingEngine()
-  private let refreshTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
-
-  private var activeEvents: [SubredditEvent] {
-    PopoverTimingPresentation.activeEvents(from: allEvents)
+    var id: String { rawValue }
   }
 
-  private var dayGroups: [PlannerDayGroup] {
-    PlannerPresentation.dayGroups(from: timingEngine.upcomingWindows)
+  var onCreateCapture: AppRefreshAction = {}
+  var onCreateCaptureForSubreddit: (Subreddit?) -> Void = { _ in }
+  var onViewQueue: AppRefreshAction = {}
+  var onEditChannels: AppRefreshAction = {}
+
+  static let createCaptureActionText = "Create capture"
+  static let viewQueueActionText = "View queue"
+  static let editChannelsActionText = "Edit windows"
+
+  @Environment(\.modelContext) private var modelContext
+  @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
+  @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
+
+  @State private var timingEngine = TimingEngine()
+  @State var eventLoadResult = PlannerEventLoadResult(
+    events: [],
+    oneOffCount: 0,
+    recurringCount: 0,
+    limitPerKind: PlannerEventLoader.defaultLimitPerKind
+  )
+  @State var visibleWindowLimit = 50
+  @State private var mode = PlannerMode.list
+  @State private var loadError: String?
+  private let refreshTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+
+  var visibleWindows: [TimingEngine.UpcomingWindow] {
+    Array(timingEngine.upcomingWindows.prefix(visibleWindowLimit))
+  }
+
+  var dayGroups: [PlannerDayGroup] {
+    PlannerPresentation.dayGroups(from: visibleWindows)
+  }
+
+  var calendarDays: [PlannerCalendarDay] {
+    PlannerPresentation.calendarDays(from: timingEngine.upcomingWindows)
+  }
+
+  var hasMoreWindows: Bool {
+    visibleWindowLimit < timingEngine.upcomingWindows.count
   }
 
   var body: some View {
     VStack(spacing: 0) {
       header
       Divider()
-      if dayGroups.isEmpty {
+      if let loadError {
+        errorState(loadError)
+      } else if timingEngine.upcomingWindows.isEmpty {
         emptyState
+      } else if mode == .calendar {
+        calendarView
       } else {
-        ScrollView {
-          VStack(alignment: .leading, spacing: 14) {
-            ForEach(dayGroups, id: \.day) { group in
-              dayGroup(group)
-            }
-          }
-          .padding(14)
-        }
+        listView
       }
     }
     .onAppear(perform: refreshTiming)
-    .onChange(of: PopoverTimingPresentation.eventTimingSignature(from: allEvents)) {
+    .onChange(of: PopoverTimingPresentation.captureTimingSignature(from: captures)) {
       refreshTiming()
     }
-    .onChange(of: PopoverTimingPresentation.captureTimingSignature(from: captures)) {
+    .onChange(of: PopoverTimingPresentation.subredditTimingSignature(from: subreddits)) {
       refreshTiming()
     }
     .onReceive(refreshTimer) { _ in
@@ -46,112 +77,53 @@ struct PlannerTabView: View {
   }
 
   private var header: some View {
-    HStack {
+    HStack(alignment: .center, spacing: 12) {
       VStack(alignment: .leading, spacing: 2) {
         Text("7-day planner")
           .font(.system(size: 13, weight: .semibold))
-        Text("Upcoming posting windows and queue readiness")
+        Text(headerDetailText)
           .font(.system(size: 11))
           .foregroundStyle(.secondary)
       }
       Spacer()
+      Picker("Planner view", selection: $mode) {
+        ForEach(PlannerMode.allCases) { mode in
+          Text(mode.rawValue).tag(mode)
+        }
+      }
+      .labelsHidden()
+      .pickerStyle(.segmented)
+      .frame(width: 150)
     }
     .padding(.horizontal, 14)
     .padding(.vertical, 12)
   }
 
-  private var emptyState: some View {
-    VStack(spacing: 8) {
-      Spacer()
-      Text("No posting windows this week")
-        .font(.system(size: 13, weight: .medium))
-        .foregroundStyle(.secondary)
-      Text("Add channels or adjust peak windows to populate the planner")
-        .font(.system(size: 11))
-        .foregroundStyle(.tertiary)
-      Spacer()
+  private var headerDetailText: String {
+    let countText = "\(timingEngine.upcomingWindows.count) window\(timingEngine.upcomingWindows.count == 1 ? "" : "s")"
+    if eventLoadResult.hitLimit {
+      return "\(countText) from capped event scan"
     }
-    .frame(maxWidth: .infinity)
+    return "\(countText) and queue readiness"
   }
 
-  private func dayGroup(_ group: PlannerDayGroup) -> some View {
-    VStack(alignment: .leading, spacing: 8) {
-      Text(group.title.uppercased())
-        .font(.system(size: 10, weight: .semibold))
-        .foregroundStyle(.secondary)
-        .tracking(0.3)
-
-      VStack(spacing: 0) {
-        ForEach(group.windows, id: \.event.id) { window in
-          plannerRow(window)
-          if window.event.id != group.windows.last?.event.id {
-            Divider().padding(.leading, 10)
-          }
-        }
-      }
-      .background(.quaternary.opacity(0.22))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
-      .overlay(
-        RoundedRectangle(cornerRadius: 8)
-          .stroke(Color(NSColor.separatorColor), lineWidth: 0.5)
-      )
-    }
-  }
-
-  private func plannerRow(_ window: TimingEngine.UpcomingWindow) -> some View {
-    HStack(alignment: .top, spacing: 10) {
-      urgencyDot(for: window.urgency)
-        .padding(.top, 5)
-
-      VStack(alignment: .leading, spacing: 3) {
-        Text(EventBannerView.title(for: window))
-          .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(.primary)
-          .lineLimit(1)
-
-        HStack(spacing: 5) {
-          Text(timeText(for: window.eventDate))
-          Text("·")
-          Text(PlannerPresentation.readinessText(for: window.matchingCaptureCount))
-            .foregroundStyle(window.matchingCaptureCount == 0 ? AppColors.redditOrange : .secondary)
-        }
-        .font(.system(size: 10))
-        .foregroundStyle(.secondary)
-      }
-
-      Spacer(minLength: 0)
-
-      Text(window.event.isGeneratedFromHeuristics ? "Auto" : "Manual")
-        .font(.system(size: 9, weight: .semibold))
-        .foregroundStyle(
-          window.event.isGeneratedFromHeuristics ? AppColors.redditOrange : .secondary
-        )
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(
-          window.event.isGeneratedFromHeuristics
-            ? AppColors.redditOrange.opacity(0.10) : Color.clear
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 5))
-    }
-    .padding(10)
-  }
-
-  private func urgencyDot(for urgency: UrgencyLevel) -> some View {
-    Circle()
-      .fill(UrgencyPresentation.color(for: urgency) ?? Color.secondary.opacity(0.35))
-      .frame(width: 7, height: 7)
-      .help(UrgencyPresentation.label(for: urgency))
-  }
-
-  private func timeText(for date: Date) -> String {
+  func timeText(for date: Date) -> String {
     let formatter = DateFormatter()
     formatter.timeStyle = .short
     formatter.dateStyle = .none
     return formatter.string(from: date)
   }
 
-  private func refreshTiming() {
-    timingEngine.refresh(events: activeEvents, captures: captures)
+  func refreshTiming() {
+    do {
+      let result = try PlannerEventLoader.fetchUpcomingCandidates(context: modelContext)
+      eventLoadResult = result
+      loadError = nil
+      timingEngine.refresh(events: result.events, captures: captures)
+      visibleWindowLimit = min(max(50, visibleWindowLimit), max(50, timingEngine.upcomingWindows.count))
+    } catch {
+      loadError = error.localizedDescription
+      timingEngine.refresh(events: [], captures: captures)
+    }
   }
 }

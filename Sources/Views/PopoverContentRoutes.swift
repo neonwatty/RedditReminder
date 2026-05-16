@@ -5,6 +5,7 @@ extension PopoverContentView {
   func captureForm(mode: CaptureWindowView.Mode) -> some View {
     CaptureWindowView(
       mode: mode,
+      initialDraft: mode.isCreate ? pendingCreateDraft : nil,
       onSave: { result in
         let didSave: Bool =
           switch mode {
@@ -12,14 +13,28 @@ extension PopoverContentView {
             saveCapture(result)
           case .edit(let capture):
             updateCapture(capture, with: result)
-          }
+        }
         guard didSave else { return false }
+        if mode.isCreate {
+          pendingCreateDraft = nil
+        }
         route = .root
-        showPosted = false
+        selectedWorkspace = .queue
         showToast(mode.isCreate ? "Draft saved" : "Draft updated")
         return true
       },
-      onCancel: { route = .root }
+      onCancel: {
+        if mode.isCreate {
+          pendingCreateDraft = nil
+        }
+        route = .root
+      },
+      onAddSubreddit: { draft in
+        if mode.isCreate, draft.hasRecoverableContent {
+          pendingCreateDraft = draft
+        }
+        openWorkspace(.channels)
+      }
     )
     .modelContainer(modelContext.container)
   }
@@ -97,13 +112,13 @@ extension PopoverContentView {
     guard menuBarController.newCaptureRequestCount > handledNewCaptureRequestCount else { return }
     handledNewCaptureRequestCount = menuBarController.newCaptureRequestCount
     route = .captureCreate
-    showPosted = false
+    selectedWorkspace = .queue
   }
 
   func handlePreferencesRequest() {
     guard menuBarController.preferencesRequestCount > handledPreferencesRequestCount else { return }
     handledPreferencesRequestCount = menuBarController.preferencesRequestCount
-    route = .preferences
+    route = .preferences(PreferencesView.defaultTab)
   }
 }
 
