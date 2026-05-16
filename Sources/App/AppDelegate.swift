@@ -292,11 +292,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     )
   }
 
-  func scheduleNotifications(
-    activeEvents: [SubredditEvent],
-    windows: [TimingEngine.UpcomingWindow]
-  ) async {
+  func scheduleNotifications(activeEvents: [SubredditEvent], windows: [TimingEngine.UpcomingWindow]) async {
     _ = await notificationScheduler.schedule(activeEvents: activeEvents, windows: windows)
   }
-
 }
