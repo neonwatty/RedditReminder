@@ -15,6 +15,7 @@ struct PlannerCalendarDay {
 
 enum PlannerPresentation {
   static let createCaptureIdentifierPrefix = "planner.createCapture"
+  static let calendarCreateCaptureIdentifierPrefix = "planner.calendar.createCapture"
 
   static func dayGroups(
     from windows: [TimingEngine.UpcomingWindow],
@@ -71,6 +72,11 @@ enum PlannerPresentation {
   static func createCaptureIdentifier(subredditId: UUID?) -> String {
     guard let subredditId else { return createCaptureIdentifierPrefix }
     return "\(createCaptureIdentifierPrefix).\(subredditId.uuidString)"
+  }
+
+  static func calendarCreateCaptureIdentifier(subredditId: UUID?) -> String {
+    guard let subredditId else { return calendarCreateCaptureIdentifierPrefix }
+    return "\(calendarCreateCaptureIdentifierPrefix).\(subredditId.uuidString)"
   }
 
   static func calendarDays(

@@ -8,7 +8,7 @@ extension CaptureWindowView {
 
       Spacer()
 
-      Button("Cancel", action: onCancel)
+      Button("Cancel") { onCancel(currentDraft) }
         .font(.system(size: 11))
         .foregroundStyle(.secondary)
         .buttonStyle(.plain)

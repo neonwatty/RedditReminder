@@ -22,10 +22,16 @@ import Testing
   #expect(PopoverSearchBarView.clearSearchHitSize == 28)
 }
 
+@Test func popoverChromeUsesSystemMaterial() {
+  #expect(AppColors.popoverUsesSystemMaterial)
+}
+
 @Test @MainActor func plannerExposesActionLabels() {
   #expect(PlannerTabView.createCaptureActionText == "Create capture")
   #expect(PlannerTabView.viewQueueActionText == "View queue")
   #expect(PlannerTabView.editChannelsActionText == "Edit windows")
+  #expect(PlannerTabView.viewModeAccessibilityIdentifier == "planner.viewMode")
+  #expect(PlannerTabView.rowActionHitSize == 28)
 }
 
 @Test @MainActor func queueEmptyWithWindowsExposesCreateCaptureCTA() {
@@ -37,6 +43,9 @@ import Testing
   #expect(
     PopoverContentView.emptyQueueWithWindowsButtonIdentifier
       == "queue.emptyWithWindows.createCapture")
+  #expect(PopoverContentView.filteredEmptyButtonText == "New capture for this subreddit")
+  #expect(
+    PopoverContentView.filteredEmptyButtonIdentifier == "queue.filteredEmpty.createCapture")
 }
 
 @Test @MainActor func queuePresentationShowsOnboardingOnlyWhenNoCapturesNoWindowsAndUnfiltered() {

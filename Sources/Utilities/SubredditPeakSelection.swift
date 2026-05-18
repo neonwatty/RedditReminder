@@ -85,6 +85,12 @@ enum SubredditPeakSelection {
     struct AppliedPreset {
         let days: [String]
         let utcHours: [Int]
+        let isExact: Bool
+    }
+
+    private struct UtcDayHour: Hashable {
+        let day: String
+        let hour: Int
     }
 
     static let presets: [PeakPreset] = [
@@ -95,8 +101,7 @@ enum SubredditPeakSelection {
     ]
 
     static func applyPreset(_ preset: PeakPreset, timeZone: TimeZone = .current, referenceDate: Date = Date()) -> AppliedPreset {
-        let utcHours = preset.localHours.map { localHourToUtc($0, timeZone: timeZone, referenceDate: referenceDate) }.sorted()
-        return AppliedPreset(days: preset.days, utcHours: utcHours)
+        localSelectionToUtc(days: preset.days, localHours: preset.localHours, timeZone: timeZone, referenceDate: referenceDate)
     }
 
     struct SuggestedDefaults {
@@ -113,5 +118,81 @@ enum SubredditPeakSelection {
 
     static func needsSuggestedDefaults(daysOverride: [String]?, hoursOverride: [Int]?, peakInfo: PeakInfo?) -> Bool {
         daysOverride == nil && hoursOverride == nil && peakInfo == nil
+    }
+
+    static func localSelectionToUtc(
+        days: [String],
+        localHours: [Int],
+        timeZone: TimeZone = .current,
+        referenceDate: Date = Date()
+    ) -> AppliedPreset {
+        let pairs = Set(days.flatMap { day in
+            localHours.compactMap { hour in
+                utcDayAndHour(localDay: day, localHour: hour, timeZone: timeZone, referenceDate: referenceDate)
+            }
+        })
+        let utcDays = dayKeys.filter { day in pairs.contains { $0.day == day } }
+        let utcHours = Array(Set(pairs.map(\.hour))).sorted()
+        let isExact = pairs.count == utcDays.count * utcHours.count
+        return AppliedPreset(days: utcDays, utcHours: utcHours, isExact: isExact)
+    }
+
+    private static func utcDayAndHour(
+        localDay: String,
+        localHour: Int,
+        timeZone: TimeZone,
+        referenceDate: Date
+    ) -> UtcDayHour? {
+        guard let weekday = weekdayNumber(for: localDay), (0...23).contains(localHour) else {
+            return nil
+        }
+
+        var localCal = Calendar(identifier: .gregorian)
+        localCal.timeZone = timeZone
+        var localDate = referenceDate
+        while localCal.component(.weekday, from: localDate) != weekday {
+            guard let next = localCal.date(byAdding: .day, value: 1, to: localDate) else {
+                return nil
+            }
+            localDate = next
+        }
+
+        var localComps = localCal.dateComponents([.year, .month, .day], from: localDate)
+        localComps.hour = localHour
+        localComps.minute = 0
+        guard let date = localCal.date(from: localComps) else { return nil }
+
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        guard let utcDay = dayKey(forWeekday: utcCal.component(.weekday, from: date)) else {
+            return nil
+        }
+        return UtcDayHour(day: utcDay, hour: utcCal.component(.hour, from: date))
+    }
+
+    private static func weekdayNumber(for day: String) -> Int? {
+        switch String(day.lowercased().prefix(3)) {
+        case "sun": return 1
+        case "mon": return 2
+        case "tue": return 3
+        case "wed": return 4
+        case "thu": return 5
+        case "fri": return 6
+        case "sat": return 7
+        default: return nil
+        }
+    }
+
+    private static func dayKey(forWeekday weekday: Int) -> String? {
+        switch weekday {
+        case 1: return "sun"
+        case 2: return "mon"
+        case 3: return "tue"
+        case 4: return "wed"
+        case 5: return "thu"
+        case 6: return "fri"
+        case 7: return "sat"
+        default: return nil
+        }
     }
 }

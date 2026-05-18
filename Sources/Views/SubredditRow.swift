@@ -7,6 +7,9 @@ struct SubredditRow: View {
   nonisolated static let moveUpAccessibilityLabel = "Move channel up"
   nonisolated static let moveDownAccessibilityLabel = "Move channel down"
   nonisolated static let removeAccessibilityLabel = "Remove channel"
+  nonisolated static let collapsedRowsUseCardChrome = false
+  nonisolated static let expandedRowsUseCardChrome = true
+  private static let expandedRowCornerRadius: CGFloat = 8
 
   @Bindable var sub: Subreddit
   let peakInfo: PeakInfo?
@@ -58,7 +61,8 @@ struct SubredditRow: View {
       .buttonStyle(.plain)
       .accessibilityLabel(isExpanded ? "Collapse \(sub.name)" : "Expand \(sub.name)")
       .accessibilityIdentifier("channels.subredditRow.\(sub.id.uuidString).toggle")
-      .padding(10)
+      .padding(.horizontal, isExpanded ? 10 : 8)
+      .padding(.vertical, isExpanded ? 10 : 8)
 
       if isExpanded {
         VStack(alignment: .leading, spacing: 10) {
@@ -134,12 +138,24 @@ struct SubredditRow: View {
         .padding(.bottom, 10)
       }
     }
-    .background(.quaternary.opacity(0.3))
-    .clipShape(RoundedRectangle(cornerRadius: 8))
-    .overlay(
-      RoundedRectangle(cornerRadius: 8)
-        .stroke(.separator, lineWidth: 0.5)
-    )
+    .background {
+      if isExpanded {
+        RoundedRectangle(cornerRadius: Self.expandedRowCornerRadius)
+          .fill(.quaternary.opacity(0.3))
+      }
+    }
+    .overlay {
+      if isExpanded {
+        RoundedRectangle(cornerRadius: Self.expandedRowCornerRadius)
+          .stroke(.separator, lineWidth: 0.5)
+      }
+    }
+    .overlay(alignment: .bottom) {
+      if !isExpanded {
+        Divider()
+          .padding(.leading, 24)
+      }
+    }
     .accessibilityElement(children: .contain)
     .accessibilityLabel(sub.name)
     .accessibilityIdentifier("channels.subredditRow.\(sub.id.uuidString)")
@@ -161,8 +177,13 @@ struct SubredditRow: View {
         .font(.system(size: 12, weight: .medium))
         .foregroundStyle(.secondary)
         .frame(width: 32, height: 32)
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .background {
+          if isExpanded {
+            RoundedRectangle(cornerRadius: 4)
+              .fill(.quaternary.opacity(0.3))
+          }
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 4))
     }
     .menuStyle(.borderlessButton)
     .menuIndicator(.hidden)

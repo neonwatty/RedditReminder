@@ -23,9 +23,9 @@ extension PopoverContentView {
         showToast(mode.isCreate ? "Draft saved" : "Draft updated")
         return true
       },
-      onCancel: {
+      onCancel: { draft in
         if mode.isCreate {
-          pendingCreateDraft = nil
+          pendingCreateDraft = draft.hasRecoverableContent ? draft : nil
         }
         route = .root
       },
@@ -34,6 +34,11 @@ extension PopoverContentView {
           pendingCreateDraft = draft
         }
         openWorkspace(.channels)
+      },
+      onDraftChanged: { draft in
+        if mode.isCreate {
+          pendingCreateDraft = draft.hasRecoverableContent ? draft : nil
+        }
       }
     )
     .modelContainer(modelContext.container)
@@ -121,7 +126,8 @@ extension PopoverContentView {
   func handlePreferencesRequest() {
     guard menuBarController.preferencesRequestCount > handledPreferencesRequestCount else { return }
     handledPreferencesRequestCount = menuBarController.preferencesRequestCount
-    route = .preferences(PreferencesView.defaultTab)
+    route = .root
+    menuBarController.openSettingsWindow()
   }
 }
 

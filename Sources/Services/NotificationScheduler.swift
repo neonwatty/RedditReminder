@@ -31,6 +31,7 @@ struct NotificationScheduler {
         }
 
         var activeEventIds: Set<String> = []
+        var desiredRequestIds: Set<String> = []
         let nudgeEnabled = defaults.object(forKey: SettingsKey.nudgeWhenEmpty) as? Bool ?? true
 
         for window in windows {
@@ -43,6 +44,7 @@ struct NotificationScheduler {
             }
 
             let subredditName = window.event.subreddit?.name ?? "subreddit"
+            desiredRequestIds.insert(AppNotificationIdentifiers.windowRequestId(eventId: eventId))
             notificationService.scheduleWindowNotification(
                 eventId: eventId,
                 subredditName: subredditName,
@@ -52,12 +54,15 @@ struct NotificationScheduler {
             )
 
             if window.matchingCaptureCount == 0 && nudgeEnabled {
+                desiredRequestIds.insert(AppNotificationIdentifiers.nudgeRequestId(eventId: eventId))
                 notificationService.scheduleEmptyQueueNudge(
                     eventId: eventId,
                     subredditName: subredditName,
                     eventName: window.event.name,
                     fireDate: window.notificationFireDate
                 )
+            } else {
+                notificationService.cancelNudgeNotification(eventId: eventId)
             }
         }
 
@@ -66,6 +71,11 @@ struct NotificationScheduler {
         for staleId in staleIds {
             notificationService.cancelNotifications(eventId: staleId)
         }
+
+        let stalePendingRequestIds = await notificationService.pendingRequestIdentifiers().filter {
+            AppNotificationIdentifiers.isManagedRequestId($0) && !desiredRequestIds.contains($0)
+        }
+        notificationService.cancelNotificationRequests(stalePendingRequestIds)
 
         NSLog("RedditReminder: refresh complete — \(windows.count) windows, \(staleIds.count) cancelled")
         return staleIds.count

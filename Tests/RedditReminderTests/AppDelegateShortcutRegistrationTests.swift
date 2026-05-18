@@ -116,6 +116,23 @@ private final class RecordingGlobalShortcut: GlobalShortcutRegistering {
     #expect(globalShortcut.unregisterCount == 1)
 }
 
+@Test @MainActor func appDelegateKeepsMenuBarAppRunningAfterLastWindowCloses() {
+    let temporaryDefaults = makeShortcutDefaults()
+    defer { temporaryDefaults.cleanup() }
+    let delegate = makeShortcutDelegate(
+        defaults: temporaryDefaults.defaults,
+        globalShortcut: RecordingGlobalShortcut()
+    )
+
+    #expect(delegate.applicationShouldTerminateAfterLastWindowClosed(NSApp) == false)
+}
+
+@Test @MainActor func appDelegateOwnsLifecycleAnchorForMenuBarLaunches() {
+    let mirror = Mirror(reflecting: AppDelegate())
+
+    #expect(mirror.children.contains { $0.label == "lifecycleAnchorWindow" })
+}
+
 private func makeShortcutDefaults() -> ShortcutTemporaryDefaults {
     let suiteName = "AppDelegateShortcutTests-\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suiteName)!

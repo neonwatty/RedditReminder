@@ -13,6 +13,8 @@ extension PopoverContentView {
     "Create a capture so your next posting windows have a draft ready."
   nonisolated static let emptyQueueWithWindowsButtonText = "Create capture"
   nonisolated static let emptyQueueWithWindowsButtonIdentifier = "queue.emptyWithWindows.createCapture"
+  nonisolated static let filteredEmptyButtonText = "New capture for this subreddit"
+  nonisolated static let filteredEmptyButtonIdentifier = "queue.filteredEmpty.createCapture"
 
   nonisolated static func queueContentPresentation(
     displayedCaptureCount: Int,
@@ -62,7 +64,9 @@ extension PopoverContentView {
     .padding(.vertical, 28)
   }
 
+  @ViewBuilder
   var filteredEmptyState: some View {
+    let filteredSubreddit = subreddits.first { $0.id == filterSubredditId }
     VStack(spacing: 10) {
       Spacer()
       Image(systemName: "tray")
@@ -71,10 +75,13 @@ extension PopoverContentView {
       Text("No captures for this subreddit")
         .font(.system(size: 12))
         .foregroundStyle(.secondary)
-      Button("+ New Capture", action: openNewCapture)
+      Button(Self.filteredEmptyButtonText) {
+        openNewCapture(for: filteredSubreddit)
+      }
         .font(.system(size: 11, weight: .medium))
         .foregroundStyle(AppColors.redditOrange)
         .buttonStyle(.plain)
+        .accessibilityIdentifier(Self.filteredEmptyButtonIdentifier)
       Spacer()
     }.frame(maxWidth: .infinity)
   }

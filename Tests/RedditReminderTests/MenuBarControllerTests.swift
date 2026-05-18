@@ -169,10 +169,10 @@ struct MenuBarControllerTests {
 
   @Test func handleOpenPreferencesInvokesCallback() {
     let controller = MenuBarController()
-    var called = false
-    controller.onOpenPreferences = { called = true }
+    var openedTab: PreferencesView.Tab?
+    controller.onOpenPreferences = { openedTab = $0 }
     controller.perform(NSSelectorFromString("handleOpenPreferences"))
-    #expect(called == true)
+    #expect(openedTab == PreferencesView.defaultTab)
   }
 
   @Test func settingsMenuItemUsesVisibleSettingsLabel() {

@@ -56,13 +56,15 @@ final class HeuristicsStore {
   func syncGeneratedEvents(
     for subreddits: [Subreddit],
     context: ModelContext,
-    defaultLeadTimeMinutes: Int
+    defaultLeadTimeMinutes: Int,
+    notificationService: NotificationService? = nil
   ) throws {
     for subreddit in subreddits {
       try syncGeneratedEvents(
         for: subreddit,
         context: context,
-        defaultLeadTimeMinutes: defaultLeadTimeMinutes
+        defaultLeadTimeMinutes: defaultLeadTimeMinutes,
+        notificationService: notificationService
       )
     }
   }
@@ -70,7 +72,8 @@ final class HeuristicsStore {
   func syncGeneratedEvents(
     for subreddit: Subreddit,
     context: ModelContext,
-    defaultLeadTimeMinutes: Int
+    defaultLeadTimeMinutes: Int,
+    notificationService: NotificationService? = nil
   ) throws {
     let peak = peakInfo(for: subreddit)
     let desired = desiredEvents(for: peak)
@@ -78,6 +81,7 @@ final class HeuristicsStore {
 
     for event in subreddit.events where event.isGeneratedFromHeuristics {
       guard let key = event.generationKey, desiredKeys.contains(key) else {
+        notificationService?.cancelNotifications(eventId: event.id.uuidString)
         context.delete(event)
         continue
       }
