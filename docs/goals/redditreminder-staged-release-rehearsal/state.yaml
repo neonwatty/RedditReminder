@@ -64,7 +64,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/redditreminder-staged-release-rehearsal/"
     command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-staged-release-rehearsal"
 
-active_task: T008
+active_task: T009
 
 tasks:
   - id: T001
@@ -443,7 +443,7 @@ tasks:
   - id: T008
     type: worker
     assignee: Worker
-    status: active
+    status: blocked
     reasoning_hint: high
     objective: "Resume the draft staged release rehearsal after PR #131 is merged and required Actions secrets are configured."
     allowed_files:
@@ -458,20 +458,60 @@ tasks:
       - "PR #131 is not merged to main."
       - "Required Actions secret names are missing."
       - "Triggering the workflow would use draft=false or otherwise publish without explicit operator approval."
+    receipt:
+      result: blocked
+      changed_files:
+        - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      commands:
+        - cmd: "gh pr view 131 --json url,isDraft,state,mergedAt,mergeStateStatus,headRefName,baseRefName,statusCheckRollup"
+          status: pass
+          note: "PR #131 is still open, draft=true, mergedAt=null, and mergeStateStatus=CLEAN."
+        - cmd: "gh workflow list --all"
+          status: pass
+          note: "Only CI is listed; Staged Release is not visible on main."
+        - cmd: "gh secret list --app actions"
+          status: pass
+          note: "No Actions secret names were listed to this operator token."
+        - cmd: "git status --short --branch"
+          status: pass
+          note: "Branch is clean and tracks origin/codex/redditreminder-staged-release-train before recording this receipt."
+      summary: "T008 cannot safely resume the draft staged release rehearsal yet. The release-train PR is still an unmerged draft, the Staged Release workflow is not visible on main, and required Actions secret names are not visible to this operator token. No secret values were requested or recorded."
+      remaining_blockers:
+        - "Merge PR #131 to main after review."
+        - "Configure or verify required GitHub Actions secret names for signing and notarization."
+        - "Resume by running a draft Staged Release workflow and recording workflow, draft release, artifact, and smoke-test evidence."
+      verification_attempts: 1
+      stopped_because: "PR #131 is not merged to main and required Actions secret names are missing."
+      no_secret_values_recorded: true
+
+  - id: T009
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: medium
+    objective: "Resume the staged release rehearsal when external prerequisites change, or keep the exact blocker current."
+    inputs:
+      - "PR #131"
+      - "GitHub workflow list"
+      - "GitHub Actions secret names"
+      - "T008 receipt"
+    constraints:
+      - "Do not inspect, print, or store secret values."
+      - "Do not merge PR #131 or publish a release without explicit operator approval."
+      - "Do not trigger a non-draft release."
+    expected_output:
+      - "If PR #131 is merged and required secret names are visible, activate a Worker to run the draft Staged Release workflow."
+      - "If prerequisites are still missing, keep the exact blocker recorded without claiming completion."
     receipt: null
 
 checks:
   dirty_fingerprint: unknown
   last_verification:
     result: pass
-    task: T999
+    task: T008
     commands:
-      - "git diff --check"
-      - "npm ci and package/config parse"
-      - "make test"
-      - "make release-dry-run"
-      - "GoalBuddy state checker"
-      - "gh run watch 28619840657 --exit-status"
-      - "gh pr view 131 --json url,isDraft,state,mergeStateStatus,statusCheckRollup,headRefName,baseRefName"
+      - "gh pr view 131 --json url,isDraft,state,mergedAt,mergeStateStatus,headRefName,baseRefName,statusCheckRollup"
       - "gh workflow list --all"
       - "gh secret list --app actions"
+      - "git status --short --branch"
+      - "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
