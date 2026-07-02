@@ -64,7 +64,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/redditreminder-staged-release-rehearsal/"
     command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-staged-release-rehearsal"
 
-active_task: T999
+active_task: T008
 
 tasks:
   - id: T001
@@ -401,7 +401,7 @@ tasks:
   - id: T999
     type: judge
     assignee: Judge
-    status: active
+    status: done
     reasoning_hint: high
     objective: "Audit whether the staged release rehearsal goal is complete."
     inputs:
@@ -419,16 +419,59 @@ tasks:
       - "Evidence mapped to draft workflow run, artifact smoke tests, and publish/fix decision"
       - "Missing evidence"
       - "Next task if not complete"
+    receipt:
+      result: done
+      decision: "not_complete"
+      full_outcome_complete: false
+      evidence_summary:
+        - "Draft PR #131 is open for codex/redditreminder-staged-release-train against main: https://github.com/neonwatty/RedditReminder/pull/131"
+        - "PR #131 merge state is CLEAN and draft=true."
+        - "GitHub CI run 28619840657 completed successfully: https://github.com/neonwatty/RedditReminder/actions/runs/28619840657"
+        - "CI successes include Detect Changed Paths, Lint, Package Metadata, CLI Tests, File Size Check, Build, Unit Tests, UI Tests, and CI Gate."
+        - "The Build job includes the production app build and development app build."
+        - "gh workflow list --all still lists only CI from main, so the Staged Release workflow is not triggerable remotely until the PR lands."
+        - "gh secret list --app actions returned no configured secret names to this operator token."
+      missing_evidence:
+        - "No Staged Release workflow run URL."
+        - "No draft GitHub Release URL."
+        - "No DMG/checksum artifact."
+        - "No notarization, stapler, Gatekeeper, install, launch, or dev/prod coexistence smoke-test evidence."
+        - "No publish/fix decision based on a real draft artifact."
+      next_task: "T008"
+      rationale: "The repo-side release train is implemented and green in PR CI, but the original rehearsal outcome requires a real draft staged release run or exact external blocker evidence after the workflow is available on main and the required signing/notarization secrets are configured."
+
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: active
+    reasoning_hint: high
+    objective: "Resume the draft staged release rehearsal after PR #131 is merged and required Actions secrets are configured."
+    allowed_files:
+      - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      - "docs/goals/redditreminder-staged-release-rehearsal/notes/"
+    verify:
+      - "gh workflow list --all | rg 'Staged Release'"
+      - "gh secret list --app actions"
+      - "Record the Staged Release workflow run URL, draft GitHub Release URL, and artifact URLs, or record the exact external blocker."
+      - "Confirm no secret values were written to repo files or receipts."
+    stop_if:
+      - "PR #131 is not merged to main."
+      - "Required Actions secret names are missing."
+      - "Triggering the workflow would use draft=false or otherwise publish without explicit operator approval."
     receipt: null
 
 checks:
   dirty_fingerprint: unknown
   last_verification:
     result: pass
-    task: T007
+    task: T999
     commands:
       - "git diff --check"
       - "npm ci and package/config parse"
       - "make test"
       - "make release-dry-run"
       - "GoalBuddy state checker"
+      - "gh run watch 28619840657 --exit-status"
+      - "gh pr view 131 --json url,isDraft,state,mergeStateStatus,statusCheckRollup,headRefName,baseRefName"
+      - "gh workflow list --all"
+      - "gh secret list --app actions"
