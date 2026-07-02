@@ -1,0 +1,552 @@
+version: 2
+
+goal:
+  title: "RedditReminder Release Train"
+  slug: "redditreminder-release-train"
+  kind: specific
+  tranche: "Implement dev/prod app identity separation, production release packaging, CI/release workflow integration, and operator documentation for a regular release train."
+  status: done
+  oracle:
+    signal: "A verified release workflow where RedditReminder Dev and RedditReminder production can coexist, the dev install path is locally usable, and the production release path can produce or is ready to produce signed/notarized distributable artifacts through documented commands and CI."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "Task receipts show implementation, verification commands, any credential blockers, and a final audit with full_outcome_complete: true."
+  intake:
+    original_request: "Make a detailed GoalBuddy prep plan to implement a regular release train using the Foil-style dev/prod structure."
+    interpreted_outcome: "RedditReminder gains a repeatable publishing workflow with a signed production app and a separate development app for continuous iteration."
+    input_shape: specific
+    audience: "RedditReminder maintainers and release operators"
+    authority: requested
+    proof_type: artifact
+    completion_proof: "Repo changes plus documented verification prove dev/prod coexistence, release packaging readiness, CI/release wiring, and operator runbook coverage."
+    likely_misfire: "Stopping at release notes or planning while app identity separation, signing/notarization, packaging, and release assets remain unimplemented."
+    blind_spots_considered:
+      - "Developer ID certificate and notarization credentials may not be available in local or CI environments."
+      - "Production and development apps need separate bundle identifiers, display names, permissions, LaunchAgent labels, and local data where applicable."
+      - "The CLI and agent workflows must continue to target the intended store and build products."
+      - "GitHub release automation must avoid publishing unsigned or unnotarized artifacts as production."
+      - "Homebrew cask support is useful but should not block the first release-train tranche."
+    existing_plan_facts:
+      - "Use the usefoil/foil model: production app for published releases, development app for continuous local iteration."
+      - "Use a regular release train rather than release-on-every-merge."
+      - "Keep main green and dev-installable."
+      - "Production artifacts should be signed and notarized."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/redditreminder-release-train/"
+    command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-release-train"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map the current RedditReminder release surface and the Foil practices that should be copied before any implementation."
+    inputs:
+      - "README.md"
+      - "Makefile"
+      - "project.yml"
+      - ".github/workflows/ci.yml"
+      - "package.json"
+      - "Sources/Info.plist"
+      - "RedditReminder.entitlements"
+      - "scripts/"
+      - "docs/"
+      - "https://github.com/usefoil/foil"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Use primary sources for Foil and current repo evidence."
+      - "Identify credential-dependent work separately from local repo work."
+    expected_output:
+      - "Current release/signing/project map with file-path evidence."
+      - "Foil-style practices worth copying and any practices to defer."
+      - "Verification commands available today."
+      - "Specific risks for dev/prod bundle IDs, app names, stores, LaunchAgent labels, CLI behavior, signing, notarization, and release automation."
+      - "Recommended Worker slices and any required human inputs."
+    receipt:
+      result: done
+      note: "notes/T001-scout-map.md"
+      summary: "Mapped current RedditReminder release surface and Foil's dev/prod release pattern. Found one app identity today, metadata-only semantic-release, no packaging/notarization assets, and a low-risk path through a separate dev target plus build-setting-driven plist fields."
+      evidence:
+        - "project.yml"
+        - "Makefile"
+        - ".github/workflows/ci.yml"
+        - ".releaserc.json"
+        - "Sources/Info.plist"
+        - "RedditReminder.entitlements"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Services/MediaStore.swift"
+        - "CLI/Sources/CLIRunner.swift"
+        - "/private/tmp/foil-release-scout/project.yml"
+        - "/private/tmp/foil-release-scout/Makefile"
+        - "/private/tmp/foil-release-scout/.github/workflows/deploy.yml"
+        - "/private/tmp/foil-release-scout/.github/scripts/build-release-dmg.sh"
+        - "/private/tmp/foil-release-scout/docs/release-process.md"
+      spawned_tasks:
+        - T002
+
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the implementation architecture for dev/prod flavors and the first safe Worker package."
+    inputs:
+      - "T001 receipt"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer XcodeGen-driven configuration."
+      - "Prefer repeatable commands over undocumented manual Xcode steps."
+      - "Do not require signing credentials for local dev identity work."
+    expected_output:
+      - "Decision on flavor architecture: separate target, build configuration, scheme, or generated setting strategy."
+      - "Decision on app/store/LaunchAgent naming strategy."
+      - "Decision on release artifact shape: app zip, dmg, or both."
+      - "Exact Worker objective for T003."
+      - "allowed_files for T003."
+      - "verify commands for T003."
+      - "stop_if conditions for T003."
+    receipt:
+      result: done
+      decision: "approved"
+      full_outcome_complete: false
+      architecture:
+        flavor: "Add a separate XcodeGen application target named RedditReminderDev, sharing Sources with the production target, with PRODUCT_NAME 'RedditReminder Dev', PRODUCT_MODULE_NAME RedditReminder, and PRODUCT_BUNDLE_IDENTIFIER com.neonwatty.RedditReminder.Dev."
+        app_store: "Preserve production storage behavior. For the dev flavor only, route SwiftData and media storage to a development-specific Application Support directory derived from the bundle ID/name."
+        launch: "Add dev Makefile entry points using ~/Applications like the existing repo: build-dev, install-dev, start-dev, stop-dev. Keep install-debug as production-debug compatibility."
+        release_artifact: "Defer release artifact choice to T004, but default to a signed/notarized DMG plus .sha256 checksum, matching Foil without Sparkle or Homebrew in the first tranche."
+      t003_worker_objective: "Implement the dev/prod app identity foundation: separate dev target/scheme, build-setting-driven Info.plist values, dev Makefile commands, and dev-only store/media separation while preserving production defaults."
+      allowed_files:
+        - "project.yml"
+        - "Makefile"
+        - "Sources/Info.plist"
+        - "Sources/Utilities/AppRuntime.swift"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Services/MediaStore.swift"
+        - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+        - "Tests/RedditReminderTests/"
+        - "RedditReminder.xcodeproj/project.pbxproj"
+        - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+        - "docs/goals/redditreminder-release-train/state.yaml"
+        - "docs/goals/redditreminder-release-train/notes/"
+      verify:
+        - "make generate"
+        - "make build-dev"
+        - "make build-debug"
+        - "make build-cli"
+        - "make test"
+        - "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminderDev -configuration Debug | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+        - "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Release | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+      stop_if:
+        - "XcodeGen cannot express the dev target cleanly without hand-editing RedditReminder.xcodeproj."
+        - "The change would migrate or rewrite production user data."
+        - "Dev build cannot be distinguished by bundle ID and app name."
+        - "Verification fails twice for reasons unrelated to local signing environment."
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement the dev/prod app identity foundation selected by Judge."
+    allowed_files:
+      - "project.yml"
+      - "Makefile"
+      - "RedditReminder.xcodeproj/"
+      - "Sources/Info.plist"
+      - "Sources/Utilities/AppRuntime.swift"
+      - "Sources/App/AppModelContainerFactory.swift"
+      - "Sources/Services/MediaStore.swift"
+      - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+      - "Tests/RedditReminderTests/"
+      - "RedditReminder.xcodeproj/project.pbxproj"
+      - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+      - "docs/goals/redditreminder-release-train/state.yaml"
+      - "docs/goals/redditreminder-release-train/notes/"
+    verify:
+      - "make generate"
+      - "make build-dev"
+      - "make build-debug"
+      - "make build-cli"
+      - "make test"
+      - "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminderDev -configuration Debug | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+      - "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Release | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+    stop_if:
+      - "XcodeGen cannot express the dev target cleanly without hand-editing RedditReminder.xcodeproj."
+      - "The change would migrate or rewrite production user data."
+      - "Dev build cannot be distinguished by bundle ID and app name."
+      - "Verification fails twice for reasons unrelated to local signing environment."
+    receipt:
+      result: done
+      changed_files:
+        - "project.yml"
+        - "Makefile"
+        - "Sources/Info.plist"
+        - "Sources/Utilities/AppRuntime.swift"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Services/MediaStore.swift"
+        - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+        - "RedditReminder.xcodeproj/project.pbxproj"
+        - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+      commands:
+        - cmd: "make generate"
+          status: pass
+        - cmd: "make build-dev"
+          status: pass
+        - cmd: "make build-debug"
+          status: pass
+        - cmd: "make build-cli"
+          status: pass
+          note: "Initial failure because RedditReminderCLI compiled MediaStore without AppRuntime; fixed by adding Sources/Utilities/AppRuntime.swift to the CLI target in project.yml."
+        - cmd: "make test"
+          status: pass
+          note: "449 tests passed."
+        - cmd: "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminderDev -configuration Debug | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+          status: pass
+        - cmd: "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Release | rg 'PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME|PRODUCT_MODULE_NAME|INFOPLIST|MARKETING_VERSION|CURRENT_PROJECT_VERSION'"
+          status: pass
+        - cmd: "swift-format lint Sources/Utilities/AppRuntime.swift Tests/RedditReminderTests/AppRuntimeTests.swift"
+          status: pass
+      summary: "Added a separate RedditReminderDev app target/scheme with bundle ID com.neonwatty.RedditReminder.Dev and app name 'RedditReminder Dev'; converted app plist identity/version fields to build settings; added build/install/start/stop dev Makefile targets; and added dev-only Application Support storage/media routing while preserving production defaults."
+      follow_up_risks:
+        - "Existing RedditReminder.entitlements is still not wired into generated debug entitlements; packaging/signing slice must decide and verify release entitlements."
+        - "install-dev target was added but not executed to avoid changing the operator's installed app state during this slice."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Add repeatable production archive, signing, notarization, and artifact packaging commands with credential boundaries clearly documented."
+    allowed_files:
+      - "Makefile"
+      - "scripts/"
+      - "scripts/build-release-dmg.sh"
+      - "docs/"
+      - ".gitignore"
+      - "project.yml"
+      - "ExportOptions.plist"
+      - "RedditReminder.entitlements"
+    verify:
+      - "make generate"
+      - "make build"
+      - "Run any new packaging command in dry-run or unsigned validation mode if provided."
+      - "Validate scripts with shellcheck if available, otherwise run syntax checks."
+    stop_if:
+      - "Signing or notarization requires unavailable secrets and no dry-run path can be implemented."
+      - "The command would publish, upload, notarize with real credentials, or mutate external state without explicit approval."
+      - "Packaging requires a product decision not covered by the charter."
+    receipt:
+      result: done
+      changed_files:
+        - "Makefile"
+        - "ExportOptions.plist"
+        - "scripts/build-release-dmg.sh"
+      commands:
+        - cmd: "bash -n scripts/build-release-dmg.sh"
+          status: pass
+        - cmd: "make release-dry-run"
+          status: pass
+          note: "Generated the release plan and export options under build/release without archiving, signing, notarizing, or creating a DMG."
+        - cmd: "make build"
+          status: pass
+        - cmd: "plutil -lint ExportOptions.plist && plutil -p ExportOptions.plist"
+          status: pass
+        - cmd: "xcodebuild -showBuildSettings -project RedditReminder.xcodeproj -scheme RedditReminder -configuration Release | rg 'CODE_SIGN_ENTITLEMENTS|ENABLE_HARDENED_RUNTIME|ENABLE_APP_SANDBOX|CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PRODUCT_BUNDLE_IDENTIFIER|PRODUCT_NAME'"
+          status: pass
+          note: "Release settings show ENABLE_HARDENED_RUNTIME=YES, ENABLE_APP_SANDBOX=NO, production bundle ID com.neonwatty.RedditReminder, and no CODE_SIGN_ENTITLEMENTS setting."
+        - cmd: "if command -v shellcheck >/dev/null 2>&1; then shellcheck scripts/build-release-dmg.sh; else printf 'shellcheck unavailable\\n'; fi"
+          status: pass
+          note: "shellcheck is not installed in this environment; the fallback command completed and bash syntax check passed."
+      summary: "Added a credential-gated Developer ID release command that archives the production scheme, exports the app, verifies code signing and version metadata, creates and signs a DMG, submits it to notarytool, staples and validates it, and writes a sha256 checksum. Dry-run mode proves the local command shape without credentials or external mutation."
+      credential_boundary:
+        required_for_real_release:
+          - "VERSION"
+          - "BUILD_NUMBER"
+          - "APPLE_TEAM_ID"
+          - "APP_STORE_CONNECT_KEY_ID"
+          - "APP_STORE_CONNECT_ISSUER_ID"
+          - "APP_STORE_CONNECT_PRIVATE_KEY"
+        local_only_without_credentials:
+          - "make release-dry-run"
+      signing_notes:
+        - "The release archive forces Developer ID manual signing, hardened runtime, and production bundle identity."
+        - "No release entitlements are wired; this preserves the app's current unsandboxed Application Support storage behavior. The script prints exported app entitlements when real signing runs."
+        - "The notary API private key is written to a temporary directory and removed on script exit."
+
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Wire CI and GitHub release automation for the regular train without exposing secrets or publishing invalid production assets."
+    allowed_files:
+      - ".github/workflows/"
+      - ".github/workflows/ci.yml"
+      - ".releaserc.json"
+      - "package.json"
+      - "package-lock.json"
+      - "Makefile"
+      - "scripts/"
+      - "scripts/prepare-release-signing.sh"
+      - "docs/"
+    verify:
+      - "npm ci"
+      - "node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); JSON.parse(require('fs').readFileSync('.releaserc.json', 'utf8')); require('./commitlint.config.cjs');\""
+      - "GitHub workflow syntax inspection by reading changed YAML and, if available, actionlint."
+    stop_if:
+      - "The repo lacks required secrets and no guarded workflow path can be expressed."
+      - "The release job would attach unsigned/unnotarized artifacts as production."
+      - "Semantic-release behavior is ambiguous."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - ".releaserc.json"
+        - "package.json"
+        - "package-lock.json"
+        - "scripts/prepare-release-signing.sh"
+      commands:
+        - cmd: "npm ci"
+          status: pass
+          note: "Completed with npm audit reporting 8 dependency vulnerabilities in the semantic-release dependency tree."
+        - cmd: "node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); JSON.parse(require('fs').readFileSync('.releaserc.json', 'utf8')); require('./commitlint.config.cjs');\""
+          status: pass
+        - cmd: "if command -v actionlint >/dev/null 2>&1; then actionlint .github/workflows/ci.yml; else ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"actionlint unavailable; YAML parsed\"'; fi"
+          status: pass
+          note: "actionlint is not installed in this environment; Ruby YAML parsing succeeded."
+        - cmd: "bash -n scripts/prepare-release-signing.sh && bash -n scripts/build-release-dmg.sh"
+          status: pass
+        - cmd: "node -e \"Promise.all([import('@semantic-release/exec'), import('@semantic-release/github')]).then(() => console.log('semantic-release plugins load'))\""
+          status: pass
+        - cmd: "make release-dry-run"
+          status: pass
+      summary: "Moved the main-branch release job to macOS, installed XcodeGen, validated the release packaging command, and wired semantic-release so verifyRelease checks/imports signing prerequisites only when a release is due, prepare builds the signed/notarized DMG with the computed version, and @semantic-release/github uploads the DMG plus checksum."
+      credential_boundary:
+        github_secrets_required_for_real_release:
+          - "APPLE_TEAM_ID"
+          - "APP_STORE_CONNECT_KEY_ID"
+          - "APP_STORE_CONNECT_ISSUER_ID"
+          - "APP_STORE_CONNECT_PRIVATE_KEY"
+          - "DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64"
+          - "DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD"
+          - "KEYCHAIN_PASSWORD"
+        optional_secret:
+          - "DEVELOPER_ID_APPLICATION"
+      publishing_notes:
+        - "No release was published locally."
+        - "Unsigned artifacts are not attached: the GitHub release assets are produced by make release-dmg in semantic-release prepare, after signing and notarization."
+        - "If semantic-release finds no releasable commits on main, verifyRelease and prepare do not run."
+
+  - id: T006
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Document the release train runbook, dev install workflow, production signing prerequisites, cadence, smoke checks, rollback, and deferred Homebrew path."
+    allowed_files:
+      - "README.md"
+      - "docs/"
+      - "docs/release-train.md"
+      - "AGENTS.md"
+    verify:
+      - "rg 'release|notar|Developer ID|RedditReminder Dev|release train' README.md docs AGENTS.md"
+      - "make cli-test"
+    stop_if:
+      - "Documentation would claim production release readiness that verification has not proven."
+      - "A required operator decision about cadence, naming, or distribution channel is unresolved."
+    receipt:
+      result: done
+      changed_files:
+        - "README.md"
+        - "docs/release-train.md"
+        - "AGENTS.md"
+      commands:
+        - cmd: "rg 'release|notar|Developer ID|RedditReminder Dev|release train' README.md docs AGENTS.md"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+      summary: "Documented the release train runbook, including production/dev app identities and storage directories, weekly cadence, dev install workflow, local release dry-run and real DMG commands, GitHub Actions secrets, semantic-release packaging flow, smoke checks, rollback guidance, and deferred Homebrew cask support. README and AGENTS now point maintainers and agents to the runbook."
+
+  - id: T007
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the implemented release-train slices for correctness, security, and operational gaps before final validation."
+    inputs:
+      - "T003 receipt"
+      - "T004 receipt"
+      - "T005 receipt"
+      - "T006 receipt"
+      - "Current git diff"
+    constraints:
+      - "Do not implement."
+      - "Check whether any queued Worker remains required before final audit."
+      - "Treat missing credentials as blocked task details, not proof of failure, when local scaffolding is otherwise complete."
+    expected_output:
+      - "approve | changes_required"
+      - "Security/signing/notarization review"
+      - "CI/release workflow review"
+      - "Required fixes or final validation commands"
+      - "Whether T999 may run after fixes"
+    receipt:
+      result: done
+      decision: "changes_required"
+      full_outcome_complete: false
+      findings:
+        - "CI does not build the new RedditReminderDev scheme, so the development app identity can regress while the production build stays green."
+        - "scripts/prepare-release-signing.sh writes the decoded Developer ID .p12 to RUNNER_TEMP and does not remove it after import."
+      security_review: "The release path is credential-gated and avoids uploading unsigned artifacts, but the transient p12 cleanup should be tightened before final audit."
+      ci_review: "semantic-release prepare/publish wiring is coherent; add a dev scheme build to CI so dev/prod coexistence remains guarded."
+      required_fixes:
+        - "Add CI build coverage for the RedditReminderDev scheme."
+        - "Remove the decoded p12 after successful import."
+      t999_ready: false
+
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Fix Judge-required release readiness gaps: CI dev-target build coverage and decoded certificate cleanup."
+    allowed_files:
+      - ".github/workflows/ci.yml"
+      - "scripts/prepare-release-signing.sh"
+      - "docs/goals/redditreminder-release-train/state.yaml"
+    verify:
+      - "bash -n scripts/prepare-release-signing.sh"
+      - "if command -v actionlint >/dev/null 2>&1; then actionlint .github/workflows/ci.yml; else ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"actionlint unavailable; YAML parsed\"'; fi"
+      - "make build-dev"
+      - "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-release-train/state.yaml"
+    stop_if:
+      - "The CI dev build requires broader workflow restructuring."
+      - "Certificate cleanup conflicts with preserving the imported identity for the later release build."
+      - "Verification fails twice for reasons unrelated to local signing environment."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - "scripts/prepare-release-signing.sh"
+      commands:
+        - cmd: "bash -n scripts/prepare-release-signing.sh"
+          status: pass
+        - cmd: "if command -v actionlint >/dev/null 2>&1; then actionlint .github/workflows/ci.yml; else ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/ci.yml\"); puts \"actionlint unavailable; YAML parsed\"'; fi"
+          status: pass
+          note: "actionlint is not installed in this environment; Ruby YAML parsing succeeded."
+        - cmd: "make build-dev"
+          status: pass
+        - cmd: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-release-train/state.yaml"
+          status: pass
+      summary: "Added CI coverage for the RedditReminderDev scheme and tightened signing import cleanup so the decoded Developer ID p12 is removed after import and by an EXIT trap if import fails."
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the release-train implementation satisfies the original user outcome."
+    inputs:
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if only planning or docs were completed."
+      - "Reject completion if dev/prod identities cannot be distinguished."
+      - "Reject completion if production packaging is not either verified or explicitly blocked only by documented external credentials."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Evidence mapped to dev/prod coexistence, production signing/notarization path, CI/release train, and operator runbook"
+      - "Missing evidence"
+      - "Next task if not complete"
+    receipt:
+      result: done
+      decision: "complete"
+      full_outcome_complete: true
+      evidence:
+        dev_prod_coexistence:
+          - "RedditReminderDev target/scheme builds with app name 'RedditReminder Dev' and bundle ID com.neonwatty.RedditReminder.Dev."
+          - "Production remains app name 'RedditReminder' and bundle ID com.neonwatty.RedditReminder."
+          - "Development flavor routes SwiftData and media storage to ~/Library/Application Support/RedditReminder Dev while production preserves existing defaults."
+          - "make build-dev passed locally and CI now builds the RedditReminderDev scheme."
+        production_packaging:
+          - "make release-dry-run passed and prints the production archive/export/DMG/checksum plan without external side effects."
+          - "make build passed during T004."
+          - "scripts/build-release-dmg.sh performs archive, export, signing verification, DMG creation/signing, notarization, stapling, Gatekeeper validation, and sha256 generation when credentials are provided."
+          - "Release archive forces Developer ID manual signing, hardened runtime, production bundle identity, and no release entitlements to preserve current unsandboxed storage behavior."
+        ci_release_train:
+          - ".github/workflows/ci.yml keeps the CI gate, runs release on macOS after the gate, validates release dry-run, then runs semantic-release on main."
+          - ".releaserc.json uses @semantic-release/exec verifyRelease/prepare so signing prerequisites and make release-dmg run only when semantic-release determines a release is due."
+          - "@semantic-release/github uploads the signed/notarized DMG and sha256 checksum from build/release."
+          - "scripts/prepare-release-signing.sh validates secrets, imports the Developer ID certificate when provided, verifies signing identity, and removes the decoded p12."
+        runbook:
+          - "docs/release-train.md documents cadence, dev install flow, local release commands, GitHub secrets, smoke checks, rollback, and deferred Homebrew."
+          - "README.md and AGENTS.md link to the runbook and summarize release-train commands."
+      final_commands:
+        - cmd: "npm ci && node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); JSON.parse(require('fs').readFileSync('.releaserc.json', 'utf8')); require('./commitlint.config.cjs');\""
+          status: pass
+          note: "npm audit reports 8 dependency vulnerabilities in the release tooling dependency tree."
+        - cmd: "make test"
+          status: pass
+          note: "449 tests passed."
+        - cmd: "make release-dry-run"
+          status: pass
+        - cmd: "make build-dev"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+        - cmd: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-release-train/state.yaml"
+          status: pass
+      missing_evidence:
+        - "A real Developer ID archive/notarization run was not executed locally because production signing and App Store Connect credentials were not provided in this session."
+      conclusion: "The requested release-train implementation is complete for this tranche: dev and production apps can coexist, production packaging and GitHub release automation are wired with credential boundaries, and the operator runbook documents cadence and execution."
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T999
+    commands:
+      - "npm ci and release config parse"
+      - "make test"
+      - "make release-dry-run"
+      - "make build-dev"
+      - "make cli-test"
+      - "GoalBuddy state checker"

@@ -88,3 +88,16 @@ Run agent-focused CLI checks with:
 ```sh
 make cli-test
 ```
+
+## Release Train
+
+- Use `make build-dev` and `make install-dev` for development app validation.
+- Use `make release-dry-run` before changing release packaging or CI release
+  workflow behavior.
+- Do not run `make release-dmg` unless the operator has provided signing and
+  notarization credentials for a real production release.
+- See `docs/release-train.md` for the production release runbook and required
+  GitHub Actions secrets.
+- Use `docs/release-checklist.md` to record staged release workflow URLs,
+  artifact URLs, smoke-test results, and publish/fix decisions. Never write
+  secret values into the checklist.

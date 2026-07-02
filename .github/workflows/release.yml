@@ -1,0 +1,150 @@
+name: Staged Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without leading v, for example 0.1.0"
+        required: true
+        type: string
+      build:
+        description: "Build number. Defaults to this workflow run number when empty."
+        required: false
+        type: string
+      ref:
+        description: "Branch, tag, or SHA to release."
+        required: true
+        default: "main"
+        type: string
+      draft:
+        description: "Create the GitHub Release as a draft."
+        required: true
+        default: true
+        type: boolean
+      prerelease:
+        description: "Mark the GitHub Release as a prerelease."
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: staged-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, Notarize, and Stage Release
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_BUILD: ${{ inputs.build || github.run_number }}
+      RELEASE_TAG: v${{ inputs.version }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+      DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+      DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 }}
+      DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Install tools
+        run: brew install xcodegen
+
+      - name: Validate release inputs
+        run: |
+          if ! printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "version must be a semantic version without a leading v" >&2
+            exit 2
+          fi
+          if ! printf '%s' "$RELEASE_BUILD" | grep -Eq '^[0-9]+$'; then
+            echo "build must be an integer" >&2
+            exit 2
+          fi
+
+      - name: Verify signing prerequisites
+        run: scripts/prepare-release-signing.sh
+
+      - name: Run release checks
+        run: |
+          make build-dev
+          make test
+          make cli-test
+          make release-dry-run
+
+      - name: Build signed and notarized DMG
+        run: make release-dmg VERSION="$RELEASE_VERSION" BUILD="$RELEASE_BUILD"
+
+      - name: Upload release artifacts for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: RedditReminder-${{ inputs.version }}-macos
+          path: |
+            build/release/RedditReminder-${{ inputs.version }}-macos.dmg
+            build/release/RedditReminder-${{ inputs.version }}-macos.dmg.sha256
+          retention-days: 30
+
+      - name: Create or update staged GitHub Release
+        env:
+          DRAFT: ${{ inputs.draft }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          release_flags=()
+          if [ "$DRAFT" = "true" ]; then
+            release_flags+=(--draft)
+          fi
+          if [ "$PRERELEASE" = "true" ]; then
+            release_flags+=(--prerelease)
+          fi
+
+          notes_file="$(mktemp)"
+          {
+            echo "RedditReminder $RELEASE_VERSION"
+            echo
+            echo "Build: $RELEASE_BUILD"
+            echo "Source ref: ${{ inputs.ref }}"
+            echo "Commit: $GITHUB_SHA"
+            echo
+            echo "Smoke checks:"
+            echo
+            echo '```sh'
+            echo "shasum -a 256 -c RedditReminder-$RELEASE_VERSION-macos.dmg.sha256"
+            echo "spctl -a -vv -t open --context context:primary-signature RedditReminder-$RELEASE_VERSION-macos.dmg"
+            echo "xcrun stapler validate RedditReminder-$RELEASE_VERSION-macos.dmg"
+            echo '```'
+          } > "$notes_file"
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" \
+              "build/release/RedditReminder-$RELEASE_VERSION-macos.dmg" \
+              "build/release/RedditReminder-$RELEASE_VERSION-macos.dmg.sha256" \
+              --clobber
+            gh release edit "$RELEASE_TAG" \
+              --title "RedditReminder $RELEASE_VERSION" \
+              --notes-file "$notes_file" \
+              --draft="$DRAFT" \
+              --prerelease="$PRERELEASE"
+          else
+            gh release create "$RELEASE_TAG" \
+              "build/release/RedditReminder-$RELEASE_VERSION-macos.dmg" \
+              "build/release/RedditReminder-$RELEASE_VERSION-macos.dmg.sha256" \
+              --target "$GITHUB_SHA" \
+              --title "RedditReminder $RELEASE_VERSION" \
+              --notes-file "$notes_file" \
+              "${release_flags[@]}"
+          fi

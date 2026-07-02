@@ -46,7 +46,6 @@ jobs:
             package_metadata:
               - 'package.json'
               - 'package-lock.json'
-              - '.releaserc.json'
               - 'commitlint.config.cjs'
 
   lint:
@@ -89,6 +88,15 @@ jobs:
           xcodebuild build
           -project RedditReminder.xcodeproj
           -scheme RedditReminder
+          -configuration Debug
+          -destination 'platform=macOS'
+          CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO
+          OTHER_SWIFT_FLAGS='-warnings-as-errors'
+      - name: Build development app (warnings as errors)
+        run: >
+          xcodebuild build
+          -project RedditReminder.xcodeproj
+          -scheme RedditReminderDev
           -configuration Debug
           -destination 'platform=macOS'
           CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO
@@ -246,7 +254,7 @@ jobs:
       - name: Validate package metadata
         run: |
           npm ci
-          node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); JSON.parse(require('fs').readFileSync('.releaserc.json', 'utf8')); require('./commitlint.config.cjs');"
+          node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); require('./commitlint.config.cjs');"
 
   file-size-check:
     name: File Size Check
@@ -300,29 +308,3 @@ jobs:
             fi
           done
           echo "All required jobs passed or were skipped"
-
-  release:
-    name: Release
-    if: >-
-      always() && !cancelled() &&
-      needs.ci-gate.result == 'success' &&
-      github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [ci-gate]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: npm ci
-      - name: Run semantic-release
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

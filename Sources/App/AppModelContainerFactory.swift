@@ -11,8 +11,7 @@ enum AppModelContainerFactory {
   }
 
   static var appSupportDirectory: URL {
-    FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-      .appendingPathComponent("RedditReminder", isDirectory: true)
+    AppRuntime.appSupportDirectory()
   }
 
   static func makePersistentContainer(storeURL: URL? = nil) throws -> ModelContainer {
@@ -20,6 +19,17 @@ enum AppModelContainerFactory {
       let directory = storeURL.deletingLastPathComponent()
       try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
       let configuration = ModelConfiguration("RedditReminderUITests", schema: schema, url: storeURL)
+      return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    if AppRuntime.isDevelopmentFlavor() {
+      let directory = AppRuntime.appSupportDirectory()
+      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      let configuration = ModelConfiguration(
+        "RedditReminderDev",
+        schema: schema,
+        url: directory.appendingPathComponent("default.store")
+      )
       return try ModelContainer(for: schema, configurations: configuration)
     }
 
