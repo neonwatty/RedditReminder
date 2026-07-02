@@ -64,7 +64,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/redditreminder-staged-release-rehearsal/"
     command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-staged-release-rehearsal"
 
-active_task: T007
+active_task: T999
 
 tasks:
   - id: T001
@@ -313,7 +313,7 @@ tasks:
   - id: T007
     type: worker
     assignee: Worker
-    status: active
+    status: done
     reasoning_hint: high
     objective: "Publish the release-train and staged-release changes to a reviewable branch/PR without exposing secrets."
     allowed_files:
@@ -350,12 +350,58 @@ tasks:
       - "Verification fails for a repo-side reason."
       - "Staging would include files outside the allowed release-train/staged-release scope."
       - "Pushing would require secret values or destructive history operations."
-    receipt: null
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - ".github/workflows/release.yml"
+        - ".releaserc.json"
+        - "AGENTS.md"
+        - "Makefile"
+        - "README.md"
+        - "RedditReminder.xcodeproj/project.pbxproj"
+        - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Info.plist"
+        - "Sources/Services/MediaStore.swift"
+        - "Sources/Utilities/AppRuntime.swift"
+        - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+        - "package-lock.json"
+        - "package.json"
+        - "project.yml"
+        - "ExportOptions.plist"
+        - "docs/release-checklist.md"
+        - "docs/release-train.md"
+        - "docs/goals/redditreminder-release-train/"
+        - "docs/goals/redditreminder-staged-release-rehearsal/"
+        - "scripts/build-release-dmg.sh"
+        - "scripts/prepare-release-signing.sh"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm ci && node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); require('./commitlint.config.cjs');\""
+          status: pass
+          note: "npm audit reports 1 moderate dependency finding in the reduced commitlint dependency tree."
+        - cmd: "make test"
+          status: pass
+          note: "449 tests passed."
+        - cmd: "make release-dry-run"
+          status: pass
+        - cmd: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+          status: pass
+        - cmd: "git push -u origin codex/redditreminder-staged-release-train"
+          status: pass
+        - cmd: "gh pr create --draft --base main --head codex/redditreminder-staged-release-train"
+          status: pass
+      branch: "codex/redditreminder-staged-release-train"
+      commit: "965ff8c"
+      pull_request: "https://github.com/neonwatty/RedditReminder/pull/131"
+      summary: "Published the release-train and staged-release implementation to a reviewable draft PR so CI can validate it and the Staged Release workflow can become available after merge. No secret values were requested or recorded."
 
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: active
     reasoning_hint: high
     objective: "Audit whether the staged release rehearsal goal is complete."
     inputs:
@@ -378,6 +424,11 @@ tasks:
 checks:
   dirty_fingerprint: unknown
   last_verification:
-    result: pending
-    task: T001
-    commands: []
+    result: pass
+    task: T007
+    commands:
+      - "git diff --check"
+      - "npm ci and package/config parse"
+      - "make test"
+      - "make release-dry-run"
+      - "GoalBuddy state checker"
