@@ -2,6 +2,10 @@ import Foundation
 
 enum AppRuntime {
   static let uiTestStoreLaunchArgument = "--ui-test-store"
+  static let productionBundleIdentifier = "com.neonwatty.RedditReminder"
+  static let developmentBundleIdentifier = "com.neonwatty.RedditReminder.Dev"
+  static let productionAppSupportDirectoryName = "RedditReminder"
+  static let developmentAppSupportDirectoryName = "RedditReminder Dev"
 
   static func isRunningUnitTests(
     environment: [String: String] = ProcessInfo.processInfo.environment
@@ -13,6 +17,33 @@ enum AppRuntime {
     environment: [String: String] = ProcessInfo.processInfo.environment
   ) -> Bool {
     !isRunningUnitTests(environment: environment)
+  }
+
+  static func isDevelopmentFlavor(
+    bundleIdentifier: String? = Bundle.main.bundleIdentifier,
+    processName: String = ProcessInfo.processInfo.processName
+  ) -> Bool {
+    bundleIdentifier == developmentBundleIdentifier
+      || processName == developmentAppSupportDirectoryName
+  }
+
+  static func appSupportDirectoryName(
+    bundleIdentifier: String? = Bundle.main.bundleIdentifier,
+    processName: String = ProcessInfo.processInfo.processName
+  ) -> String {
+    isDevelopmentFlavor(bundleIdentifier: bundleIdentifier, processName: processName)
+      ? developmentAppSupportDirectoryName
+      : productionAppSupportDirectoryName
+  }
+
+  static func appSupportDirectory(
+    bundleIdentifier: String? = Bundle.main.bundleIdentifier,
+    processName: String = ProcessInfo.processInfo.processName
+  ) -> URL {
+    FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent(
+        appSupportDirectoryName(bundleIdentifier: bundleIdentifier, processName: processName),
+        isDirectory: true)
   }
 
   static func uiTestStoreURL(arguments: [String] = ProcessInfo.processInfo.arguments) -> URL? {

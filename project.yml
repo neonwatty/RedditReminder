@@ -35,6 +35,7 @@ targets:
       - path: Sources/Services/NotificationService.swift
       - path: Sources/Services/TimingEngine.swift
       - path: Sources/App/AppRefreshAction.swift
+      - path: Sources/Utilities/AppRuntime.swift
       - path: Sources/Utilities/CapturePersistenceActions.swift
       - path: Sources/Utilities/Constants.swift
       - path: Sources/Utilities/ProjectPersistenceActions.swift
@@ -55,16 +56,46 @@ targets:
       - path: Sources
       - path: Resources/peak-times.json
         buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: RedditReminder
+        PRODUCT_MODULE_NAME: RedditReminder
+        PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminder
     info:
       path: Sources/Info.plist
       properties:
         LSUIElement: true
         NSSupportsAutomaticTermination: false
-        CFBundleName: RedditReminder
-        CFBundleDisplayName: RedditReminder
-        CFBundleIdentifier: com.neonwatty.RedditReminder
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleName: "$(PRODUCT_NAME)"
+        CFBundleDisplayName: "$(PRODUCT_NAME)"
+        CFBundleIdentifier: "$(PRODUCT_BUNDLE_IDENTIFIER)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "Copyright 2026 Jeremy Watt"
+
+  RedditReminderDev:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Resources/peak-times.json
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: "RedditReminder Dev"
+        PRODUCT_MODULE_NAME: RedditReminder
+        PRODUCT_BUNDLE_IDENTIFIER: com.neonwatty.RedditReminder.Dev
+    info:
+      path: Sources/Info.plist
+      properties:
+        LSUIElement: true
+        NSSupportsAutomaticTermination: false
+        CFBundleName: "$(PRODUCT_NAME)"
+        CFBundleDisplayName: "$(PRODUCT_NAME)"
+        CFBundleIdentifier: "$(PRODUCT_BUNDLE_IDENTIFIER)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "Copyright 2026 Jeremy Watt"
 
@@ -107,6 +138,11 @@ schemes:
     test:
       targets:
         - RedditReminderTests
+
+  RedditReminderDev:
+    build:
+      targets:
+        RedditReminderDev: all
 
   RedditReminderUITests:
     build:

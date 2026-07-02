@@ -40,6 +40,8 @@ make test
 make ui-test
 make build-debug
 make install-debug
+make build-dev
+make install-dev
 ```
 
 Local smoke QA:
@@ -54,6 +56,24 @@ UI tests launch RedditReminder with a per-test `--ui-test-store` path so `--seed
 CI runs unit, CLI, and UI test jobs for code changes. Package and release metadata
 changes run a lightweight npm metadata validation job. Coverage is reported and
 uploaded by CI, but it is not enforced as a numeric gate yet.
+
+### Release Train
+
+Use `RedditReminder Dev` for continuous local iteration and reserve
+`RedditReminder` for production candidates and published releases. The dev app
+has a separate bundle ID and Application Support directory, so it can coexist
+with the production app.
+
+```sh
+make release-dry-run
+```
+
+Production DMGs are built by `make release-dmg VERSION=... BUILD=...` and by the
+manual **Staged Release** GitHub Actions workflow when signing/notarization
+secrets are configured. See [docs/release-train.md](docs/release-train.md) for
+the full runbook, required secrets, smoke checks, and rollback guidance. Use
+[docs/release-checklist.md](docs/release-checklist.md) to record each staged
+release rehearsal.
 
 ## Notes
 

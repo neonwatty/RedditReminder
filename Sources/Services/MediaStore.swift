@@ -9,8 +9,7 @@ final class MediaStore {
     if let rootDir {
       self.rootDir = rootDir
     } else {
-      let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-      self.rootDir = appSupport.appendingPathComponent("RedditReminder/media")
+      self.rootDir = AppRuntime.appSupportDirectory().appendingPathComponent("media")
     }
   }
 

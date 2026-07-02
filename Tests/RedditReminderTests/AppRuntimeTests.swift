@@ -51,3 +51,26 @@ import Testing
   #expect(AppRuntime.uiTestStoreURL(arguments: ["RedditReminder", "--ui-test-store"]) == nil)
   #expect(AppRuntime.uiTestStoreURL(arguments: ["RedditReminder"]) == nil)
 }
+
+@Test func productionFlavorKeepsExistingApplicationSupportName() {
+  let name = AppRuntime.appSupportDirectoryName(
+    bundleIdentifier: AppRuntime.productionBundleIdentifier,
+    processName: "RedditReminder")
+
+  #expect(name == "RedditReminder")
+}
+
+@Test func developmentFlavorUsesSeparateApplicationSupportName() {
+  let name = AppRuntime.appSupportDirectoryName(
+    bundleIdentifier: AppRuntime.developmentBundleIdentifier,
+    processName: "RedditReminder Dev")
+
+  #expect(name == "RedditReminder Dev")
+}
+
+@Test func developmentFlavorCanBeDetectedFromProcessName() {
+  #expect(
+    AppRuntime.isDevelopmentFlavor(
+      bundleIdentifier: nil,
+      processName: "RedditReminder Dev"))
+}

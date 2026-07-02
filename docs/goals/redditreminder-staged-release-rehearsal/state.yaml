@@ -1,0 +1,517 @@
+version: 2
+
+goal:
+  title: "RedditReminder Staged Release Rehearsal"
+  slug: "redditreminder-staged-release-rehearsal"
+  kind: existing_plan
+  tranche: "Run the first staged release rehearsal through secret readiness, draft workflow execution, artifact smoke testing, and publish-or-fix decision."
+  status: active
+  oracle:
+    signal: "A draft GitHub Release or explicit external blocker is recorded with evidence; when an artifact exists, checksum, stapler, Gatekeeper, install, launch, and dev/prod coexistence smoke checks are recorded; final Judge states publish, fix, or blocked."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "Task receipts map workflow run evidence, artifact evidence or blocker, smoke checks when possible, and a publish/fix decision."
+  intake:
+    original_request: "Organize the staged release rehearsal as GoalBuddy prep."
+    interpreted_outcome: "Create and run a GoalBuddy-managed first staged release rehearsal for RedditReminder."
+    input_shape: existing_plan
+    audience: "RedditReminder maintainer and release operator"
+    authority: requested
+    proof_type: artifact
+    completion_proof: "A draft GitHub Release or exact external blocker plus smoke-test and decision receipts."
+    likely_misfire: "Only writing a checklist or describing release steps while no workflow/artifact/blocker evidence is captured."
+    blind_spots_considered:
+      - "GitHub Actions secrets may not be configured or may be malformed."
+      - "Apple Developer ID certificate and App Store Connect notarization credentials may be unavailable."
+      - "The first workflow run may expose CI-only signing, keychain, notarization, or gh release issues."
+      - "A draft artifact can pass notarization but still fail local smoke checks."
+      - "Publishing should remain a human decision after smoke evidence."
+    existing_plan_facts:
+      - "Use the manual Staged Release workflow rather than semantic-release."
+      - "Start releases as drafts for smoke testing."
+      - "Smoke-test the DMG before publication."
+      - "Keep secrets out of repo files and GoalBuddy receipts."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: pending
+    url: "http://goalbuddy.localhost:41737/redditreminder-staged-release-rehearsal/"
+    command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-staged-release-rehearsal"
+
+active_task: T009
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map current staged-release readiness and identify the exact first rehearsal path without reading or exposing secret values."
+    inputs:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/ci.yml"
+      - "docs/release-train.md"
+      - "README.md"
+      - "AGENTS.md"
+      - "Makefile"
+      - "scripts/build-release-dmg.sh"
+      - "scripts/prepare-release-signing.sh"
+      - "GitHub Actions UI or gh CLI metadata when available"
+    constraints:
+      - "Read-only."
+      - "Do not inspect, print, or store secret values."
+      - "Do not trigger a workflow."
+      - "Differentiate repo-local readiness from external GitHub/Apple credential readiness."
+    expected_output:
+      - "Checklist of required workflow inputs and secrets."
+      - "Whether a release checklist artifact should be added before rehearsal."
+      - "Exact safe next Worker objective, allowed_files, verify commands, and stop_if conditions."
+      - "Any external blocker that must be resolved before a draft workflow run."
+    receipt:
+      result: done
+      summary: "Mapped the first staged-release rehearsal path. Repo-local workflow/scripts/runbook are present in the dirty worktree, but GitHub currently lists only the existing CI workflow and no Actions secrets, so a real draft run is externally blocked until the staged workflow is committed/pushed and required secrets are configured."
+      evidence:
+        - ".github/workflows/release.yml defines workflow_dispatch inputs: version, build, ref, draft, prerelease."
+        - ".github/workflows/release.yml runs signing prerequisite verification, make build-dev, make test, make cli-test, make release-dry-run, make release-dmg, artifact upload, and draft GitHub Release create/update."
+        - "docs/release-train.md documents manual staged release operation, required secrets, and smoke checks."
+        - "Makefile exposes build-dev, cli-test, release-dry-run, and release-dmg."
+        - "scripts/build-release-dmg.sh requires VERSION, BUILD_NUMBER, APPLE_TEAM_ID, APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, and APP_STORE_CONNECT_PRIVATE_KEY for a real release."
+        - "scripts/prepare-release-signing.sh validates notarization environment variables, optionally imports the Developer ID certificate, verifies a signing identity, and cleans up the decoded p12."
+        - "gh workflow list --all returned only CI, which means the new Staged Release workflow is not yet available to GitHub Actions from the current uncommitted/unpushed worktree."
+        - "gh secret list --app actions returned no secret names."
+      required_workflow_inputs:
+        - "version"
+        - "build"
+        - "ref"
+        - "draft"
+        - "prerelease"
+      required_actions_secrets:
+        - "APPLE_TEAM_ID"
+        - "APP_STORE_CONNECT_KEY_ID"
+        - "APP_STORE_CONNECT_ISSUER_ID"
+        - "APP_STORE_CONNECT_PRIVATE_KEY"
+        - "DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64"
+        - "DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD"
+        - "KEYCHAIN_PASSWORD"
+      optional_actions_secrets:
+        - "DEVELOPER_ID_APPLICATION"
+      checklist_recommendation: "Add a repo-native release checklist artifact before the first rehearsal. The runbook explains the process, but a per-release checklist gives the operator a durable place to record workflow URL, artifact URLs, smoke-test evidence, and publish/fix decision without putting secrets in receipts."
+      external_blockers_before_draft_run:
+        - "Commit/push or merge the staged release workflow so GitHub Actions can see it."
+        - "Configure required GitHub Actions secrets; none are currently listed."
+      recommended_next_worker:
+        objective: "Add a per-release checklist template for staged release rehearsals that records inputs, workflow run, artifacts, smoke checks, publish/fix decision, and secret-handling guardrails."
+        allowed_files:
+          - "docs/release-checklist.md"
+          - "docs/release-train.md"
+          - "README.md"
+          - "AGENTS.md"
+        verify:
+          - "rg 'workflow run|artifact|checksum|stapler|Gatekeeper|publish|fix|secret' docs/release-checklist.md docs/release-train.md README.md AGENTS.md"
+          - "make release-dry-run"
+        stop_if:
+          - "The checklist would store or request secret values."
+          - "The checklist would claim a release was published or smoke-tested before evidence exists."
+          - "Need files outside the allowed docs scope."
+
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Decide whether to add a repo-native release checklist before the first rehearsal and define the next Worker slice."
+    inputs:
+      - "T001 receipt"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer the largest safe useful slice."
+      - "Do not require secrets to complete repo-local checklist work."
+    expected_output:
+      - "approve | skip_checklist | blocked"
+      - "Next Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+    receipt:
+      result: done
+      decision: "approve"
+      full_outcome_complete: false
+      rationale: "The first draft workflow run is externally blocked until the new workflow is visible to GitHub Actions and required Actions secrets are configured. A repo-native checklist is the largest safe local slice because it gives the operator a durable evidence capture surface for the upcoming run without requiring credentials or triggering external state."
+      next_worker_objective: "Add a per-release checklist template for staged release rehearsals that records inputs, workflow run, artifacts, smoke checks, publish/fix decision, and secret-handling guardrails."
+      allowed_files:
+        - "docs/release-checklist.md"
+        - "docs/release-train.md"
+        - "README.md"
+        - "AGENTS.md"
+      verify:
+        - "rg 'workflow run|artifact|checksum|stapler|Gatekeeper|publish|fix|secret' docs/release-checklist.md docs/release-train.md README.md AGENTS.md"
+        - "make release-dry-run"
+      stop_if:
+        - "The checklist would store or request secret values."
+        - "The checklist would claim a release was published or smoke-tested before evidence exists."
+        - "Need files outside the allowed docs scope."
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Execute the repo-local checklist or runbook slice selected by Judge, if any."
+    allowed_files:
+      - "docs/release-checklist.md"
+      - "docs/release-train.md"
+      - "README.md"
+      - "AGENTS.md"
+    verify:
+      - "rg 'workflow run|artifact|checksum|stapler|Gatekeeper|publish|fix|secret' docs/release-checklist.md docs/release-train.md README.md AGENTS.md"
+      - "make release-dry-run"
+    stop_if:
+      - "Judge has not populated allowed_files and verify commands."
+      - "Need files outside allowed_files."
+      - "The change would claim release success without rehearsal evidence."
+    receipt:
+      result: done
+      changed_files:
+        - "docs/release-checklist.md"
+        - "docs/release-train.md"
+        - "README.md"
+        - "AGENTS.md"
+      commands:
+        - cmd: "rg 'workflow run|artifact|checksum|stapler|Gatekeeper|publish|fix|secret' docs/release-checklist.md docs/release-train.md README.md AGENTS.md"
+          status: pass
+        - cmd: "make release-dry-run"
+          status: pass
+      summary: "Added a staged release checklist template that records release inputs, named secret readiness, workflow URL, artifact URLs, expected workflow checks, checksum/Gatekeeper/stapler smoke tests, install/launch/dev-prod coexistence checks, and publish/fix decision without requesting secret values. Linked it from the runbook, README, and AGENTS."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: high
+    objective: "Guide secret readiness and trigger or prepare the first draft Staged Release workflow run without exposing secrets."
+    allowed_files:
+      - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      - "docs/goals/redditreminder-staged-release-rehearsal/notes/"
+      - "docs/goals/redditreminder-staged-release-rehearsal/notes/T004-secret-and-workflow-handoff.md"
+    verify:
+      - "Record GitHub workflow run URL or exact external blocker."
+      - "Confirm no secret values were written to repo files or receipts."
+    stop_if:
+      - "Operator has not configured required GitHub Actions secrets."
+      - "Triggering the workflow would publish a non-draft release without explicit approval."
+      - "GitHub authentication is unavailable and no operator-run handoff can be recorded."
+    receipt:
+      result: blocked
+      changed_files:
+        - "docs/goals/redditreminder-staged-release-rehearsal/notes/T004-secret-and-workflow-handoff.md"
+      commands:
+        - cmd: "gh auth status"
+          status: pass
+        - cmd: "gh repo view --json nameWithOwner,defaultBranchRef,url"
+          status: pass
+        - cmd: "gh workflow list --all"
+          status: pass
+          note: "Only CI is listed; Staged Release is not yet visible because release.yml is local/uncommitted."
+        - cmd: "gh secret list --app actions"
+          status: pass
+          note: "No Actions secret names were listed."
+      summary: "Prepared a non-secret handoff note for the first draft run, including required setup, required secret names, recommended workflow inputs, and evidence to capture."
+      external_blockers:
+        - "Staged Release workflow must be committed/pushed and made available to GitHub Actions, normally by merging to main."
+        - "Required GitHub Actions secrets must be configured; no Actions secret names are currently listed."
+      no_secret_values_recorded: true
+
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: high
+    objective: "Smoke-test the draft release artifact or record the exact blocker preventing artifact testing."
+    allowed_files:
+      - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      - "docs/goals/redditreminder-staged-release-rehearsal/notes/"
+    verify:
+      - "shasum -a 256 -c RedditReminder-*-macos.dmg.sha256"
+      - "spctl -a -vv -t open --context context:primary-signature RedditReminder-*-macos.dmg"
+      - "xcrun stapler validate RedditReminder-*-macos.dmg"
+      - "Manual install and launch notes for RedditReminder.app"
+      - "Manual coexistence notes for RedditReminder Dev.app"
+    stop_if:
+      - "No draft artifact exists."
+      - "Artifact download requires credentials not available to the current operator."
+      - "Smoke test requires installing over production and the operator has not approved that local action."
+    receipt:
+      result: blocked
+      summary: "Artifact smoke testing cannot start because the draft Staged Release workflow has not run and no draft DMG/checksum artifact exists yet."
+      upstream_blocker: "T004"
+      exact_blocker: "Staged Release workflow is not visible in GitHub Actions yet and required Actions secrets are not configured."
+
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Decide whether the draft release can be published, needs repo fixes, or is blocked by external setup."
+    inputs:
+      - "T001 receipt"
+      - "T003 receipt if present"
+      - "T004 receipt"
+      - "T005 receipt"
+      - "Goal oracle"
+    constraints:
+      - "Do not publish."
+      - "Do not claim readiness without artifact or explicit blocker evidence."
+      - "If fixes are needed, define exact Worker scope."
+    expected_output:
+      - "publish_ready | fixes_required | blocked"
+      - "Evidence summary"
+      - "Missing evidence"
+      - "Next task if not publish_ready"
+    receipt:
+      result: done
+      decision: "blocked"
+      full_outcome_complete: false
+      evidence_summary:
+        - "Repo-local release train and staged release files exist in the dirty worktree."
+        - "GitHub currently lists only the CI workflow, so the Staged Release workflow cannot be triggered remotely yet."
+        - "No Actions secret names are currently listed."
+        - "A release checklist and non-secret handoff note now exist."
+      missing_evidence:
+        - "No Staged Release workflow run URL."
+        - "No draft GitHub Release URL."
+        - "No DMG/checksum artifact."
+        - "No artifact smoke-test evidence."
+      next_task: "Create a branch, commit the release-train/staged-release changes, push it, and open a draft PR so the workflow can be reviewed and merged to main. This resolves the workflow-visibility blocker as far as the current agent can without secret values."
+
+  - id: T007
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: high
+    objective: "Publish the release-train and staged-release changes to a reviewable branch/PR without exposing secrets."
+    allowed_files:
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/release.yml"
+      - ".releaserc.json"
+      - "AGENTS.md"
+      - "Makefile"
+      - "README.md"
+      - "RedditReminder.xcodeproj/project.pbxproj"
+      - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+      - "Sources/App/AppModelContainerFactory.swift"
+      - "Sources/Info.plist"
+      - "Sources/Services/MediaStore.swift"
+      - "Sources/Utilities/AppRuntime.swift"
+      - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+      - "package-lock.json"
+      - "package.json"
+      - "project.yml"
+      - "ExportOptions.plist"
+      - "docs/release-checklist.md"
+      - "docs/release-train.md"
+      - "docs/goals/redditreminder-release-train/"
+      - "docs/goals/redditreminder-staged-release-rehearsal/"
+      - "scripts/build-release-dmg.sh"
+      - "scripts/prepare-release-signing.sh"
+    verify:
+      - "git diff --check"
+      - "npm ci && node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); require('./commitlint.config.cjs');\""
+      - "make test"
+      - "make release-dry-run"
+      - "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+    stop_if:
+      - "Verification fails for a repo-side reason."
+      - "Staging would include files outside the allowed release-train/staged-release scope."
+      - "Pushing would require secret values or destructive history operations."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/ci.yml"
+        - ".github/workflows/release.yml"
+        - ".releaserc.json"
+        - "AGENTS.md"
+        - "Makefile"
+        - "README.md"
+        - "RedditReminder.xcodeproj/project.pbxproj"
+        - "RedditReminder.xcodeproj/xcshareddata/xcschemes/RedditReminderDev.xcscheme"
+        - "Sources/App/AppModelContainerFactory.swift"
+        - "Sources/Info.plist"
+        - "Sources/Services/MediaStore.swift"
+        - "Sources/Utilities/AppRuntime.swift"
+        - "Tests/RedditReminderTests/AppRuntimeTests.swift"
+        - "package-lock.json"
+        - "package.json"
+        - "project.yml"
+        - "ExportOptions.plist"
+        - "docs/release-checklist.md"
+        - "docs/release-train.md"
+        - "docs/goals/redditreminder-release-train/"
+        - "docs/goals/redditreminder-staged-release-rehearsal/"
+        - "scripts/build-release-dmg.sh"
+        - "scripts/prepare-release-signing.sh"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm ci && node -e \"JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('package-lock.json', 'utf8')); require('./commitlint.config.cjs');\""
+          status: pass
+          note: "npm audit reports 1 moderate dependency finding in the reduced commitlint dependency tree."
+        - cmd: "make test"
+          status: pass
+          note: "449 tests passed."
+        - cmd: "make release-dry-run"
+          status: pass
+        - cmd: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+          status: pass
+        - cmd: "git push -u origin codex/redditreminder-staged-release-train"
+          status: pass
+        - cmd: "gh pr create --draft --base main --head codex/redditreminder-staged-release-train"
+          status: pass
+      branch: "codex/redditreminder-staged-release-train"
+      commit: "965ff8c"
+      pull_request: "https://github.com/neonwatty/RedditReminder/pull/131"
+      summary: "Published the release-train and staged-release implementation to a reviewable draft PR so CI can validate it and the Staged Release workflow can become available after merge. No secret values were requested or recorded."
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the staged release rehearsal goal is complete."
+    inputs:
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Goal oracle"
+    constraints:
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if only planning/checklist work was completed."
+      - "Accept blocked completion only if the blocker is external, exact, and no safe local work remains."
+    expected_output:
+      - "complete | not_complete | externally_blocked"
+      - "full_outcome_complete: true | false"
+      - "Evidence mapped to draft workflow run, artifact smoke tests, and publish/fix decision"
+      - "Missing evidence"
+      - "Next task if not complete"
+    receipt:
+      result: done
+      decision: "not_complete"
+      full_outcome_complete: false
+      evidence_summary:
+        - "Draft PR #131 is open for codex/redditreminder-staged-release-train against main: https://github.com/neonwatty/RedditReminder/pull/131"
+        - "PR #131 merge state is CLEAN and draft=true."
+        - "GitHub CI run 28619840657 completed successfully: https://github.com/neonwatty/RedditReminder/actions/runs/28619840657"
+        - "CI successes include Detect Changed Paths, Lint, Package Metadata, CLI Tests, File Size Check, Build, Unit Tests, UI Tests, and CI Gate."
+        - "The Build job includes the production app build and development app build."
+        - "gh workflow list --all still lists only CI from main, so the Staged Release workflow is not triggerable remotely until the PR lands."
+        - "gh secret list --app actions returned no configured secret names to this operator token."
+      missing_evidence:
+        - "No Staged Release workflow run URL."
+        - "No draft GitHub Release URL."
+        - "No DMG/checksum artifact."
+        - "No notarization, stapler, Gatekeeper, install, launch, or dev/prod coexistence smoke-test evidence."
+        - "No publish/fix decision based on a real draft artifact."
+      next_task: "T008"
+      rationale: "The repo-side release train is implemented and green in PR CI, but the original rehearsal outcome requires a real draft staged release run or exact external blocker evidence after the workflow is available on main and the required signing/notarization secrets are configured."
+
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: high
+    objective: "Resume the draft staged release rehearsal after PR #131 is merged and required Actions secrets are configured."
+    allowed_files:
+      - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      - "docs/goals/redditreminder-staged-release-rehearsal/notes/"
+    verify:
+      - "gh workflow list --all | rg 'Staged Release'"
+      - "gh secret list --app actions"
+      - "Record the Staged Release workflow run URL, draft GitHub Release URL, and artifact URLs, or record the exact external blocker."
+      - "Confirm no secret values were written to repo files or receipts."
+    stop_if:
+      - "PR #131 is not merged to main."
+      - "Required Actions secret names are missing."
+      - "Triggering the workflow would use draft=false or otherwise publish without explicit operator approval."
+    receipt:
+      result: blocked
+      changed_files:
+        - "docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
+      commands:
+        - cmd: "gh pr view 131 --json url,isDraft,state,mergedAt,mergeStateStatus,headRefName,baseRefName,statusCheckRollup"
+          status: pass
+          note: "PR #131 is still open, draft=true, mergedAt=null, and mergeStateStatus=CLEAN."
+        - cmd: "gh workflow list --all"
+          status: pass
+          note: "Only CI is listed; Staged Release is not visible on main."
+        - cmd: "gh secret list --app actions"
+          status: pass
+          note: "No Actions secret names were listed to this operator token."
+        - cmd: "git status --short --branch"
+          status: pass
+          note: "Branch is clean and tracks origin/codex/redditreminder-staged-release-train before recording this receipt."
+      summary: "T008 cannot safely resume the draft staged release rehearsal yet. The release-train PR is still an unmerged draft, the Staged Release workflow is not visible on main, and required Actions secret names are not visible to this operator token. No secret values were requested or recorded."
+      remaining_blockers:
+        - "Merge PR #131 to main after review."
+        - "Configure or verify required GitHub Actions secret names for signing and notarization."
+        - "Resume by running a draft Staged Release workflow and recording workflow, draft release, artifact, and smoke-test evidence."
+      verification_attempts: 1
+      stopped_because: "PR #131 is not merged to main and required Actions secret names are missing."
+      no_secret_values_recorded: true
+
+  - id: T009
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: medium
+    objective: "Resume the staged release rehearsal when external prerequisites change, or keep the exact blocker current."
+    inputs:
+      - "PR #131"
+      - "GitHub workflow list"
+      - "GitHub Actions secret names"
+      - "T008 receipt"
+    constraints:
+      - "Do not inspect, print, or store secret values."
+      - "Do not merge PR #131 or publish a release without explicit operator approval."
+      - "Do not trigger a non-draft release."
+    expected_output:
+      - "If PR #131 is merged and required secret names are visible, activate a Worker to run the draft Staged Release workflow."
+      - "If prerequisites are still missing, keep the exact blocker recorded without claiming completion."
+    receipt: null
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T008
+    commands:
+      - "gh pr view 131 --json url,isDraft,state,mergedAt,mergeStateStatus,headRefName,baseRefName,statusCheckRollup"
+      - "gh workflow list --all"
+      - "gh secret list --app actions"
+      - "git status --short --branch"
+      - "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/redditreminder-staged-release-rehearsal/state.yaml"
