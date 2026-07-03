@@ -211,7 +211,10 @@ notarize_dmg() {
 }
 
 checksum_dmg() {
-  shasum -a 256 "$DMG_PATH" > "$CHECKSUM_PATH"
+  (
+    cd "$(dirname "$DMG_PATH")"
+    shasum -a 256 "$(basename "$DMG_PATH")"
+  ) > "$CHECKSUM_PATH"
   echo "Created $DMG_PATH"
   echo "Created $CHECKSUM_PATH"
 }
