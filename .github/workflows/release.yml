@@ -135,6 +135,7 @@ jobs:
               "build/release/RedditReminder-$RELEASE_VERSION-macos.dmg.sha256" \
               --clobber
             gh release edit "$RELEASE_TAG" \
+              --target "$GITHUB_SHA" \
               --title "RedditReminder $RELEASE_VERSION" \
               --notes-file "$notes_file" \
               --draft="$DRAFT" \
