@@ -39,6 +39,18 @@ there are user-facing fixes or features worth shipping. Skip the train if there
 is nothing meaningful to publish. Use an out-of-band hotfix only for urgent
 production breakage, then let the next normal train continue from `main`.
 
+Use patch releases, such as `0.1.1`, for production regressions, packaging or
+release-process fixes, documentation corrections, and low-risk polish. Use a
+minor release, such as `0.2.0`, when the train includes meaningful feature
+scope or user-facing workflow changes. Do not publish a patch release just to
+keep the calendar moving.
+
+Track each train with a GitHub milestone and one tracking issue. The active
+post-`0.1.0` patch train is
+[v0.1.1](https://github.com/neonwatty/RedditReminder/milestone/1), tracked by
+[issue #137](https://github.com/neonwatty/RedditReminder/issues/137), with a
+target train date of July 10, 2026.
+
 Recommended pre-train checks:
 
 ```sh
