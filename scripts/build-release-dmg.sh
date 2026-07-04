@@ -19,6 +19,8 @@ Required for real builds:
 Optional:
   DEVELOPER_ID_APPLICATION              Code signing identity.
                                         Default: Developer ID Application
+  NOTARY_WAIT_TIMEOUT                   Maximum time to wait for notarization.
+                                        Default: 45m
   RELEASE_OUTPUT_DIR                    Output directory.
                                         Default: build/release
   DERIVED_DATA_PATH                     DerivedData path.
@@ -56,6 +58,7 @@ CHECKSUM_PATH="$DMG_PATH.sha256"
 EXPORT_OPTIONS_TEMPLATE="$REPO_ROOT/ExportOptions.plist"
 EXPORT_OPTIONS="$OUTPUT_DIR/ExportOptions.plist"
 DEVELOPER_ID_APPLICATION="${DEVELOPER_ID_APPLICATION:-Developer ID Application}"
+NOTARY_WAIT_TIMEOUT="${NOTARY_WAIT_TIMEOUT:-45m}"
 TEMP_DIR=""
 
 cleanup() {
@@ -77,6 +80,12 @@ require_env() {
     echo "Missing required environment variable: $1" >&2
     exit 2
   fi
+}
+
+json_value() {
+  local key="$1"
+  local file="$2"
+  plutil -extract "$key" raw -o - "$file" 2>/dev/null || true
 }
 
 validate_inputs() {
@@ -117,6 +126,7 @@ Release DMG plan:
   dmg: $DMG_PATH
   checksum: $CHECKSUM_PATH
   export options: $EXPORT_OPTIONS
+  notary wait timeout: $NOTARY_WAIT_TIMEOUT
 EOF
 }
 
@@ -125,6 +135,7 @@ dry_run() {
   require_tool hdiutil
   require_tool codesign
   require_tool xcrun
+  require_tool plutil
   require_tool shasum
   [ -f "$EXPORT_OPTIONS_TEMPLATE" ] || {
     echo "Missing $EXPORT_OPTIONS_TEMPLATE" >&2
@@ -193,17 +204,92 @@ create_dmg() {
 
 notarize_dmg() {
   local key_path
+  local notary_log_json
+  local notary_message
+  local notary_status
+  local submission_id
+  local submit_json
+  local wait_json
   TEMP_DIR="$(mktemp -d)"
   key_path="$TEMP_DIR/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+  submit_json="$OUTPUT_DIR/notary-submit-$VERSION-$BUILD_NUMBER.json"
+  wait_json="$OUTPUT_DIR/notary-wait-$VERSION-$BUILD_NUMBER.json"
+  notary_log_json="$OUTPUT_DIR/notary-log-$VERSION-$BUILD_NUMBER.json"
   printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > "$key_path"
   chmod 600 "$key_path"
 
+  echo "Submitting $DMG_PATH to Apple notarization."
   xcrun notarytool submit \
     "$DMG_PATH" \
     --key "$key_path" \
     --key-id "$APP_STORE_CONNECT_KEY_ID" \
     --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-    --wait
+    --output-format json \
+    --no-progress \
+    > "$submit_json"
+
+  cat "$submit_json"
+  submission_id="$(json_value id "$submit_json")"
+  if [ -z "$submission_id" ]; then
+    echo "notarytool submit did not return a submission id. Response saved to $submit_json" >&2
+    exit 1
+  fi
+
+  echo "Notary submission ID: $submission_id"
+  echo "Notary submit response saved to $submit_json"
+  echo "Waiting up to $NOTARY_WAIT_TIMEOUT for notarization to complete."
+  if ! xcrun notarytool wait \
+    "$submission_id" \
+    --key "$key_path" \
+    --key-id "$APP_STORE_CONNECT_KEY_ID" \
+    --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+    --output-format json \
+    --no-progress \
+    --timeout "$NOTARY_WAIT_TIMEOUT" \
+    > "$wait_json"; then
+    echo "notarytool wait failed or timed out for submission $submission_id." >&2
+    if [ -s "$wait_json" ]; then
+      cat "$wait_json" >&2
+    fi
+    echo "Notary wait response saved to $wait_json" >&2
+    echo "Check later with: xcrun notarytool info $submission_id --key <AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8> --key-id $APP_STORE_CONNECT_KEY_ID --issuer $APP_STORE_CONNECT_ISSUER_ID" >&2
+    exit 1
+  fi
+
+  cat "$wait_json"
+  echo "Notary wait response saved to $wait_json"
+  notary_status="$(json_value status "$wait_json")"
+  notary_message="$(json_value message "$wait_json")"
+  echo "Notary status for $submission_id: ${notary_status:-unknown}"
+  if [ -n "$notary_message" ]; then
+    echo "Notary message: $notary_message"
+  fi
+
+  case "$notary_status" in
+    Accepted)
+      ;;
+    Invalid|Rejected)
+      echo "Notarization $notary_status for submission $submission_id. Fetching notary log." >&2
+      if xcrun notarytool log \
+        "$submission_id" \
+        "$notary_log_json" \
+        --key "$key_path" \
+        --key-id "$APP_STORE_CONNECT_KEY_ID" \
+        --issuer "$APP_STORE_CONNECT_ISSUER_ID"; then
+        cat "$notary_log_json" >&2
+        echo "Notary log saved to $notary_log_json" >&2
+      else
+        echo "Failed to fetch notary log for submission $submission_id." >&2
+      fi
+      exit 1
+      ;;
+    *)
+      echo "Unexpected notary status '${notary_status:-missing}' for submission $submission_id." >&2
+      echo "Notary wait response saved to $wait_json" >&2
+      echo "Check later with: xcrun notarytool info $submission_id --key <AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8> --key-id $APP_STORE_CONNECT_KEY_ID --issuer $APP_STORE_CONNECT_ISSUER_ID" >&2
+      exit 1
+      ;;
+  esac
 
   xcrun stapler staple "$DMG_PATH"
   xcrun stapler validate "$DMG_PATH"
@@ -230,6 +316,7 @@ require_tool xcodebuild
 require_tool hdiutil
 require_tool codesign
 require_tool xcrun
+require_tool plutil
 require_tool shasum
 prepare_export_options
 print_plan
