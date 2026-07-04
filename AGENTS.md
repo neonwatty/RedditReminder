@@ -42,6 +42,16 @@ make build-cli
 build/Build/Products/Debug/redditreminder --json agent bootstrap
 ```
 
+## Agent Skill Distribution
+
+- Reusable Codex skill: `skills/redditreminder-agent/`
+- Distribution notes: `docs/agent-distribution.md`
+- Validate the skill before sharing it:
+
+```sh
+python3 /Users/neonwatty/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/redditreminder-agent
+```
+
 ## Agent Rules
 
 - Prefer `agent bootstrap`, `commands list`, and `recipes list` before guessing
