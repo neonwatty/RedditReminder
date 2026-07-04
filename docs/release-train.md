@@ -111,9 +111,10 @@ To stage a release from GitHub:
 5. Run the workflow, download the artifacts, perform smoke checks, then publish
    the draft release when ready.
 
-Use [release-checklist.md](release-checklist.md) for each train to record the
-workflow run URL, artifact URLs, smoke-test evidence, and publish/fix decision.
-Never write secret values into the checklist.
+Copy [release-checklist.md](release-checklist.md) to
+`docs/releases/v<version>.md` for each train, then record the workflow run URL,
+artifact URLs, smoke-test evidence, and publish/fix decision there. Never write
+secret values into the checklist or release record.
 
 Required GitHub Actions secrets:
 
