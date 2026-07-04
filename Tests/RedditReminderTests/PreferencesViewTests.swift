@@ -13,6 +13,10 @@ import Testing
   #expect(PreferencesView.defaultTab == .general)
 }
 
+@Test @MainActor func preferencesVersionFooterHasStableAccessibilityIdentifier() {
+  #expect(PreferencesView.versionFooterAccessibilityIdentifier == "preferences.footer.version")
+}
+
 @Test @MainActor func channelsSetupCopyPrioritizesAddingAChannel() {
   #expect(ChannelsTabView.setupTitleText == "Add a posting channel")
   #expect(

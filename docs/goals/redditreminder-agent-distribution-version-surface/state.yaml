@@ -1,0 +1,350 @@
+version: 2
+
+goal:
+  title: "RedditReminder Agent Distribution and Version Surface"
+  slug: "redditreminder-agent-distribution-version-surface"
+  kind: specific
+  tranche: "Implement a visible Settings version/build surface and prepare validated agent-facing skill/plugin distribution guidance."
+  status: done
+  oracle:
+    signal: "The app visibly shows version/build metadata from bundle values, and the repo contains validated agent guidance for safely using RedditReminder through the CLI, with distribution instructions."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "Receipts show UI/version verification, skill/plugin artifact validation or documented decision, docs update, and passing relevant checks."
+  intake:
+    original_request: "Plan app version visibility and agent skill/plugin distribution using GoalBuddy prep."
+    interpreted_outcome: "Create an execution board for adding visible version/build metadata and packaging agent-facing guidance for RedditReminder."
+    input_shape: specific
+    audience: "RedditReminder maintainers and future AI agents/Codex sessions"
+    authority: requested
+    proof_type: artifact
+    completion_proof: "A final audit maps implementation receipts and verification to visible bundle-derived version/build UI and validated agent guidance/distribution artifacts."
+    likely_misfire: "Adding version text to the busy popover or creating a generic skill/plugin that does not teach the CLI-first, dry-run-first agent workflow."
+    blind_spots_considered:
+      - "Version footer placement should avoid cluttering the high-use posting popover."
+      - "The UI must read bundle metadata rather than hard-code a release number."
+      - "Skill-only may be enough; plugin packaging is useful only if installable/shareable distribution is needed now."
+      - "Agent docs must preserve CLI dry-run, validation, isolated store, release-train, and no-secret rules."
+    existing_plan_facts:
+      - "AGENTS.md already tells agents to use the redditreminder CLI."
+      - "The app has bundle version/build metadata but no visible app version surface."
+      - "Recommended placement is a compact Settings/Preferences footer rather than the main popover footer."
+      - "Use skill-creator before creating/updating a skill."
+      - "Use plugin-creator before creating/updating a plugin."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/redditreminder-agent-distribution-version-surface/"
+    command: "node /Users/neonwatty/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.9/skills/goalbuddy/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal /Users/neonwatty/Desktop/RedditReminder/docs/goals/redditreminder-agent-distribution-version-surface"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: default
+    objective: "Map current version/build metadata flow, Settings/Preferences UI structure, agent-facing docs, and available validation commands."
+    inputs:
+      - "project.yml"
+      - "Sources/Views/PreferencesView.swift"
+      - "Sources/Views/GeneralTabView.swift"
+      - "Sources/App/RedditReminderApp.swift"
+      - "AGENTS.md"
+      - "docs/release-train.md"
+      - "docs/releases/v0.1.0.md"
+      - "skill-creator instructions"
+      - "plugin-creator instructions"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation, docs, skill, plugin, or marketplace files."
+      - "Confirm whether version/build is currently visible anywhere before proposing changes."
+      - "Identify focused tests or inspection commands for any proposed UI change."
+    expected_output:
+      - "Current version/build source and visibility map."
+      - "Recommended UI target and rationale."
+      - "Agent artifact options: AGENTS.md-only, skill, plugin-wrapped skill."
+      - "Candidate files for Worker slices."
+      - "Verification commands for UI and artifact work."
+    receipt:
+      result: done
+      note: notes/T001-scout-map.md
+      summary: "Mapped version/build metadata, Settings surface, agent guidance, skill/plugin options, and verification commands. Recommended Settings footer first, skill-only artifact second, plugin deferred unless installable distribution is required."
+      evidence:
+        - project.yml
+        - Sources/Views/PreferencesView.swift
+        - Sources/Views/GeneralTabView.swift
+        - AGENTS.md
+        - Tests/RedditReminderTests/PreferencesViewTests.swift
+        - Tests/RedditReminderUITests/RedditReminderWorkflowUITests.swift
+        - Makefile
+      spawned_tasks:
+        - T002
+
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: default
+    objective: "Choose the first implementation slice and decide whether the agent artifact should start as a skill-only or plugin-wrapped skill."
+    inputs:
+      - "T001 receipt"
+      - "Goal oracle"
+      - "Non-negotiable constraints"
+    constraints:
+      - "Read-only."
+      - "Do not implement."
+      - "Prefer the largest safe useful slice with clear allowed_files and verification."
+      - "If plugin packaging is not needed now, explicitly defer it and keep the first artifact skill-only."
+    expected_output:
+      - "Decision: first Worker slice."
+      - "Decision: skill-only vs plugin-wrapped skill for this tranche."
+      - "allowed_files for T003."
+      - "verify commands for T003."
+      - "stop_if conditions for T003."
+      - "Any blocked/deferred follow-up tasks."
+    receipt:
+      result: done
+      note: notes/T002-judge-decision.md
+      decision: approved
+      first_worker_slice: "Add a compact Settings/Preferences footer that displays app version and build from bundle metadata."
+      agent_artifact_decision: "Use a repo-local skill-only artifact for this tranche; defer plugin wrapping until marketplace/installable distribution is explicitly needed."
+      selected_worker: T003
+      full_outcome_complete: false
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: default
+    objective: "Execute the first safe implementation slice selected by Judge."
+    allowed_files:
+      - "RedditReminder.xcodeproj/project.pbxproj"
+      - "Sources/Views/PreferencesView.swift"
+      - "Sources/Utilities/AppVersionInfo.swift"
+      - "Tests/RedditReminderTests/AppVersionInfoTests.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+    verify:
+      - "git diff --check"
+      - "make build-dev"
+      - "Focused unit tests for AppVersionInfoTests and PreferencesViewTests where the local Xcode test filter is reliable."
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Version/build display would require hard-coded release values."
+      - "Settings layout would need a broader redesign outside PreferencesView."
+      - "Verification fails twice for the same reason."
+    receipt:
+      result: done
+      note: notes/T003-version-footer.md
+      summary: "Added bundle-derived Settings footer for app version/build, formatter tests, Preferences identifier test, and regenerated the tracked Xcode project."
+      changed_files:
+        - RedditReminder.xcodeproj/project.pbxproj
+        - Sources/Views/PreferencesView.swift
+        - Sources/Utilities/AppVersionInfo.swift
+        - Tests/RedditReminderTests/AppVersionInfoTests.swift
+        - Tests/RedditReminderTests/PreferencesViewTests.swift
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "make build-dev"
+          status: pass
+        - cmd: "xcodebuild test -project RedditReminder.xcodeproj -scheme RedditReminder -destination 'platform=macOS' -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= ENABLE_DEBUG_DYLIB=NO ENABLE_HARDENED_RUNTIME=NO OTHER_CODE_SIGN_FLAGS= -only-testing:RedditReminderTests/AppVersionInfoTests -only-testing:RedditReminderTests/PreferencesViewTests"
+          status: pass
+        - cmd: "make test"
+          status: pass
+        - cmd: "/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' -c 'Print :CFBundleShortVersionString' -c 'Print :CFBundleVersion' 'build/Build/Products/Debug/RedditReminder Dev.app/Contents/Info.plist'"
+          status: pass
+      verification:
+        - "git diff --check: passed"
+        - "make build-dev: passed"
+        - "xcodebuild focused filter: succeeded but ran 0 tests, not counted as proof"
+        - "make test: passed, 454 Swift Testing tests"
+      bundle_metadata:
+        dev_display_name: "RedditReminder Dev"
+        dev_version: "0.1.0"
+        dev_build: "1"
+        expected_dev_footer: "RedditReminder Dev 0.1.0 (1)"
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: default
+    objective: "Execute the second implementation slice required to satisfy the oracle after T003 is verified."
+    allowed_files:
+      - "skills/redditreminder-agent/SKILL.md"
+      - "skills/redditreminder-agent/agents/openai.yaml"
+      - "skills/redditreminder-agent/references/cli-workflows.md"
+      - "AGENTS.md"
+      - "docs/agent-distribution.md"
+    verify:
+      - "git diff --check"
+      - "python3 /Users/neonwatty/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/redditreminder-agent"
+      - "./scripts/agent-bootstrap.sh"
+      - "make cli-test if the skill changes alter agent command assumptions."
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The remaining work is no longer required after T003 and Judge/PM review."
+      - "Verification fails twice for the same reason."
+    receipt:
+      result: done
+      note: notes/T004-agent-skill.md
+      summary: "Added a repo-local redditreminder-agent skill, OpenAI skill metadata, CLI workflow reference, distribution doc, and AGENTS pointer."
+      changed_files:
+        - AGENTS.md
+        - docs/agent-distribution.md
+        - skills/redditreminder-agent/SKILL.md
+        - skills/redditreminder-agent/agents/openai.yaml
+        - skills/redditreminder-agent/references/cli-workflows.md
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "python3 /Users/neonwatty/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/redditreminder-agent"
+          status: pass
+        - cmd: "./scripts/agent-bootstrap.sh >/tmp/redditreminder-agent-bootstrap-t004.json && python3 -m json.tool /tmp/redditreminder-agent-bootstrap-t004.json >/dev/null"
+          status: pass
+        - cmd: "make cli-test"
+          status: pass
+      distribution_decision: "skill-only now; plugin wrapper deferred until marketplace/installable distribution is needed."
+
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: default
+    objective: "Publish the verified changes through the repo's normal branch, commit, PR, CI, and merge flow if prior Worker slices produced repo changes."
+    allowed_files:
+      - "AGENTS.md"
+      - "RedditReminder.xcodeproj/project.pbxproj"
+      - "Sources/Views/PreferencesView.swift"
+      - "Sources/Utilities/AppVersionInfo.swift"
+      - "Tests/RedditReminderTests/AppVersionInfoTests.swift"
+      - "Tests/RedditReminderTests/PreferencesViewTests.swift"
+      - "docs/agent-distribution.md"
+      - "docs/goals/redditreminder-agent-distribution-version-surface/state.yaml"
+      - "docs/goals/redditreminder-agent-distribution-version-surface/goal.md"
+      - "docs/goals/redditreminder-agent-distribution-version-surface/notes/**"
+      - "skills/redditreminder-agent/SKILL.md"
+      - "skills/redditreminder-agent/agents/openai.yaml"
+      - "skills/redditreminder-agent/references/cli-workflows.md"
+    verify:
+      - "git status --short --branch"
+      - "gh pr checks <pr> --watch"
+    stop_if:
+      - "There are no implementation changes to publish."
+      - "CI fails for a non-docs/non-trivial reason that needs a new Worker slice."
+      - "GitHub auth or network access is unavailable."
+    receipt:
+      result: done
+      note: notes/T005-publish.md
+      summary: "Published the verified changes to branch codex/agent-distribution-version-footer and opened draft PR #140; PR CI passed before this receipt update."
+      changed_files:
+        - AGENTS.md
+        - RedditReminder.xcodeproj/project.pbxproj
+        - Sources/Views/PreferencesView.swift
+        - Sources/Utilities/AppVersionInfo.swift
+        - Tests/RedditReminderTests/AppVersionInfoTests.swift
+        - Tests/RedditReminderTests/PreferencesViewTests.swift
+        - docs/agent-distribution.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/goal.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/notes/T001-scout-map.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/notes/T002-judge-decision.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/notes/T003-version-footer.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/notes/T004-agent-skill.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/notes/T005-publish.md
+        - docs/goals/redditreminder-agent-distribution-version-surface/state.yaml
+        - skills/redditreminder-agent/SKILL.md
+        - skills/redditreminder-agent/agents/openai.yaml
+        - skills/redditreminder-agent/references/cli-workflows.md
+      commands:
+        - cmd: "git status -sb"
+          status: pass
+        - cmd: "git switch -c codex/agent-distribution-version-footer"
+          status: pass
+        - cmd: "git add AGENTS.md RedditReminder.xcodeproj/project.pbxproj Sources/Views/PreferencesView.swift Sources/Utilities/AppVersionInfo.swift Tests/RedditReminderTests/AppVersionInfoTests.swift Tests/RedditReminderTests/PreferencesViewTests.swift docs/agent-distribution.md docs/goals/redditreminder-agent-distribution-version-surface skills/redditreminder-agent"
+          status: pass
+        - cmd: "git commit -m \"Add agent skill and version footer\""
+          status: pass
+        - cmd: "git push -u origin codex/agent-distribution-version-footer"
+          status: pass
+        - cmd: "gh pr create --draft --repo neonwatty/RedditReminder --base main --head codex/agent-distribution-version-footer --title '[codex] Add agent skill and version footer'"
+          status: pass
+        - cmd: "gh pr checks 140 --repo neonwatty/RedditReminder --watch --interval 10"
+          status: pass
+      branch: "codex/agent-distribution-version-footer"
+      commit: "b3b019a"
+      pr: "https://github.com/neonwatty/RedditReminder/pull/140"
+      connector_pr_creation: "failed with 403 Resource not accessible by integration; gh fallback succeeded."
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: default
+    objective: "Audit whether visible version/build UI and agent-facing distribution guidance satisfy the original user outcome."
+    inputs:
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Any PR/issue/release links created during the goal"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if version/build is not visibly available in the app or not sourced from bundle metadata."
+      - "Reject completion if agent guidance is not actionable for future agents."
+      - "Reject completion if skill/plugin validation or an explicit defer decision is missing."
+      - "Reject completion if required Worker work is still queued or active."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      note: notes/T999-final-audit.md
+      summary: "Visible bundle-derived Settings version/build footer, validated agent skill distribution guidance, explicit plugin defer decision, and published PR evidence satisfy the oracle."
+      evidence:
+        - notes/T003-version-footer.md
+        - notes/T004-agent-skill.md
+        - notes/T005-publish.md
+        - Sources/Utilities/AppVersionInfo.swift
+        - Sources/Views/PreferencesView.swift
+        - skills/redditreminder-agent/SKILL.md
+        - docs/agent-distribution.md
+        - "https://github.com/neonwatty/RedditReminder/pull/140"
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: unknown
+    task: null
+    commands: []

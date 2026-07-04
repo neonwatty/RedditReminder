@@ -1,0 +1,4 @@
+interface:
+  display_name: "RedditReminder Agent"
+  short_description: "Use RedditReminder safely through its CLI"
+  default_prompt: "Use $redditreminder-agent to inspect or automate RedditReminder through the CLI."

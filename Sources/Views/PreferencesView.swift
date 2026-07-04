@@ -7,6 +7,7 @@ struct PreferencesView: View {
   var onAppStateChanged: AppRefreshAction = {}
 
   static let defaultTab: Tab = .general
+  static let versionFooterAccessibilityIdentifier = "preferences.footer.version"
 
   @State private var selectedTab: Tab
 
@@ -57,17 +58,31 @@ struct PreferencesView: View {
 
       Divider()
 
-      switch selectedTab {
-      case .general:
-        GeneralTabView(onAppStateChanged: onAppStateChanged)
-      case .notifications:
-        NotificationsTabView(
-          notificationService: notificationService,
-          onAppStateChanged: onAppStateChanged
-        )
-      case .backup:
-        BackupTabView(onAppStateChanged: onAppStateChanged)
+      Group {
+        switch selectedTab {
+        case .general:
+          GeneralTabView(onAppStateChanged: onAppStateChanged)
+        case .notifications:
+          NotificationsTabView(
+            notificationService: notificationService,
+            onAppStateChanged: onAppStateChanged
+          )
+        case .backup:
+          BackupTabView(onAppStateChanged: onAppStateChanged)
+        }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      Divider()
+
+      Text(AppVersionInfo.current.displayText)
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier(Self.versionFooterAccessibilityIdentifier)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
