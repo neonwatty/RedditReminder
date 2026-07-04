@@ -86,6 +86,7 @@ Optional:
 
 ```sh
 DEVELOPER_ID_APPLICATION="Developer ID Application: Example, LLC (TEAMID)"
+NOTARY_WAIT_TIMEOUT=45m
 RELEASE_OUTPUT_DIR=build/release
 DERIVED_DATA_PATH=build/release/DerivedData
 ```
@@ -94,6 +95,12 @@ The release command archives the production scheme, exports the app, verifies
 the code signature and bundle version, creates and signs a DMG, submits it to
 notarytool, staples and validates the DMG, runs Gatekeeper validation, and writes
 a `.sha256` checksum.
+
+Notarization diagnostics are written to `build/release/notary-*.json`. The
+script submits first, prints the notary submission ID, then waits on that ID. If
+Apple processing times out or returns an unexpected status, use the printed
+submission ID with `xcrun notarytool info`. If Apple returns `Invalid` or
+`Rejected`, the script fetches and prints `notarytool log` output.
 
 ## GitHub Release Automation
 
@@ -111,7 +118,9 @@ The staged workflow:
    `make release-dry-run`.
 4. Runs `make release-dmg VERSION=<version> BUILD=<build>`.
 5. Uploads the DMG and checksum as workflow artifacts for review.
-6. Creates or updates draft release `v<version>` with the signed/notarized DMG
+6. Uploads a diagnostics artifact on release failure, including any DMG and
+   `build/release/notary-*.json` files that were produced.
+7. Creates or updates draft release `v<version>` with the signed/notarized DMG
    and `.sha256` checksum.
 
 To stage a release from GitHub:

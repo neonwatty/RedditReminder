@@ -90,6 +90,19 @@ jobs:
       - name: Build signed and notarized DMG
         run: make release-dmg VERSION="$RELEASE_VERSION" BUILD="$RELEASE_BUILD"
 
+      - name: Upload release diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RedditReminder-${{ inputs.version }}-release-diagnostics
+          path: |
+            build/release/RedditReminder-${{ inputs.version }}-macos.dmg
+            build/release/RedditReminder-${{ inputs.version }}-macos.dmg.sha256
+            build/release/notary-*.json
+            build/release/ExportOptions.plist
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Upload release artifacts for review
         uses: actions/upload-artifact@v4
         with:
