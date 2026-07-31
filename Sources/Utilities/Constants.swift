@@ -28,12 +28,7 @@ enum AppColors {
   static let generatedState = Color(red: 0.42, green: 0.38, blue: 0.92)
   static let link = Color.blue
 
-  // Solid popover background — warm cream (light) / warm charcoal (dark)
-  static let popoverBg = Color(nsColor: NSColor(name: nil) { appearance in
-    appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-      ? NSColor(red: 0.13, green: 0.12, blue: 0.11, alpha: 1.0)
-      : NSColor(red: 0.98, green: 0.97, blue: 0.95, alpha: 1.0)
-  })
+  static let popoverUsesSystemMaterial = true
 }
 
 enum SettingsKey {

@@ -9,6 +9,7 @@ struct CaptureSubredditPicker: View {
   static let emptyDescriptionText = "Add a subreddit channel before saving this capture."
   static let addChannelButtonText = "Add channel"
   static let addChannelButtonAccessibilityIdentifier = "captureWindow.addChannel"
+  static let addAnotherChannelButtonText = "Add another channel"
 
   var body: some View {
     if subreddits.isEmpty {
@@ -83,6 +84,15 @@ struct CaptureSubredditPicker: View {
       .menuStyle(.borderlessButton)
       .accessibilityLabel("Capture subreddits")
       .accessibilityIdentifier("captureWindow.subreddits")
+
+      Button(action: onAddSubreddit) {
+        Label(Self.addAnotherChannelButtonText, systemImage: "plus")
+          .font(.system(size: 11, weight: .medium))
+          .foregroundStyle(AppColors.redditOrange)
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel(Self.addAnotherChannelButtonText)
+      .accessibilityIdentifier(Self.addChannelButtonAccessibilityIdentifier)
     }
   }
 }

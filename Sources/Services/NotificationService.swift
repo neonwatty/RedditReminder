@@ -7,6 +7,11 @@ protocol NotificationCenterProtocol: Sendable {
   func removePendingNotificationRequests(withIdentifiers identifiers: [String])
   func removeAllPendingNotificationRequests()
   func getAuthorizationStatus() async -> UNAuthorizationStatus
+  func pendingNotificationRequests() async -> [UNNotificationRequest]
+}
+
+extension NotificationCenterProtocol {
+  func pendingNotificationRequests() async -> [UNNotificationRequest] { [] }
 }
 
 extension UNUserNotificationCenter: @retroactive @unchecked Sendable {}
@@ -30,6 +35,10 @@ enum AppNotificationIdentifiers {
 
   static func nudgeRequestId(eventId: String) -> String {
     "nudge-\(eventId)"
+  }
+
+  static func isManagedRequestId(_ identifier: String) -> Bool {
+    identifier.hasPrefix("window-") || identifier.hasPrefix("nudge-")
   }
 }
 
@@ -165,6 +174,23 @@ final class NotificationService {
         AppNotificationIdentifiers.nudgeRequestId(eventId: eventId)
       ]
     )
+  }
+
+  func cancelNudgeNotification(eventId: String) {
+    center.removePendingNotificationRequests(
+      withIdentifiers: [
+        AppNotificationIdentifiers.nudgeRequestId(eventId: eventId)
+      ]
+    )
+  }
+
+  func cancelNotificationRequests(_ identifiers: [String]) {
+    guard !identifiers.isEmpty else { return }
+    center.removePendingNotificationRequests(withIdentifiers: identifiers)
+  }
+
+  func pendingRequestIdentifiers() async -> [String] {
+    await center.pendingNotificationRequests().map(\.identifier)
   }
 
   func cancelAll() {

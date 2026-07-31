@@ -5,7 +5,6 @@ enum PopoverRoute {
   case root
   case captureCreate
   case captureEdit(Capture)
-  case preferences(PreferencesView.Tab)
   case postHandoff(Capture)
 }
 
@@ -17,11 +16,11 @@ struct PopoverContentView: View {
   let mediaStore = MediaStore()
 
   @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
-  @Query(sort: \Subreddit.sortOrder) private var subreddits: [Subreddit]
+  @Query(sort: \Subreddit.sortOrder) var subreddits: [Subreddit]
   @Environment(\.modelContext) var modelContext
 
   @State private var timingEngine = TimingEngine()
-  @State private var filterSubredditId: UUID?
+  @State var filterSubredditId: UUID?
   @State private var searchText: String = ""
   @State var toast: Toast?
   @State var toastTask: Task<Void, Never>?
@@ -56,16 +55,6 @@ struct PopoverContentView: View {
         captureForm(mode: .create)
       case .captureEdit(let capture):
         captureForm(mode: .edit(capture))
-      case .preferences(let tab):
-        detailScreen(title: "Settings", systemName: "gearshape") {
-          PreferencesView(
-            notificationService: notificationService,
-            heuristicsStore: heuristicsStore,
-            initialTab: tab,
-            onAppStateChanged: onAppStateChanged
-          )
-          .modelContainer(modelContext.container)
-        }
       case .postHandoff(let capture):
         postHandoff(capture)
       }
@@ -75,7 +64,7 @@ struct PopoverContentView: View {
         PopoverToastView(toast: toast)
       }
     }
-    .background(AppColors.popoverBg)
+    .background(.regularMaterial)
     .frame(width: 460).frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 800) * 0.85)
     .onAppear {
       handlePendingMenuRequests()

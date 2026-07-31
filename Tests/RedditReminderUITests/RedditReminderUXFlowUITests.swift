@@ -63,6 +63,120 @@ final class RedditReminderUXFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["captureWindow.save"].isEnabled)
     }
 
+    func testCancelPreservesRecoverableCreateDraft() throws {
+        continueAfterFailure = false
+        let app = makeSeededRedditReminderApp()
+        defer { app.terminate() }
+
+        launchAndWaitForRedditReminder(app)
+        openNewCaptureRoute(in: app)
+
+        let titleField = app.textFields["captureWindow.title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+        titleField.click()
+        titleField.typeText("Protected draft title")
+
+        XCTAssertTrue(app.buttons["captureWindow.addChannel"].waitForExistence(timeout: 3))
+        cancelCaptureRoute(in: app)
+
+        let newCaptureButton = app.buttons["popover.header.newCapture"]
+        XCTAssertTrue(newCaptureButton.waitForExistence(timeout: 3))
+        newCaptureButton.click()
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+
+        XCTAssertEqual(app.textFields["captureWindow.title"].value as? String, "Protected draft title")
+    }
+
+    func testPreferencesShortcutPreservesRecoverableCreateDraft() throws {
+        continueAfterFailure = false
+        let app = makeSeededRedditReminderApp()
+        defer { app.terminate() }
+
+        launchAndWaitForRedditReminder(app)
+        openNewCaptureRoute(in: app)
+
+        let titleField = app.textFields["captureWindow.title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+        titleField.click()
+        titleField.typeText("Shortcut protected draft")
+
+        app.typeKey(",", modifierFlags: .command)
+        XCTAssertTrue(
+            app.descendants(matching: .any)["preferences.content.General"].waitForExistence(timeout: 3)
+        )
+
+        app.typeKey("w", modifierFlags: .command)
+
+        app.typeKey("n", modifierFlags: .command)
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+
+        XCTAssertEqual(app.textFields["captureWindow.title"].value as? String, "Shortcut protected draft")
+    }
+
+    func testExistingChannelAddChannelPreservesDraftFields() throws {
+        continueAfterFailure = false
+        let app = makeSeededRedditReminderApp()
+        defer { app.terminate() }
+
+        launchAndWaitForRedditReminder(app)
+        openNewCaptureRoute(in: app)
+
+        let titleField = app.textFields["captureWindow.title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+        titleField.click()
+        titleField.typeText("Existing channel draft")
+
+        let addChannel = app.buttons["captureWindow.addChannel"]
+        XCTAssertTrue(addChannel.waitForExistence(timeout: 3))
+        addChannel.click()
+
+        let channelField = app.textFields["channels.addSubreddit.textField"]
+        XCTAssertTrue(channelField.waitForExistence(timeout: 3))
+        channelField.click()
+        channelField.typeText("ExistingFlowQA")
+
+        let addChannelButton = app.buttons["channels.addSubreddit.button"]
+        XCTAssertTrue(addChannelButton.waitForExistence(timeout: 3))
+        addChannelButton.click()
+
+        let newCaptureButton = app.buttons["popover.header.newCapture"]
+        XCTAssertTrue(newCaptureButton.waitForExistence(timeout: 3))
+        newCaptureButton.click()
+
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+        XCTAssertEqual(app.textFields["captureWindow.title"].value as? String, "Existing channel draft")
+    }
+
+    func testPlannerCalendarCreateActionOpensCaptureWithChannelContext() throws {
+        continueAfterFailure = false
+        let app = makeSeededRedditReminderApp()
+        defer { app.terminate() }
+
+        launchAndWaitForRedditReminder(app)
+        openHomePopover(in: app)
+        openWorkspace("popover.header.planner", in: app)
+
+        let viewMode = app.descendants(matching: .any)["planner.viewMode"]
+        XCTAssertTrue(viewMode.waitForExistence(timeout: 3))
+        viewMode.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).click()
+
+        let createButton = firstButton(withIdentifierPrefix: "planner.calendar.createCapture.", in: app)
+        XCTAssertTrue(createButton.waitForExistence(timeout: 3))
+        createButton.click()
+
+        let titleField = app.textFields["captureWindow.title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 3))
+        titleField.click()
+        titleField.typeText("Calendar context title")
+
+        let textView = app.textViews["captureWindow.text"]
+        XCTAssertTrue(textView.waitForExistence(timeout: 3))
+        textView.click()
+        textView.typeText("Calendar context body")
+
+        XCTAssertTrue(app.buttons["captureWindow.save"].isEnabled)
+    }
+
     func testNoChannelAddChannelPreservesDraftFields() throws {
         continueAfterFailure = false
         let app = makeClearedRedditReminderApp()

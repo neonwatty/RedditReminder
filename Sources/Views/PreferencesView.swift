@@ -32,25 +32,20 @@ struct PreferencesView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      HStack(spacing: 0) {
-        ForEach(Tab.allCases, id: \.self) { tab in
-          Button(action: { selectedTab = tab }) {
+      HStack {
+        Picker("Settings section", selection: $selectedTab) {
+          ForEach(Tab.allCases, id: \.self) { tab in
             Text(tab.rawValue)
-              .font(.system(size: 11, weight: selectedTab == tab ? .semibold : .medium))
-              .foregroundStyle(selectedTab == tab ? AppColors.redditOrange : .secondary)
-              .padding(.horizontal, 12)
-              .padding(.vertical, 6)
-              .background(
-                selectedTab == tab
-                  ? AppColors.redditOrange.opacity(0.1)
-                  : Color.clear
-              )
-              .clipShape(RoundedRectangle(cornerRadius: 6))
+              .tag(tab)
+              .accessibilityLabel("\(tab.rawValue) tab")
+              .accessibilityIdentifier("preferences.tab.\(tab.rawValue)")
           }
-          .buttonStyle(.plain)
-          .accessibilityLabel("\(tab.rawValue) tab")
-          .accessibilityIdentifier("preferences.tab.\(tab.rawValue)")
         }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .frame(width: 320)
+        .accessibilityIdentifier("preferences.tabs")
+        Spacer()
       }
       .padding(.vertical, 10)
       .padding(.horizontal, 16)

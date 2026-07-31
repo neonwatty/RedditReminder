@@ -23,7 +23,8 @@ extension PopoverContentView {
   }
 
   func openPreferences(tab: PreferencesView.Tab = PreferencesView.defaultTab) {
-    route = .preferences(tab)
+    route = .root
+    menuBarController.openSettingsWindow(tab: tab)
   }
 
   func openWorkspace(_ workspace: PopoverWorkspace) {

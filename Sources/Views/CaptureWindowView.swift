@@ -13,8 +13,9 @@ struct CaptureWindowView: View {
   let mode: Mode
   var initialDraft: CaptureFormDraft?
   let onSave: (CaptureFormResult) -> Bool
-  let onCancel: () -> Void
+  let onCancel: (CaptureFormDraft) -> Void
   var onAddSubreddit: (CaptureFormDraft) -> Void = { _ in }
+  var onDraftChanged: (CaptureFormDraft) -> Void = { _ in }
 
   @Query(sort: \Project.name) var projects: [Project]
   @Query(sort: \Subreddit.sortOrder) var subreddits: [Subreddit]
@@ -53,34 +54,25 @@ struct CaptureWindowView: View {
             VStack(spacing: 6) {
               HStack {
                 Spacer()
-                HStack(spacing: 2) {
-                  Button(action: { showPreview = false }) {
-                    Text("Edit")
-                      .font(.system(size: 9, weight: showPreview ? .medium : .semibold))
-                      .foregroundStyle(showPreview ? .secondary : AppColors.redditOrange)
-                      .padding(.horizontal, 6).padding(.vertical, 2)
-                      .background(showPreview ? Color.clear : AppColors.redditOrange.opacity(0.1))
-                      .clipShape(RoundedRectangle(cornerRadius: 3))
-                  }
-                  .buttonStyle(.plain)
-                  .accessibilityLabel("Edit capture text")
-                  .accessibilityIdentifier("captureWindow.text.edit")
-                  Button(action: { showPreview = true }) {
-                    Text("Preview")
-                      .font(.system(size: 9, weight: showPreview ? .semibold : .medium))
-                      .foregroundStyle(showPreview ? AppColors.redditOrange : .secondary)
-                      .padding(.horizontal, 6).padding(.vertical, 2)
-                      .background(showPreview ? AppColors.redditOrange.opacity(0.1) : Color.clear)
-                      .clipShape(RoundedRectangle(cornerRadius: 3))
-                  }
-                  .buttonStyle(.plain)
-                  .accessibilityLabel("Preview capture text")
-                  .accessibilityIdentifier("captureWindow.text.preview")
+                Picker("Capture text mode", selection: $showPreview) {
+                  Text("Edit")
+                    .tag(false)
+                    .accessibilityLabel("Edit capture text")
+                    .accessibilityIdentifier("captureWindow.text.edit")
+                  Text("Preview")
+                    .tag(true)
+                    .accessibilityLabel("Preview capture text")
+                    .accessibilityIdentifier("captureWindow.text.preview")
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 128)
+                .accessibilityIdentifier("captureWindow.text.mode")
               }
               if showPreview {
                 MarkdownPreviewView(text: text)
                   .frame(minHeight: 72)
+                  .accessibilityIdentifier("captureWindow.text.previewContent")
               } else {
                 TextEditor(text: $text)
                   .font(.system(size: 12))
@@ -170,7 +162,13 @@ struct CaptureWindowView: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .onAppear { populateFromMode() }
+    .onAppear {
+      populateFromMode()
+      onDraftChanged(currentDraft)
+    }
+    .onChange(of: currentDraft) {
+      onDraftChanged(currentDraft)
+    }
   }
 
 }

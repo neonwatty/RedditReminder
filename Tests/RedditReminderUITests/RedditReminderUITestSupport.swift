@@ -61,8 +61,8 @@ extension XCTestCase {
     XCTAssertTrue(settingsButton.waitForExistence(timeout: 3), "Settings button should exist")
     settingsButton.click()
     XCTAssertTrue(
-      app.buttons["preferences.tab.General"].waitForExistence(timeout: 3),
-      "Preferences route should expose the General tab"
+      app.descendants(matching: .any)["preferences.content.General"].waitForExistence(timeout: 3),
+      "Settings window should expose the General content"
     )
   }
 

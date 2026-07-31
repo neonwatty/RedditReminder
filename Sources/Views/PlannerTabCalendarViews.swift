@@ -132,6 +132,8 @@ extension PlannerTabView {
           Text("·")
           Text(PlannerPresentation.readinessText(for: window.matchingCaptureCount))
             .foregroundStyle(window.matchingCaptureCount == 0 ? AppColors.redditOrange : .secondary)
+          Text("·")
+          sourceBadge(for: window)
         }
         .font(.system(size: 10))
         .foregroundStyle(.secondary)
@@ -139,38 +141,69 @@ extension PlannerTabView {
 
       Spacer(minLength: 0)
 
-      VStack(alignment: .trailing, spacing: 5) {
-        Text(window.event.isGeneratedFromHeuristics ? "Auto" : "Manual")
-          .font(.system(size: 9, weight: .semibold))
-          .foregroundStyle(window.event.isGeneratedFromHeuristics ? AppColors.redditOrange : .secondary)
-          .padding(.horizontal, 6)
-          .padding(.vertical, 3)
-          .background(
-            window.event.isGeneratedFromHeuristics ? AppColors.redditOrange.opacity(0.10) : Color.clear
-          )
-          .clipShape(RoundedRectangle(cornerRadius: 5))
-
-        HStack(spacing: 8) {
-          if window.matchingCaptureCount == 0 {
-            Button(Self.createCaptureActionText) {
-              onCreateCaptureForSubreddit(window.event.subreddit)
-            }
-            .accessibilityIdentifier(
-              PlannerPresentation.createCaptureIdentifier(subredditId: window.event.subreddit?.id)
-            )
-          } else {
-            Button(Self.viewQueueActionText, action: onViewQueue)
-              .accessibilityIdentifier("planner.viewQueue")
-          }
-          Button(Self.editChannelsActionText, action: onEditChannels)
-            .accessibilityIdentifier("planner.editChannels")
-        }
-        .font(.system(size: 10, weight: .medium))
-        .foregroundStyle(AppColors.redditOrange)
-        .buttonStyle(.plain)
+      HStack(spacing: 6) {
+        primaryPlannerAction(for: window)
+        plannerIconButton(
+          systemName: "slider.horizontal.3",
+          label: Self.editChannelsActionText,
+          action: onEditChannels
+        )
+        .accessibilityIdentifier("planner.editChannels")
       }
     }
     .padding(10)
+  }
+
+  func sourceBadge(for window: TimingEngine.UpcomingWindow) -> some View {
+    Text(window.event.isGeneratedFromHeuristics ? "Auto" : "Manual")
+      .font(.system(size: 9, weight: .semibold))
+      .foregroundStyle(window.event.isGeneratedFromHeuristics ? AppColors.redditOrange : .secondary)
+      .padding(.horizontal, 5)
+      .padding(.vertical, 2)
+      .background(
+        window.event.isGeneratedFromHeuristics ? AppColors.redditOrange.opacity(0.10) : Color.clear
+      )
+      .clipShape(RoundedRectangle(cornerRadius: 4))
+  }
+
+  @ViewBuilder
+  func primaryPlannerAction(for window: TimingEngine.UpcomingWindow) -> some View {
+    if window.matchingCaptureCount == 0 {
+      plannerIconButton(
+        systemName: "text.badge.plus",
+        label: Self.createCaptureActionText,
+        action: { onCreateCaptureForSubreddit(window.event.subreddit) }
+      )
+      .accessibilityIdentifier(
+        PlannerPresentation.createCaptureIdentifier(subredditId: window.event.subreddit?.id)
+      )
+    } else {
+      plannerIconButton(
+        systemName: "tray",
+        label: Self.viewQueueActionText,
+        action: onViewQueue
+      )
+      .accessibilityIdentifier("planner.viewQueue")
+    }
+  }
+
+  func plannerIconButton(
+    systemName: String,
+    label: String,
+    action: @escaping () -> Void
+  ) -> some View {
+    Button(action: action) {
+      Image(systemName: systemName)
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(AppColors.redditOrange)
+        .frame(width: Self.rowActionHitSize, height: Self.rowActionHitSize)
+        .background(.quaternary.opacity(0.25))
+        .clipShape(RoundedRectangle(cornerRadius: 5))
+        .contentShape(RoundedRectangle(cornerRadius: 5))
+    }
+    .buttonStyle(.plain)
+    .help(label)
+    .accessibilityLabel(label)
   }
 
   func calendarDayCell(_ day: PlannerCalendarDay) -> some View {
@@ -222,6 +255,28 @@ extension PlannerTabView {
         )
       )
       .lineLimit(1)
+      Spacer(minLength: 0)
+      if window.matchingCaptureCount == 0 {
+        Button(action: { onCreateCaptureForSubreddit(window.event.subreddit) }) {
+          Image(systemName: "plus.circle")
+            .font(.system(size: 10, weight: .medium))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Self.createCaptureActionText)
+        .accessibilityIdentifier(
+          PlannerPresentation.calendarCreateCaptureIdentifier(
+            subredditId: window.event.subreddit?.id
+          )
+        )
+      } else {
+        Button(action: onViewQueue) {
+          Image(systemName: "list.bullet")
+            .font(.system(size: 10, weight: .medium))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Self.viewQueueActionText)
+        .accessibilityIdentifier("planner.calendar.viewQueue")
+      }
     }
     .font(.system(size: 9, weight: .medium))
     .foregroundStyle(.secondary)

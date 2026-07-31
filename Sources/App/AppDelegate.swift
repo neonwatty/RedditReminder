@@ -19,8 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   let globalShortcut: any GlobalShortcutRegistering
   private var refreshTask: Task<Void, Never>?
   private var shortcutObserver: NSObjectProtocol?
+  private var commandKeyMonitor: Any?
   var activeShortcutConfig: KeyboardShortcutConfig?
-  private var keepAliveWindow: NSWindow?
+  private var settingsWindowController: NSWindowController?
+  private var lifecycleAnchorWindow: NSWindow?
 
   override convenience init() {
     self.init(
@@ -102,8 +104,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     ProcessInfo.processInfo.disableAutomaticTermination(
       "Keep RedditReminder menu bar app running"
     )
-    setupKeepAliveWindow()
     bootstrapApplication()
+    setupLifecycleAnchorWindow()
+    installCommandKeyMonitor()
 
     if AppRuntime.shouldRegisterGlobalShortcut() {
       registerGlobalShortcut()
@@ -159,26 +162,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     menuBarController.setup(popoverContent: popoverView)
   }
 
-  private func setupKeepAliveWindow() {
-    guard keepAliveWindow == nil else { return }
-
-    let window = NSWindow(
-      contentRect: NSRect(x: -10_000, y: -10_000, width: 1, height: 1),
-      styleMask: [.borderless],
-      backing: .buffered,
-      defer: false
-    )
-    window.contentView = NSView(frame: NSRect(x: 0, y: 0, width: 1, height: 1))
-    window.backgroundColor = .clear
-    window.alphaValue = 0.01
-    window.ignoresMouseEvents = true
-    window.isOpaque = false
-    window.isReleasedWhenClosed = false
-    window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
-    window.orderFront(nil)
-    keepAliveWindow = window
-  }
-
   private func presentStoreUnavailableAlert(error: Error) {
     let alert = NSAlert()
     alert.alertStyle = .critical
@@ -205,18 +188,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func applicationWillTerminate(_ notification: Notification) {
     globalShortcut.unregister()
     refreshTask?.cancel()
-    keepAliveWindow?.close()
-    keepAliveWindow = nil
+    settingsWindowController?.close()
+    settingsWindowController = nil
+    lifecycleAnchorWindow?.close()
+    lifecycleAnchorWindow = nil
     ProcessInfo.processInfo.enableAutomaticTermination(
       "Keep RedditReminder menu bar app running"
     )
     if let shortcutObserver {
       NotificationCenter.default.removeObserver(shortcutObserver)
     }
+    if let commandKeyMonitor {
+      NSEvent.removeMonitor(commandKeyMonitor)
+    }
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
     false
+  }
+
+  private func setupLifecycleAnchorWindow() {
+    guard lifecycleAnchorWindow == nil else { return }
+
+    let window = NSWindow(
+      contentRect: NSRect(x: -10_000, y: -10_000, width: 1, height: 1),
+      styleMask: [.borderless],
+      backing: .buffered,
+      defer: false
+    )
+    window.level = .popUpMenu
+    window.alphaValue = 0
+    window.ignoresMouseEvents = true
+    window.isReleasedWhenClosed = false
+    window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+    window.orderFrontRegardless()
+    lifecycleAnchorWindow = window
   }
 
   private func startRefreshLoop() {
@@ -227,6 +233,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         guard !Task.isCancelled else { break }
         runRefreshCycle()
       }
+    }
+  }
+
+  private func installCommandKeyMonitor() {
+    guard commandKeyMonitor == nil else { return }
+    commandKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+      let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+      guard
+        flags.contains(.command),
+        !flags.contains(.option),
+        !flags.contains(.control),
+        !flags.contains(.shift),
+        let key = event.charactersIgnoringModifiers?.lowercased()
+      else {
+        return event
+      }
+
+      switch key {
+      case "n", ",", "w":
+        Task { @MainActor [weak self] in
+          self?.handleCommandKey(key)
+        }
+        return nil
+      default:
+        return event
+      }
+    }
+  }
+
+  private func handleCommandKey(_ key: String) {
+    switch key {
+    case "n":
+      settingsWindowController?.window?.performClose(nil)
+      menuBarController.requestNewCapture()
+    case ",":
+      openSettingsWindow()
+    case "w":
+      let window = NSApp.keyWindow ?? NSApp.orderedWindows.first { window in
+        window.isVisible && window.canBecomeKey
+      }
+      window?.performClose(nil)
+    default:
+      break
     }
   }
 
@@ -272,11 +321,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
   func wireMenuActions(container: ModelContainer) {
     modelContainer = container
     menuBarController.onNewCapture = { [weak self] in
+      self?.settingsWindowController?.window?.performClose(nil)
       self?.menuBarController.requestNewCapture()
     }
-    menuBarController.onOpenPreferences = { [weak self] in
-      self?.menuBarController.requestPreferences()
+    menuBarController.onOpenPreferences = { [weak self] tab in
+      self?.openSettingsWindow(initialTab: tab)
     }
+  }
+
+  func openSettingsWindow(initialTab: PreferencesView.Tab = PreferencesView.defaultTab) {
+    guard let container = modelContainer else {
+      NSLog("RedditReminder: settings skipped — no ModelContainer")
+      return
+    }
+
+    menuBarController.dismissPopover()
+    menuBarController.installMenuShortcuts()
+
+    let settingsView = PreferencesView(
+      notificationService: notificationService,
+      heuristicsStore: heuristicsStore,
+      initialTab: initialTab,
+      onAppStateChanged: { [weak self] in self?.runRefreshCycle() }
+    )
+    .modelContainer(container)
+    .frame(minWidth: 520, idealWidth: 560, minHeight: 360, idealHeight: 420)
+
+    let hostingController = NSHostingController(rootView: settingsView)
+
+    if let window = settingsWindowController?.window {
+      window.contentViewController = hostingController
+      window.makeKeyAndOrderFront(nil)
+      NSApp.activate(ignoringOtherApps: true)
+      menuBarController.installMenuShortcuts()
+      return
+    }
+
+    let window = NSWindow(contentViewController: hostingController)
+    window.title = "Settings"
+    window.styleMask = [.titled, .closable, .miniaturizable]
+    window.minSize = NSSize(width: 520, height: 360)
+    window.isReleasedWhenClosed = false
+    window.center()
+
+    let controller = NSWindowController(window: window)
+    settingsWindowController = controller
+    controller.showWindow(nil)
+    NSApp.activate(ignoringOtherApps: true)
+    menuBarController.installMenuShortcuts()
   }
 
   private var defaultLeadTimeMinutes: Int {
@@ -288,7 +380,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     try heuristicsStore.syncGeneratedEvents(
       for: subreddits,
       context: context,
-      defaultLeadTimeMinutes: defaultLeadTimeMinutes
+      defaultLeadTimeMinutes: defaultLeadTimeMinutes,
+      notificationService: notificationService
     )
   }
 

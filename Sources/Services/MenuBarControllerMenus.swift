@@ -29,6 +29,10 @@ extension MenuBarController {
       title: "New Capture", action: #selector(handleNewCapture), keyEquivalent: "n")
     newCaptureItem.target = self
     fileMenu.addItem(newCaptureItem)
+    let closeItem = NSMenuItem(
+      title: "Close", action: #selector(handleCloseWindow), keyEquivalent: "w")
+    closeItem.target = self
+    fileMenu.addItem(closeItem)
     mainMenu.addItem(fileMenuItem)
 
     #if DEBUG
@@ -43,7 +47,14 @@ extension MenuBarController {
   }
 
   @objc private func handleOpenPreferences() {
-    onOpenPreferences?()
+    openSettingsWindow()
+  }
+
+  @objc private func handleCloseWindow() {
+    let window = NSApp.keyWindow ?? NSApp.orderedWindows.first { window in
+      window.isVisible && window.canBecomeKey
+    }
+    window?.performClose(nil)
   }
 }
 

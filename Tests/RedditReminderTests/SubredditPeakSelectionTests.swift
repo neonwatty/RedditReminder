@@ -114,6 +114,51 @@ import Foundation
     #expect(result.days == ["mon", "tue", "wed", "thu", "fri"])
     // PDT is UTC-7: local 8=UTC15, 9=UTC16, 10=UTC17, 11=UTC18
     #expect(result.utcHours == [15, 16, 17, 18])
+    #expect(result.isExact)
+}
+
+@Test func localSelectionToUtcShiftsDayWhenLocalHourCrossesUtcMidnight() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+
+    let result = SubredditPeakSelection.localSelectionToUtc(
+        days: ["mon"],
+        localHours: [20],
+        timeZone: pdt,
+        referenceDate: summer
+    )
+
+    #expect(result.days == ["tue"])
+    #expect(result.utcHours == [3])
+    #expect(result.isExact)
+}
+
+@Test func localSelectionToUtcFlagsMixedUtcDayShiftsAsInexact() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+
+    let result = SubredditPeakSelection.localSelectionToUtc(
+        days: ["mon"],
+        localHours: [8, 20],
+        timeZone: pdt,
+        referenceDate: summer
+    )
+
+    #expect(result.days == ["mon", "tue"])
+    #expect(result.utcHours == [3, 15])
+    #expect(!result.isExact)
+}
+
+@Test func weekdayPMPresetShiftsToFollowingUtcDaysWhenNeeded() {
+    let pdt = TimeZone(identifier: "America/Los_Angeles")!
+    let summer = DateComponents(calendar: .current, year: 2024, month: 7, day: 1).date!
+    let preset = SubredditPeakSelection.presets[1]
+
+    let result = SubredditPeakSelection.applyPreset(preset, timeZone: pdt, referenceDate: summer)
+
+    #expect(result.days == ["tue", "wed", "thu", "fri", "sat"])
+    #expect(result.utcHours == [0, 1, 2, 3])
+    #expect(result.isExact)
 }
 
 @Test func suggestedDefaultsReturnsWeekdayAMPreset() {

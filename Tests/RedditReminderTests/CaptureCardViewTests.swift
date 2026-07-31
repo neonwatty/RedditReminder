@@ -33,4 +33,6 @@ import Testing
   #expect(SubredditRow.moveUpAccessibilityLabel == "Move channel up")
   #expect(SubredditRow.moveDownAccessibilityLabel == "Move channel down")
   #expect(SubredditRow.removeAccessibilityLabel == "Remove channel")
+  #expect(SubredditRow.collapsedRowsUseCardChrome == false)
+  #expect(SubredditRow.expandedRowsUseCardChrome == true)
 }

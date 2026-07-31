@@ -17,6 +17,30 @@ final class RedditReminderWorkflowUITests: XCTestCase {
     XCTAssertTrue(cancelButton.exists)
   }
 
+  func testCaptureTextModeUsesSegmentedPreviewControl() throws {
+    continueAfterFailure = false
+    let app = makeSeededRedditReminderApp()
+    defer { app.terminate() }
+
+    launchAndWaitForRedditReminder(app)
+    openNewCaptureRoute(in: app)
+
+    let textEditor = app.textViews["captureWindow.text"]
+    XCTAssertTrue(textEditor.waitForExistence(timeout: 3), "Capture text editor should exist")
+
+    let modeControl = app.descendants(matching: .any)["captureWindow.text.mode"]
+    XCTAssertTrue(modeControl.waitForExistence(timeout: 3), "Capture text mode control should exist")
+
+    modeControl.coordinate(withNormalizedOffset: CGVector(dx: 0.84, dy: 0.5)).click()
+    XCTAssertTrue(
+      app.descendants(matching: .any)["captureWindow.text.previewContent"].waitForExistence(timeout: 3),
+      "Preview content should appear after selecting Preview"
+    )
+
+    modeControl.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.5)).click()
+    XCTAssertTrue(textEditor.waitForExistence(timeout: 3), "Text editor should return after selecting Edit")
+  }
+
   func testPreferencesTabNavigation() throws {
     continueAfterFailure = false
     let app = makeSeededRedditReminderApp()
@@ -25,11 +49,15 @@ final class RedditReminderWorkflowUITests: XCTestCase {
     launchAndWaitForRedditReminder(app)
     openPreferencesRoute(in: app)
 
-    let tabs = ["General", "Notifications", "Backup"]
-    for tab in tabs {
-      let tabButton = app.buttons["preferences.tab.\(tab)"]
-      XCTAssertTrue(tabButton.waitForExistence(timeout: 3), "Tab '\(tab)' should exist")
-      tabButton.click()
+    let tabs = [
+      ("General", CGVector(dx: 0.16, dy: 0.5)),
+      ("Notifications", CGVector(dx: 0.5, dy: 0.5)),
+      ("Backup", CGVector(dx: 0.84, dy: 0.5)),
+    ]
+    let segmentedTabs = app.descendants(matching: .any)["preferences.tabs"]
+    XCTAssertTrue(segmentedTabs.waitForExistence(timeout: 3), "Settings tabs should exist")
+    for (tab, offset) in tabs {
+      segmentedTabs.coordinate(withNormalizedOffset: offset).click()
       XCTAssertTrue(
         app.descendants(matching: .any)["preferences.content.\(tab)"].waitForExistence(timeout: 3),
         "Tab '\(tab)' should expose its content"

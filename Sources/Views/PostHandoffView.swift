@@ -45,7 +45,7 @@ struct PostHandoffView: View {
       footer
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(AppColors.popoverBg)
+    .background(.regularMaterial)
   }
 
   private var header: some View {
@@ -170,9 +170,13 @@ struct PostHandoffView: View {
       Spacer()
 
       Button(action: onMarkPosted) {
-        Label("Mark Posted", systemImage: "checkmark.circle")
+        Label(
+          Self.markPostedButtonText(destinationCount: sortedSubreddits.count),
+          systemImage: "checkmark.circle"
+        )
       }
-      .accessibilityLabel("Mark posted")
+      .help(Self.markPostedAccessibilityLabel(destinationCount: sortedSubreddits.count))
+      .accessibilityLabel(Self.markPostedAccessibilityLabel(destinationCount: sortedSubreddits.count))
       .accessibilityIdentifier("postHandoff.markPosted")
 
       openSubmitControl
@@ -198,6 +202,14 @@ struct PostHandoffView: View {
 
   private func runCopy(_ action: () -> Bool, successMessage: String) {
     statusMessage = action() ? successMessage : "Copy failed"
+  }
+
+  nonisolated static func markPostedButtonText(destinationCount: Int) -> String {
+    destinationCount > 1 ? "Mark All Posted" : "Mark Posted"
+  }
+
+  nonisolated static func markPostedAccessibilityLabel(destinationCount: Int) -> String {
+    destinationCount > 1 ? "Mark all destinations posted" : "Mark posted"
   }
 
 }

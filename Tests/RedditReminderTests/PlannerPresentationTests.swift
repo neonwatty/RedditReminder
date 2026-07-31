@@ -53,6 +53,12 @@ import Testing
     PlannerPresentation.createCaptureIdentifier(subredditId: subredditId)
       == "planner.createCapture.00000000-0000-0000-0000-000000000123")
   #expect(PlannerPresentation.createCaptureIdentifier(subredditId: nil) == "planner.createCapture")
+  #expect(
+    PlannerPresentation.calendarCreateCaptureIdentifier(subredditId: subredditId)
+      == "planner.calendar.createCapture.00000000-0000-0000-0000-000000000123")
+  #expect(
+    PlannerPresentation.calendarCreateCaptureIdentifier(subredditId: nil)
+      == "planner.calendar.createCapture")
 }
 
 @Test @MainActor func plannerPresentationCalendarDaysAlwaysReturnsSevenDays() {

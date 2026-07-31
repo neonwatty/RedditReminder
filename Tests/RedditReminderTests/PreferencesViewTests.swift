@@ -62,6 +62,7 @@ import Testing
     CaptureSubredditPicker.emptyDescriptionText
       == "Add a subreddit channel before saving this capture.")
   #expect(CaptureSubredditPicker.addChannelButtonText == "Add channel")
+  #expect(CaptureSubredditPicker.addAnotherChannelButtonText == "Add another channel")
   #expect(
     CaptureSubredditPicker.addChannelButtonAccessibilityIdentifier == "captureWindow.addChannel")
 }

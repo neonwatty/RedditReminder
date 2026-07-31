@@ -17,6 +17,8 @@ struct PlannerTabView: View {
   static let createCaptureActionText = "Create capture"
   static let viewQueueActionText = "View queue"
   static let editChannelsActionText = "Edit windows"
+  static let viewModeAccessibilityIdentifier = "planner.viewMode"
+  static let rowActionHitSize: CGFloat = 28
 
   @Environment(\.modelContext) private var modelContext
   @Query(sort: \Capture.createdAt, order: .reverse) private var captures: [Capture]
@@ -94,6 +96,7 @@ struct PlannerTabView: View {
       .labelsHidden()
       .pickerStyle(.segmented)
       .frame(width: 150)
+      .accessibilityIdentifier(Self.viewModeAccessibilityIdentifier)
     }
     .padding(.horizontal, 14)
     .padding(.vertical, 12)

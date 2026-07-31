@@ -14,11 +14,12 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
 
   private var statusItem: NSStatusItem?
   private var popover: NSPopover?
+  private let menuBarLabel = "RR"
 
   /// Called from PopoverContentView to open new capture; wired to ⌘N.
   var onNewCapture: (() -> Void)?
   /// Called from PopoverContentView to open settings; wired to ⌘,.
-  var onOpenPreferences: (() -> Void)?
+  var onOpenPreferences: ((PreferencesView.Tab) -> Void)?
   #if DEBUG
     var onQACopyFirstQueuedCapture: (() -> Void)?
     var onQACopyFirstQueuedSubmitURL: (() -> Void)?
@@ -35,12 +36,15 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
   #endif
 
   func setup(popoverContent: some View) {
-    let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
     if let button = item.button {
       button.image = NSImage(
         systemSymbolName: "bell.badge", accessibilityDescription: "RedditReminder")
       button.image?.isTemplate = true
+      button.title = menuBarLabel
+      button.imagePosition = .imageLeading
+      button.toolTip = "RedditReminder"
       button.action = #selector(statusItemClicked)
       button.target = self
     }
@@ -87,7 +91,12 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
 
   func requestPreferences() {
     preferencesRequestCount += 1
-    openPopover()
+    openSettingsWindow()
+  }
+
+  func openSettingsWindow(tab: PreferencesView.Tab = PreferencesView.defaultTab) {
+    dismissPopover()
+    onOpenPreferences?(tab)
   }
 
   func dismissPopover() {
@@ -116,11 +125,11 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     }
 
     if badgeCount > 0 {
-      button.title = "\(badgeCount)"
+      button.title = "\(menuBarLabel) \(badgeCount)"
       button.imagePosition = .imageLeading
     } else {
-      button.title = ""
-      button.imagePosition = .imageOnly
+      button.title = menuBarLabel
+      button.imagePosition = .imageLeading
     }
   }
 

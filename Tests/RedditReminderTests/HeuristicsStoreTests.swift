@@ -1,7 +1,20 @@
 import Testing
 import Foundation
 import SwiftData
+import UserNotifications
 @testable import RedditReminder
+
+private final class HeuristicsRecordingNotificationCenter: NotificationCenterProtocol, @unchecked Sendable {
+  private(set) var removedIdentifiers: [[String]] = []
+
+  func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool { true }
+  func add(_ request: UNNotificationRequest, withCompletionHandler handler: (@Sendable (Error?) -> Void)?) {}
+  func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
+    removedIdentifiers.append(identifiers)
+  }
+  func removeAllPendingNotificationRequests() {}
+  func getAuthorizationStatus() async -> UNAuthorizationStatus { .authorized }
+}
 
 private func makeTestBundle() -> Bundle {
   makePeakTimesTestBundle()
@@ -91,6 +104,38 @@ private func makeTestBundle() -> Bundle {
   #expect(events[0].rrule == "FREQ=WEEKLY;BYDAY=MO")
   #expect(events[0].recurrenceHour == 9)
   #expect(events[0].reminderLeadMinutes == 120)
+}
+
+@Test @MainActor func syncGeneratedEventsCancelsNotificationsForRemovedGeneratedEvents() throws {
+  let container = try makeContainer()
+  let context = ModelContext(container)
+  let sub = Subreddit(name: "r/SideProject")
+  context.insert(sub)
+  try context.save()
+
+  let store = HeuristicsStore(bundle: makeTestBundle())
+  try store.syncGeneratedEvents(for: sub, context: context, defaultLeadTimeMinutes: 60)
+  let originalEvents = try context.fetch(FetchDescriptor<SubredditEvent>())
+  #expect(originalEvents.count == 6)
+
+  let center = HeuristicsRecordingNotificationCenter()
+  let service = NotificationService(center: center)
+  sub.peakDaysOverride = ["mon"]
+  sub.peakHoursUtcOverride = [9]
+  try context.save()
+
+  try store.syncGeneratedEvents(
+    for: sub,
+    context: context,
+    defaultLeadTimeMinutes: 60,
+    notificationService: service
+  )
+
+  let removedIds = Set(center.removedIdentifiers.flatMap { $0 })
+  for event in originalEvents {
+    #expect(removedIds.contains(AppNotificationIdentifiers.windowRequestId(eventId: event.id.uuidString)))
+    #expect(removedIds.contains(AppNotificationIdentifiers.nudgeRequestId(eventId: event.id.uuidString)))
+  }
 }
 
 private func makeContainer() throws -> ModelContainer {
